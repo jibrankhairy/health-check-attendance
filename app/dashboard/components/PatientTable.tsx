@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { PlusCircle, Search, Eye, Pencil, Trash2 } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+import { PlusCircle, Search, Eye, Pencil, Trash2, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,31 +34,19 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip"; // Import Tooltip
+} from "@/components/ui/tooltip";
+import { format } from "date-fns";
 
-// Tipe data ini akan kita gunakan saat fetch data asli
+// Tipe data sesuai dengan model Prisma Patient
 type PatientData = {
-  id: string;
-  name: string;
-  idNumber: string;
-  registrationDate: string;
-  mcuPackage: string;
+  id: number;
+  patientId: string;
+  fullName: string;
+  age: number;
+  department: string;
+  mcuPackage: string[];
   qrCode: string;
-  status: "Approved" | "Pending" | "Canceled";
-};
-
-const StatusBadge = ({
-  status,
-}: {
-  status: "Approved" | "Pending" | "Canceled";
-}) => {
-  const statusStyles: { [key in "Approved" | "Pending" | "Canceled"]: string } =
-    {
-      Approved: "bg-[#01449D] hover:bg-[#01449D]/90 text-white",
-      Pending: "bg-yellow-500 hover:bg-yellow-500/90 text-white",
-      Canceled: "bg-red-600 hover:bg-red-600/90 text-white",
-    };
-  return <Badge className={statusStyles[status]}>{status}</Badge>;
+  createdAt: string;
 };
 
 type PatientTableProps = {
@@ -68,39 +56,42 @@ type PatientTableProps = {
 
 export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  // --- PERUBAHAN 2: State patients dimulai dengan array kosong ---
   const [patients, setPatients] = useState<PatientData[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  useEffect(() => {
-    // --- PERUBAHAN 3: Hapus data dummy, siapkan untuk fetch API ---
+  const fetchPatients = useCallback(async () => {
+    if (!companyId) return;
     setLoading(true);
-    // Di sini nanti kamu akan fetch data pasien dari API berdasarkan companyId
-    // const response = await fetch(`/api/patients?companyId=${companyId}`);
-    // const data = await response.json();
-    // setPatients(data);
-    setTimeout(() => {
-      // Simulasi loading
-      setPatients([]); // Mulai dengan tabel kosong
+    try {
+      const response = await fetch(`/api/patients?companyId=${companyId}`);
+      if (!response.ok) throw new Error(`Error: ${response.statusText}`);
+      const data = await response.json();
+      setPatients(data);
+    } catch (error) {
+      console.error("Failed to fetch patients:", error);
+    } finally {
       setLoading(false);
-    }, 500);
+    }
   }, [companyId]);
 
-  const filteredPatients = patients.filter((patient) =>
-    patient.name.toLowerCase().includes(searchQuery.toLowerCase())
+  useEffect(() => {
+    fetchPatients();
+  }, [fetchPatients]);
+
+  const filteredPatients = patients.filter(
+    (patient) =>
+      patient.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      patient.patientId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      patient.department.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
   const currentRows = filteredPatients.slice(indexOfFirstRow, indexOfLastRow);
   const totalPages = Math.ceil(filteredPatients.length / rowsPerPage);
-
-  if (loading) {
-    return <div className="p-8">Memuat data pasien untuk {companyName}...</div>;
-  }
 
   return (
     <div className="flex-1 p-8">
@@ -109,7 +100,7 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
-              placeholder="Cari nama pasien..."
+              placeholder="Cari nama, ID, atau departemen..."
               className="pl-9"
               value={searchQuery}
               onChange={(e) => {
@@ -139,6 +130,7 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
             <PatientRegistrationForm
               setOpen={setIsDialogOpen}
               companyId={companyId}
+              onPatientAdded={fetchPatients}
             />
           </DialogContent>
         </Dialog>
@@ -149,36 +141,47 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
           <TableHeader>
             <TableRow>
               <TableHead className="w-[50px] text-center">No.</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Patient ID</TableHead>
-              <TableHead>Registration Date</TableHead>
-              <TableHead>MCU Package</TableHead>
-              <TableHead>QR Code</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-center">Action</TableHead>
+              <TableHead>ID Pasien</TableHead>
+              <TableHead>Nama Lengkap</TableHead>
+              <TableHead>Departemen</TableHead>
+              <TableHead>Tgl. Registrasi</TableHead>
+              <TableHead className="text-center">QR Code</TableHead>
+              <TableHead className="text-center">Aksi</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {currentRows.length > 0 ? (
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={7} className="h-24 text-center">
+                  <div className="flex justify-center items-center">
+                    <Loader2 className="mr-2 h-6 w-6 animate-spin" />
+                    Memuat data pasien...
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : currentRows.length > 0 ? (
               currentRows.map((patient, index) => (
                 <TableRow key={patient.id}>
                   <TableCell className="font-medium text-center">
                     {indexOfFirstRow + index + 1}
                   </TableCell>
-                  <TableCell className="font-medium">{patient.name}</TableCell>
-                  <TableCell>{patient.idNumber}</TableCell>
-                  <TableCell>{patient.registrationDate}</TableCell>
-                  <TableCell>{patient.mcuPackage}</TableCell>
                   <TableCell>
+                    <Badge variant="secondary">{patient.patientId}</Badge>
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {patient.fullName}
+                  </TableCell>
+                  <TableCell>{patient.department}</TableCell>
+                  <TableCell>
+                    {format(new Date(patient.createdAt), "dd MMM yyyy")}
+                  </TableCell>
+                  <TableCell className="flex justify-center">
                     <img
                       src={`https://api.qrserver.com/v1/create-qr-code/?size=40x40&data=${patient.qrCode}`}
-                      alt="QR Code"
+                      alt={`QR Code for ${patient.fullName}`}
+                      className="rounded-sm"
                     />
                   </TableCell>
-                  <TableCell>
-                    <StatusBadge status={patient.status} />
-                  </TableCell>
-                  {/* --- PERUBAHAN 4: Ganti DropdownMenu dengan ikon berjejer --- */}
                   <TableCell>
                     <TooltipProvider>
                       <div className="flex items-center justify-center gap-2">
@@ -231,7 +234,7 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center">
+                <TableCell colSpan={7} className="h-24 text-center">
                   {searchQuery
                     ? "Pasien tidak ditemukan."
                     : "Belum ada data pasien untuk perusahaan ini."}
@@ -242,15 +245,16 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
         </Table>
       </div>
 
+      {/* Pagination Controls */}
       <div className="flex items-center justify-between mt-4">
         <div className="text-sm text-gray-600">
-          Showing {Math.min(indexOfFirstRow + 1, filteredPatients.length)} to{" "}
-          {Math.min(indexOfLastRow, filteredPatients.length)} of{" "}
-          {filteredPatients.length} patients
+          Menampilkan {filteredPatients.length > 0 ? indexOfFirstRow + 1 : 0}{" "}
+          sampai {Math.min(indexOfLastRow, filteredPatients.length)} dari{" "}
+          {filteredPatients.length} pasien
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <p className="text-sm">Lines per page:</p>
+            <p className="text-sm">Baris per halaman:</p>
             <Select
               value={`${rowsPerPage}`}
               onValueChange={(value: string) => {
@@ -271,7 +275,7 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
             </Select>
           </div>
           <div className="text-sm font-medium">
-            Page {currentPage} of {totalPages}
+            Halaman {currentPage} dari {totalPages || 1}
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -280,7 +284,7 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
             >
-              Previous
+              Sebelumnya
             </Button>
             <Button
               variant="outline"
@@ -290,7 +294,7 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
               }
               disabled={currentPage === totalPages || totalPages === 0}
             >
-              Next
+              Selanjutnya
             </Button>
           </div>
         </div>

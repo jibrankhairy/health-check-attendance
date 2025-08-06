@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useForm, ControllerRenderProps } from "react-hook-form";
+import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
@@ -17,7 +17,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { DialogFooter } from "@/components/ui/dialog";
@@ -38,15 +37,18 @@ const mcuItems = [
 ];
 
 const formSchema = z.object({
-  patientId: z.string().optional(),
-  registrationDate: z.string(),
+  patientId: z.string().min(1, "ID Pasien tidak boleh kosong."),
   fullName: z.string().min(3, { message: "Nama lengkap minimal 3 karakter." }),
-  email: z.string().email({ message: "Format email tidak valid." }),
+  email: z
+    .string()
+    .email({ message: "Format email tidak valid." })
+    .optional()
+    .or(z.literal("")),
   dob: z
     .string()
     .refine((val) => val.length > 0, { message: "Tanggal lahir harus diisi." }),
-  healthHistory: z.string().optional(),
-  recommendation: z.string().optional(),
+  age: z.coerce.number().min(0, { message: "Umur harus diisi." }),
+  department: z.string().min(1, { message: "Departemen harus diisi." }),
   mcuPackage: z.array(z.string()).refine((value) => value.length > 0, {
     message: "Anda harus memilih setidaknya satu item pemeriksaan.",
   }),
@@ -57,52 +59,88 @@ type PatientFormValues = z.infer<typeof formSchema>;
 type PatientFormProps = {
   setOpen: (open: boolean) => void;
   companyId: string;
+  onPatientAdded: () => void;
 };
 
 export const PatientRegistrationForm = ({
   setOpen,
   companyId,
+  onPatientAdded,
 }: PatientFormProps) => {
   const form = useForm<PatientFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       patientId: `MCU-${Math.floor(1000 + Math.random() * 9000)}`,
-      registrationDate: new Date().toISOString().split("T")[0],
       fullName: "",
       email: "",
       dob: "",
-      healthHistory: "",
-      recommendation: "",
+      age: 0,
+      department: "",
       mcuPackage: [],
     },
   });
 
-  function onSubmit(data: PatientFormValues) {
+  const handleDobChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const dob = e.target.value;
+    form.setValue("dob", dob);
+    if (dob) {
+      const birthDate = new Date(dob);
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      form.setValue("age", age >= 0 ? age : 0);
+    } else {
+      form.setValue("age", 0);
+    }
+  };
+
+  const onSubmit: SubmitHandler<PatientFormValues> = async (data) => {
     const dataToSubmit = {
       ...data,
       companyId: companyId,
     };
 
-    const promise = new Promise((resolve) =>
-      setTimeout(() => {
-        console.log("Data siap dikirim ke backend:", dataToSubmit);
-        resolve({ name: data.fullName });
-      }, 2000)
-    );
+    const promise = fetch("/api/patients", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dataToSubmit),
+    }).then(async (res) => {
+      const responseData = await res.json();
+      if (!res.ok) {
+        throw responseData;
+      }
+      return responseData;
+    });
 
     toast.promise(promise, {
-      loading: "Menyimpan data pasien dan membuat QR Code...",
-      success: (data: any) => {
+      loading: "Menyimpan data pasien...",
+      success: (data: { fullName: string }) => {
         setOpen(false);
-        return `Pasien ${data.name} berhasil didaftarkan! QR Code dikirim ke email.`;
+        onPatientAdded();
+        form.reset();
+        form.setValue(
+          "patientId",
+          `MCU-${Math.floor(1000 + Math.random() * 9000)}`
+        );
+        return `Pasien ${data.fullName} berhasil didaftarkan!`;
       },
-      error: "Gagal mendaftarkan pasien. Silakan coba lagi.",
+      error: (errorData) => {
+        const errors = errorData?.error;
+        if (errors) {
+          const errorMessages = Object.values(errors).flat().join(", ");
+          return `Gagal: ${errorMessages}`;
+        }
+        return "Gagal mendaftarkan pasien. Cek kembali data Anda.";
+      },
     });
-  }
+  };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -119,26 +157,6 @@ export const PatientRegistrationForm = ({
           />
           <FormField
             control={form.control}
-            name="registrationDate"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Tgl. Registrasi</FormLabel>
-                <FormControl>
-                  <Input
-                    type="date"
-                    {...field}
-                    readOnly
-                    className="bg-gray-100"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
             name="fullName"
             render={({ field }) => (
               <FormItem>
@@ -150,26 +168,13 @@ export const PatientRegistrationForm = ({
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="dob"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Tanggal Lahir</FormLabel>
-                <FormControl>
-                  <Input type="date" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
         </div>
         <FormField
           control={form.control}
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email Pasien</FormLabel>
+              <FormLabel>Email Pasien (Opsional)</FormLabel>
               <FormControl>
                 <Input
                   type="email"
@@ -181,39 +186,55 @@ export const PatientRegistrationForm = ({
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="healthHistory"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Riwayat Kesehatan (Opsional)</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="cth: Alergi obat, riwayat penyakit jantung, dll."
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="recommendation"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Kesimpulan & Rekomendasi (Opsional)</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Diisi oleh dokter setelah pemeriksaan selesai."
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <FormField
+            control={form.control}
+            name="dob"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tanggal Lahir</FormLabel>
+                <FormControl>
+                  <Input type="date" {...field} onChange={handleDobChange} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="age"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Umur</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    {...field}
+                    readOnly
+                    className="bg-gray-100"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="department"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Departemen</FormLabel>
+                <FormControl>
+                  <Input placeholder="cth: Produksi" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
         <Separator />
+
         <FormField
           control={form.control}
           name="mcuPackage"
@@ -251,42 +272,33 @@ export const PatientRegistrationForm = ({
                     key={item.id}
                     control={form.control}
                     name="mcuPackage"
-                    render={({
-                      field,
-                    }: {
-                      field: ControllerRenderProps<
-                        PatientFormValues,
-                        "mcuPackage"
-                      >;
-                    }) => {
-                      return (
-                        <FormItem
-                          key={item.id}
-                          className="flex flex-row items-start space-x-3 space-y-0"
-                        >
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value?.includes(item.id)}
-                              onCheckedChange={(checked) => {
-                                return checked
-                                  ? field.onChange([
-                                      ...(field.value || []),
-                                      item.id,
-                                    ])
-                                  : field.onChange(
-                                      (field.value || []).filter(
-                                        (value: string) => value !== item.id
-                                      )
-                                    );
-                              }}
-                            />
-                          </FormControl>
-                          <FormLabel className="font-normal">
-                            {item.label}
-                          </FormLabel>
-                        </FormItem>
-                      );
-                    }}
+                    render={({ field }) => (
+                      <FormItem
+                        key={item.id}
+                        className="flex flex-row items-start space-x-3 space-y-0"
+                      >
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value?.includes(item.id)}
+                            onCheckedChange={(checked) => {
+                              return checked
+                                ? field.onChange([
+                                    ...(field.value || []),
+                                    item.id,
+                                  ])
+                                : field.onChange(
+                                    (field.value || []).filter(
+                                      (value: string) => value !== item.id
+                                    )
+                                  );
+                            }}
+                          />
+                        </FormControl>
+                        <FormLabel className="font-normal">
+                          {item.label}
+                        </FormLabel>
+                      </FormItem>
+                    )}
                   />
                 ))}
               </div>
@@ -305,8 +317,9 @@ export const PatientRegistrationForm = ({
           <Button
             type="submit"
             className="bg-[#01449D] hover:bg-[#01449D]/90 text-white"
+            disabled={form.formState.isSubmitting}
           >
-            Simpan & Kirim QR Code
+            Simpan & Buat QR Code
           </Button>
         </DialogFooter>
       </form>
