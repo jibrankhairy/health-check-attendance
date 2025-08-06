@@ -25,12 +25,12 @@ export const Header = ({ companyName, onBack }: HeaderProps) => {
         )}
         <div>
           <h2 className="text-xl font-semibold">
-            {companyName ? `Pasien di ${companyName}` : "Manajemen Perusahaan"}
+            {companyName ? `Pasien di ${companyName}` : "Company Management"}
           </h2>
           <p className="text-sm text-gray-500">
             {companyName
-              ? "Kelola semua pasien dari perusahaan ini."
-              : "Pilih perusahaan untuk melihat detail pasien."}
+              ? "Manage all patients from this company."
+              : "Select a company to view patient details."}
           </p>
         </div>
       </div>

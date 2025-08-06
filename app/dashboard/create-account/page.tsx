@@ -15,12 +15,12 @@ const CreateAccountPage = () => {
         <Card>
           <CardHeader>
             <CardTitle className="text-2xl">
-              Buat Akun Perusahaan Rekanan
+              Create a Partner Company Account
             </CardTitle>
             <CardDescription>
-              Daftarkan perusahaan baru beserta akun login untuk HRD mereka.
-              Akun HRD dapat digunakan untuk mendaftarkan pasien MCU dari
-              perusahaan tersebut.
+              Register a new company and a login account for their HR
+              department. The HR department account can be used to register MCU
+              patients from that company.
             </CardDescription>
           </CardHeader>
           <CardContent>

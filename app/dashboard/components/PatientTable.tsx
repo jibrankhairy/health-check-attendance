@@ -149,10 +149,10 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
           <TableHeader>
             <TableRow>
               <TableHead className="w-[50px] text-center">No.</TableHead>
-              <TableHead>Nama</TableHead>
-              <TableHead>ID Pasien</TableHead>
-              <TableHead>Tgl. Registrasi</TableHead>
-              <TableHead>Paket MCU</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Patient ID</TableHead>
+              <TableHead>Registration Date</TableHead>
+              <TableHead>MCU Package</TableHead>
               <TableHead>QR Code</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-center">Action</TableHead>
@@ -244,13 +244,13 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
 
       <div className="flex items-center justify-between mt-4">
         <div className="text-sm text-gray-600">
-          Menampilkan {Math.min(indexOfFirstRow + 1, filteredPatients.length)}{" "}
-          sampai {Math.min(indexOfLastRow, filteredPatients.length)} dari{" "}
-          {filteredPatients.length} pasien
+          Showing {Math.min(indexOfFirstRow + 1, filteredPatients.length)} to{" "}
+          {Math.min(indexOfLastRow, filteredPatients.length)} of{" "}
+          {filteredPatients.length} patients
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <p className="text-sm">Baris per halaman:</p>
+            <p className="text-sm">Lines per page:</p>
             <Select
               value={`${rowsPerPage}`}
               onValueChange={(value: string) => {
@@ -271,7 +271,7 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
             </Select>
           </div>
           <div className="text-sm font-medium">
-            Halaman {currentPage} dari {totalPages}
+            Page {currentPage} of {totalPages}
           </div>
           <div className="flex items-center gap-2">
             <Button

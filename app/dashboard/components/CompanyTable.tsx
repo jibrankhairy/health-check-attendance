@@ -79,7 +79,7 @@ export const CompanyTable = ({ onSelectCompany }: CompanyTableProps) => {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
-              placeholder="Cari perusahaan..."
+              placeholder="Search for companies..."
               className="pl-9"
               value={searchQuery}
               onChange={(e) => {
@@ -96,10 +96,10 @@ export const CompanyTable = ({ onSelectCompany }: CompanyTableProps) => {
           <TableHeader>
             <TableRow>
               <TableHead className="w-[50px] text-center">No.</TableHead>
-              <TableHead>Nama Perusahaan</TableHead>
-              <TableHead>ID Perusahaan</TableHead>
-              <TableHead>Jumlah Pasien</TableHead>
-              <TableHead>Tanggal Dibuat</TableHead>
+              <TableHead>Company name</TableHead>
+              <TableHead>Company ID</TableHead>
+              <TableHead>Number of Patients</TableHead>
+              <TableHead>Date Created</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -139,13 +139,13 @@ export const CompanyTable = ({ onSelectCompany }: CompanyTableProps) => {
 
       <div className="flex items-center justify-between mt-4">
         <div className="text-sm text-gray-600">
-          Menampilkan {Math.min(indexOfFirstRow + 1, filteredCompanies.length)}{" "}
-          sampai {Math.min(indexOfLastRow, filteredCompanies.length)} dari{" "}
-          {filteredCompanies.length} perusahaan
+          Showing {Math.min(indexOfFirstRow + 1, filteredCompanies.length)} to{" "}
+          {Math.min(indexOfLastRow, filteredCompanies.length)} of{" "}
+          {filteredCompanies.length} companies
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <p className="text-sm">Baris per halaman:</p>
+            <p className="text-sm">Lines per page:</p>
             <Select
               value={`${rowsPerPage}`}
               onValueChange={(value: string) => {
@@ -166,7 +166,7 @@ export const CompanyTable = ({ onSelectCompany }: CompanyTableProps) => {
             </Select>
           </div>
           <div className="text-sm font-medium">
-            Halaman {currentPage} dari {totalPages}
+            Page {currentPage} of {totalPages}
           </div>
           <div className="flex items-center gap-2">
             <Button
