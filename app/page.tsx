@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, FormEvent } from "react";
+import { toast } from "sonner";
 
 const EyeIcon = ({ className }: { className?: string }) => (
   <svg
@@ -15,9 +16,8 @@ const EyeIcon = ({ className }: { className?: string }) => (
     strokeLinecap="round"
     strokeLinejoin="round"
   >
-    {" "}
-    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />{" "}
-    <circle cx="12" cy="12" r="3" />{" "}
+    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+    <circle cx="12" cy="12" r="3" />
   </svg>
 );
 const EyeOffIcon = ({ className }: { className?: string }) => (
@@ -33,11 +33,10 @@ const EyeOffIcon = ({ className }: { className?: string }) => (
     strokeLinecap="round"
     strokeLinejoin="round"
   >
-    {" "}
-    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />{" "}
-    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />{" "}
-    <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />{" "}
-    <line x1="2" x2="22" y1="2" y2="22" />{" "}
+    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+    <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+    <line x1="2" x2="22" y1="2" y2="22" />
   </svg>
 );
 
@@ -45,13 +44,17 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
+
+    if (!email || !password) {
+      toast.warning("Email and password must be filled in.");
+      return;
+    }
+
     setIsLoading(true);
-    setError(null);
 
     try {
       const response = await fetch("/api/auth/login", {
@@ -63,14 +66,19 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Terjadi kesalahan.");
+        throw new Error(data.message || "Incorrect email or password.");
       }
+
+      toast.success("Login Successfull");
 
       localStorage.setItem("authToken", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
-      window.location.href = "/dashboard";
+
+      setTimeout(() => {
+        window.location.href = "/dashboard";
+      }, 1000);
     } catch (err: any) {
-      setError(err.message);
+      toast.error(err.message);
     } finally {
       setIsLoading(false);
     }
@@ -96,23 +104,13 @@ export default function LoginPage() {
               </p>
             </div>
 
-            {error && (
-              <div
-                className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
-                role="alert"
-              >
-                <span className="block sm:inline">{error}</span>
-              </div>
-            )}
-
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div>
                 <label
                   htmlFor="email"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  {" "}
-                  Email{" "}
+                  Email
                 </label>
                 <div className="mt-1">
                   <input
@@ -120,7 +118,6 @@ export default function LoginPage() {
                     name="email"
                     type="email"
                     autoComplete="email"
-                    required
                     placeholder="Input your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -134,8 +131,7 @@ export default function LoginPage() {
                   htmlFor="password"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  {" "}
-                  Password{" "}
+                  Password
                 </label>
                 <div className="mt-1 relative">
                   <input
@@ -143,7 +139,6 @@ export default function LoginPage() {
                     name="password"
                     type={showPassword ? "text" : "password"}
                     autoComplete="current-password"
-                    required
                     placeholder="Input your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -175,8 +170,7 @@ export default function LoginPage() {
                     htmlFor="remember-me"
                     className="ml-2 block text-sm text-gray-900"
                   >
-                    {" "}
-                    Remember Me{" "}
+                    Remember Me
                   </label>
                 </div>
                 <div className="text-sm">
@@ -185,8 +179,7 @@ export default function LoginPage() {
                     className="font-medium hover:underline"
                     style={{ color: "#01449D" }}
                   >
-                    {" "}
-                    Forgot Your Password?{" "}
+                    Forgot Your Password?
                   </a>
                 </div>
               </div>
@@ -209,8 +202,7 @@ export default function LoginPage() {
                 className="font-medium hover:underline"
                 style={{ color: "#01449D" }}
               >
-                {" "}
-                Register Now.{" "}
+                Register Now.
               </a>
             </p>
           </div>
@@ -219,8 +211,7 @@ export default function LoginPage() {
             <p className="text-xs text-gray-400">
               Copyright © 2025 Sim Klinik.
               <a href="#" className="ml-4 hover:underline">
-                {" "}
-                Privacy Policy{" "}
+                Privacy Policy
               </a>
             </p>
           </div>
@@ -234,9 +225,7 @@ export default function LoginPage() {
             className="absolute inset-0 h-full w-full"
             xmlns="http://www.w3.org/2000/svg"
           >
-            {" "}
             <defs>
-              {" "}
               <pattern
                 id="wavy"
                 patternUnits="userSpaceOnUse"
@@ -244,24 +233,23 @@ export default function LoginPage() {
                 height="80"
                 patternTransform="rotate(45)"
               >
-                {" "}
                 <path
                   d="M 0 20 Q 10 10, 20 20 T 40 20"
                   stroke="#ffffff"
                   strokeWidth="1"
                   fill="none"
                   strokeOpacity="0.1"
-                />{" "}
+                />
                 <path
                   d="M 0 60 Q 10 50, 20 60 T 40 60"
                   stroke="#ffffff"
                   strokeWidth="1"
                   fill="none"
                   strokeOpacity="0.1"
-                />{" "}
-              </pattern>{" "}
-            </defs>{" "}
-            <rect width="100%" height="100%" fill="url(#wavy)" />{" "}
+                />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#wavy)" />
           </svg>
           <div className="relative z-10 flex flex-col items-center text-center max-w-lg">
             <img
