@@ -31,12 +31,12 @@ export const Sidebar = () => {
         />
         <h1 className="text-sm font-semibold">Klinik Yuliarpan Medika</h1>
       </div>
-      <nav className="flex-1 px-4 py-4 space-y-2">
+      <nav className="flex-1 px-4 py-6 space-y-4">
         {navItems.map((item) => (
           <Link key={item.label} href={item.href} passHref>
             <Button
               variant={pathname === item.href ? "secondary" : "ghost"}
-              className="w-full justify-start"
+              className="w-full justify-start h-11"
             >
               <item.icon className="mr-2 h-4 w-4" />
               {item.label}
