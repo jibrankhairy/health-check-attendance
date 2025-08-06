@@ -1,5 +1,3 @@
-// File: context/AuthContext.tsx
-
 "use client";
 
 import React, {
@@ -14,7 +12,7 @@ interface User {
   id: number;
   fullName: string;
   email: string;
-  role: "PETUGAS" | "ADMINISTRASI" | string;
+  role: "ADMINISTRASI" | "PETUGAS" | string;
 }
 
 interface AuthContextType {

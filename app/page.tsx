@@ -67,6 +67,7 @@ export default function LoginPage() {
       }
 
       localStorage.setItem("authToken", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
       window.location.href = "/dashboard";
     } catch (err: any) {
       setError(err.message);
