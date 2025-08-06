@@ -12,6 +12,12 @@ async function main() {
     create: { name: "ADMINISTRASI" },
   });
 
+  const adminPetugasRole = await prisma.role.upsert({
+    where: { name: "PETUGAS" },
+    update: {},
+    create: { name: "PETUGAS" },
+  });
+
   console.log("Roles created/verified.");
 
   const hashedPasswordAdministrasi = await bcrypt.hash("adminsimklinik", 10);
@@ -26,6 +32,19 @@ async function main() {
     },
   });
   console.log("Admin created.");
+
+  const hashedPasswordPetugas = await bcrypt.hash("petugassimklinik", 10);
+  await prisma.user.upsert({
+    where: { email: "petugas@simklinik.com" },
+    update: {},
+    create: {
+      email: "petugas@simklinik.com",
+      fullName: "Admin Petugas",
+      password: hashedPasswordPetugas,
+      roleId: adminPetugasRole.id,
+    },
+  });
+  console.log("Petugas created.");
 
   console.log("Seeding finished.");
 

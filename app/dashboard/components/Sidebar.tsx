@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import {
   LayoutDashboard,
@@ -9,8 +11,11 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import { useAuth } from "@/components/context/AuthContext";
 
 export const Sidebar = () => {
+  const { user, logout } = useAuth();
+
   return (
     <aside className="w-64 flex-shrink-0 border-r bg-white flex flex-col">
       <div className="h-16 flex items-center px-6 border-b">
@@ -55,8 +60,8 @@ export const Sidebar = () => {
             <AvatarFallback>A</AvatarFallback>
           </Avatar>
           <div className="ml-3">
-            <p className="text-sm font-medium">Admin</p>
-            <p className="text-xs text-gray-500">admin@medika.com</p>
+            <p className="text-sm font-medium">{user?.fullName}</p>
+            <p className="text-xs text-gray-500">{user?.email}</p>
           </div>
         </div>
       </div>
