@@ -12,15 +12,6 @@ const Header = () => {
           Status terbaru dari pendaftaran pasien medical check up.
         </p>
       </div>
-      <div className="flex items-center gap-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input placeholder="Search..." className="pl-9 w-64" />
-        </div>
-        <Button variant="outline" size="icon">
-          <Bell className="h-5 w-5" />
-        </Button>
-      </div>
     </header>
   );
 };

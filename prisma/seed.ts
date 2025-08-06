@@ -1,57 +1,55 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
-async function main() {
-  const prisma = new PrismaClient();
+const prisma = new PrismaClient();
 
+async function main() {
   console.log("Start seeding...");
 
-  const adminAdministrasiRole = await prisma.role.upsert({
-    where: { name: "ADMINISTRASI" },
+  // 1. Buat semua role yang dibutuhkan
+  const adminKlinikRole = await prisma.role.upsert({
+    where: { name: "ADMIN_KLINIK" },
     update: {},
-    create: { name: "ADMINISTRASI" },
+    create: { name: "ADMIN_KLINIK" },
   });
 
-  const adminPetugasRole = await prisma.role.upsert({
+  const petugasRole = await prisma.role.upsert({
     where: { name: "PETUGAS" },
     update: {},
     create: { name: "PETUGAS" },
   });
 
-  console.log("Roles created/verified.");
+  const hrdRole = await prisma.role.upsert({
+    where: { name: "HRD" },
+    update: {},
+    create: { name: "HRD" },
+  });
 
-  const hashedPasswordAdministrasi = await bcrypt.hash("adminsimklinik", 10);
+  console.log("Roles (ADMIN_KLINIK, PETUGAS, HRD) created/verified.");
+
+  // 2. Buat HANYA user ADMIN_KLINIK
+  const hashedPasswordAdmin = await bcrypt.hash("adminklinik123", 10);
   await prisma.user.upsert({
-    where: { email: "admin@simklinik.com" },
+    where: { email: "admin@klinikym.com" },
     update: {},
     create: {
-      email: "admin@simklinik.com",
-      fullName: "Admin Administrasi",
-      password: hashedPasswordAdministrasi,
-      roleId: adminAdministrasiRole.id,
+      email: "admin@klinikym.com",
+      fullName: "Admin Klinik Utama",
+      password: hashedPasswordAdmin,
+      roleId: adminKlinikRole.id,
+      // companyId dikosongkan karena dia admin klinik
     },
   });
-  console.log("Admin created.");
-
-  const hashedPasswordPetugas = await bcrypt.hash("petugassimklinik", 10);
-  await prisma.user.upsert({
-    where: { email: "petugas@simklinik.com" },
-    update: {},
-    create: {
-      email: "petugas@simklinik.com",
-      fullName: "Admin Petugas",
-      password: hashedPasswordPetugas,
-      roleId: adminPetugasRole.id,
-    },
-  });
-  console.log("Petugas created.");
+  console.log("Admin Klinik user created.");
 
   console.log("Seeding finished.");
-
-  await prisma.$disconnect();
 }
 
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

@@ -1,10 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Filter, MoreHorizontal, PlusCircle, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,6 +19,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { PatientRegistrationForm } from "./PatientRegistrationForm";
+import { Toaster } from "sonner";
 
 type PatientStatus = "Approved" | "Pending" | "Canceled";
 type DummyPatient = {
@@ -51,33 +60,6 @@ const dummyPatients: DummyPatient[] = [
     qrCode: "qr-albert",
     status: "Pending",
   },
-  {
-    id: "3",
-    name: "Cameron Williamson",
-    idNumber: "MCU-02",
-    registrationDate: "2024-03-23",
-    mcuPackage: "Paket Lengkap",
-    qrCode: "qr-cameron",
-    status: "Approved",
-  },
-  {
-    id: "4",
-    name: "Floyd Miles",
-    idNumber: "MCU-03",
-    registrationDate: "2024-07-14",
-    mcuPackage: "Paket Karyawan",
-    qrCode: "qr-floyd",
-    status: "Pending",
-  },
-  {
-    id: "5",
-    name: "Robert Fox",
-    idNumber: "MCU-01",
-    registrationDate: "2023-03-11",
-    mcuPackage: "Paket Lengkap",
-    qrCode: "qr-robert",
-    status: "Canceled",
-  },
 ];
 
 const StatusBadge = ({ status }: { status: PatientStatus }) => {
@@ -91,8 +73,11 @@ const StatusBadge = ({ status }: { status: PatientStatus }) => {
 };
 
 export const PatientTable = () => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
   return (
     <div className="flex-1 p-8">
+      <Toaster richColors position="top-center" />
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <div className="relative">
@@ -104,10 +89,26 @@ export const PatientTable = () => {
             Filter
           </Button>
         </div>
-        <Button className="bg-[#01449D] hover:bg-[#01449D]/90 text-white">
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Tambah Pasien
-        </Button>
+
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-[#01449D] hover:bg-[#01449D]/90 text-white">
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Tambah Pasien
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-4xl">
+            <DialogHeader>
+              <DialogTitle className="text-2xl">
+                Form Pendaftaran Pasien MCU
+              </DialogTitle>
+              <DialogDescription>
+                Lengkapi semua data di bawah ini untuk mendaftarkan pasien baru.
+              </DialogDescription>
+            </DialogHeader>
+            <PatientRegistrationForm setOpen={setIsDialogOpen} />
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="rounded-lg border bg-white">
