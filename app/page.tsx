@@ -76,7 +76,7 @@ export default function LoginPage() {
 
       setTimeout(() => {
         window.location.href = "/dashboard";
-      }, 1000);
+      }, 500);
     } catch (err: any) {
       toast.error(err.message);
     } finally {
