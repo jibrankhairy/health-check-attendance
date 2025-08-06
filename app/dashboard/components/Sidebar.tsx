@@ -29,12 +29,43 @@ export const Sidebar = () => {
   const { user, logout } = useAuth();
   const pathname = usePathname();
 
-  const navItems = [
-    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/dashboard/create-account", label: "Create Account", icon: Users },
-    { href: "/dashboard/reports", label: "Laporan MCU", icon: FileText },
+  // 1. Tambahkan properti 'roles' di setiap item menu
+  const allNavItems = [
+    {
+      href: "/dashboard",
+      label: "Dashboard",
+      icon: LayoutDashboard,
+      roles: ["ADMINISTRASI", "HRD", "PETUGAS"], // Bisa diakses semua role
+    },
+    {
+      href: "/dashboard/create-account",
+      label: "Create Account",
+      icon: Users,
+      roles: ["ADMINISTRASI"], // Hanya untuk Admin Klinik
+    },
+    {
+      href: "/dashboard/reports",
+      label: "Laporan MCU",
+      icon: FileText,
+      roles: ["ADMINISTRASI", "PETUGAS"], // Hanya untuk Admin Klinik dan Petugas
+    },
   ];
+
+  // 2. Filter menu berdasarkan role user yang sedang login
+  const navItems = user
+    ? allNavItems.filter((item) => item.roles.includes(user.role))
+    : [];
+
   const { isMobile } = useSidebar();
+  
+  // Tambahkan loading state jika data user belum siap
+  if (!user) {
+    return (
+       <aside className="w-64 flex-shrink-0 border-r bg-white flex flex-col p-6">
+         <div>Loading...</div>
+       </aside>
+    )
+  }
 
   return (
     <aside className="w-64 flex-shrink-0 border-r bg-white flex flex-col">
@@ -49,6 +80,7 @@ export const Sidebar = () => {
         <h1 className="text-sm font-semibold">Klinik Yuliarpan Medika</h1>
       </div>
       <nav className="flex-1 px-4 py-6 space-y-4">
+        {/* 3. Render menu yang SUDAH DIFILTER */}
         {navItems.map((item) => (
           <Link key={item.label} href={item.href} passHref>
             <Button
@@ -107,7 +139,7 @@ export const Sidebar = () => {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout}>
-              <IconLogout />
+              <IconLogout className="mr-2 h-4 w-4" />
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>

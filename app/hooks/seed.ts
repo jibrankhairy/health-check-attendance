@@ -8,7 +8,7 @@ async function main() {
 
   // 1. Buat semua role yang dibutuhkan
   const adminKlinikRole = await prisma.role.upsert({
-    where: { name: "ADMINISTRASIK" },
+    where: { name: "ADMINISTRASI" },
     update: {},
     create: { name: "ADMINISTRASI" },
   });
@@ -27,6 +27,7 @@ async function main() {
 
   console.log("Roles (ADMINISTRASI, PETUGAS, HRD) created/verified.");
 
+  // 2. Buat HANYA user ADMINISTRASI
   const hashedPasswordAdmin = await bcrypt.hash("adminklinik123", 10);
   await prisma.user.upsert({
     where: { email: "admin@klinikym.com" },
