@@ -1,7 +1,15 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
-import { PlusCircle, Search, Eye, Pencil, Trash2, Loader2 } from "lucide-react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import {
+  PlusCircle,
+  Search,
+  Eye,
+  Pencil,
+  Trash2,
+  Loader2,
+  Upload,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,8 +44,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { format } from "date-fns";
+import * as XLSX from "xlsx";
 
-// Tipe data sesuai dengan model Prisma Patient
 type PatientData = {
   id: number;
   patientId: string;
@@ -58,9 +66,11 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [patients, setPatients] = useState<PatientData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isImporting, setIsImporting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchPatients = useCallback(async () => {
     if (!companyId) return;
@@ -80,6 +90,74 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
   useEffect(() => {
     fetchPatients();
   }, [fetchPatients]);
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    const reader = new FileReader();
+
+    reader.onload = async (e) => {
+      try {
+        const data = e.target?.result;
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        
+        // **PERUBAHAN DI SINI:** Menambahkan 'Email' ke header
+        const json = XLSX.utils.sheet_to_json(worksheet, {
+            header: ["NIK", "Nama Pegawai", "Email", "Tanggal Lahir", "Bagian / Departemen"],
+            raw: false,
+            dateNF: 'yyyy-mm-dd'
+        }).slice(1);
+
+        const newPatients = json.map((row: any, index: number) => {
+            if (!row["NIK"] || !row["Nama Pegawai"] || !row["Tanggal Lahir"]) {
+                throw new Error(`Data tidak lengkap di baris ${index + 2}. Pastikan NIK, Nama, dan Tanggal Lahir terisi.`);
+            }
+            
+            // **PERUBAHAN DI SINI:** Mengirim 'nik', 'email', dll.
+            return {
+                nik: String(row["NIK"]),
+                fullName: String(row["Nama Pegawai"]),
+                email: row["Email"] || null, // Kirim email atau null jika kosong
+                dob: row["Tanggal Lahir"],
+                department: String(row["Bagian / Departemen"] || "N/A"),
+            };
+        });
+        
+        const response = await fetch('/api/patients/bulk', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ patients: newPatients, companyId }),
+        });
+
+        const resultData = await response.json();
+        if (!response.ok) {
+            throw new Error(resultData.message || 'Gagal mengimpor data pasien.');
+        }
+
+        alert(resultData.message);
+        await fetchPatients();
+
+      } catch (error) {
+        console.error("Error importing patients:", error);
+        alert(`Error: ${error instanceof Error ? error.message : "Terjadi kesalahan"}`);
+      } finally {
+        setIsImporting(false);
+        if(fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
+      }
+    };
+
+    reader.readAsArrayBuffer(file);
+  };
 
   const filteredPatients = patients.filter(
     (patient) =>
@@ -111,29 +189,51 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
           </div>
         </div>
 
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-[#01449D] hover:bg-[#01449D]/90 text-white">
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Tambah Pasien
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-4xl">
-            <DialogHeader>
-              <DialogTitle className="text-2xl">
-                Form Pendaftaran Pasien - {companyName}
-              </DialogTitle>
-              <DialogDescription>
-                Pasien ini akan terdaftar di bawah perusahaan {companyName}.
-              </DialogDescription>
-            </DialogHeader>
-            <PatientRegistrationForm
-              setOpen={setIsDialogOpen}
-              companyId={companyId}
-              onPatientAdded={fetchPatients}
+        <div className="flex items-center gap-2">
+            <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+                accept=".xlsx, .xls"
             />
-          </DialogContent>
-        </Dialog>
+            <Button
+                variant="outline"
+                onClick={handleImportClick}
+                disabled={isImporting}
+            >
+                {isImporting ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                    <Upload className="mr-2 h-4 w-4" />
+                )}
+                {isImporting ? "Mengimpor..." : "Import Excel"}
+            </Button>
+
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                <Button className="bg-[#01449D] hover:bg-[#01449D]/90 text-white">
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Tambah Pasien
+                </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-4xl">
+                <DialogHeader>
+                    <DialogTitle className="text-2xl">
+                    Form Pendaftaran Pasien - {companyName}
+                    </DialogTitle>
+                    <DialogDescription>
+                    Pasien ini akan terdaftar di bawah perusahaan {companyName}.
+                    </DialogDescription>
+                </DialogHeader>
+                <PatientRegistrationForm
+                    setOpen={setIsDialogOpen}
+                    companyId={companyId}
+                    onPatientAdded={fetchPatients}
+                />
+                </DialogContent>
+            </Dialog>
+        </div>
       </div>
 
       <div className="rounded-lg border bg-white">
@@ -245,7 +345,6 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
         </Table>
       </div>
 
-      {/* Pagination Controls */}
       <div className="flex items-center justify-between mt-4">
         <div className="text-sm text-gray-600">
           Menampilkan {filteredPatients.length > 0 ? indexOfFirstRow + 1 : 0}{" "}
