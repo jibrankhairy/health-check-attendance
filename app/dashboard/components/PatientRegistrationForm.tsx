@@ -21,12 +21,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { DialogFooter } from "@/components/ui/dialog";
-import { id } from "zod/v4/locales";
 
 const mcuItems = [
   { id: "pemeriksaan_fisik", label: "Pemeriksaan Fisik" },
-  // { id: "dass_21", label: "Tes Psikologi: DASS-21" },
-  // { id: "tes_fas", label: "Tes Psikologi: Tes FAS" },
   { id: "tes_psikologi", label: "Tes Psikologi" },
   { id: "framingham_score", label: "Framingham Score" },
   { id: "darah_lengkap", label: "Darah Lengkap" },
@@ -59,9 +56,13 @@ type PatientFormValues = z.infer<typeof formSchema>;
 
 type PatientFormProps = {
   setOpen: (open: boolean) => void;
+  companyId: string;
 };
 
-export const PatientRegistrationForm = ({ setOpen }: PatientFormProps) => {
+export const PatientRegistrationForm = ({
+  setOpen,
+  companyId,
+}: PatientFormProps) => {
   const form = useForm<PatientFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -77,9 +78,14 @@ export const PatientRegistrationForm = ({ setOpen }: PatientFormProps) => {
   });
 
   function onSubmit(data: PatientFormValues) {
+    const dataToSubmit = {
+      ...data,
+      companyId: companyId,
+    };
+
     const promise = new Promise((resolve) =>
       setTimeout(() => {
-        console.log("Data siap dikirim ke backend:", data);
+        console.log("Data siap dikirim ke backend:", dataToSubmit);
         resolve({ name: data.fullName });
       }, 2000)
     );
@@ -207,9 +213,7 @@ export const PatientRegistrationForm = ({ setOpen }: PatientFormProps) => {
             </FormItem>
           )}
         />
-
         <Separator />
-
         <FormField
           control={form.control}
           name="mcuPackage"
@@ -241,7 +245,6 @@ export const PatientRegistrationForm = ({ setOpen }: PatientFormProps) => {
                   Pilih Semua (Paket Lengkap)
                 </label>
               </div>
-
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
                 {mcuItems.map((item) => (
                   <FormField
@@ -291,7 +294,6 @@ export const PatientRegistrationForm = ({ setOpen }: PatientFormProps) => {
             </FormItem>
           )}
         />
-
         <DialogFooter className="pt-4">
           <Button
             type="button"

@@ -99,3 +99,25 @@ export async function POST(request: Request) {
     );
   }
 }
+
+export async function GET() {
+  try {
+    const companies = await prisma.company.findMany({
+      include: {
+        _count: {
+          select: { patients: true },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    return NextResponse.json(companies);
+  } catch (error) {
+    console.error("Fetch Companies Error:", error);
+    return NextResponse.json(
+      { message: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
+}

@@ -28,8 +28,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { PatientRegistrationForm } from "./PatientRegistrationForm";
-import { Toaster } from "sonner";
 
+// Tipe data dan data dummy bisa kita biarkan untuk sekarang
 type PatientStatus = "Approved" | "Pending" | "Canceled";
 type DummyPatient = {
   id: string;
@@ -44,21 +44,12 @@ type DummyPatient = {
 const dummyPatients: DummyPatient[] = [
   {
     id: "1",
-    name: "Younes",
+    name: "Younes (Contoh Pasien)",
     idNumber: "MCU-07",
     registrationDate: "2025-09-11",
     mcuPackage: "Paket Lengkap",
     qrCode: "qr-younes",
     status: "Approved",
-  },
-  {
-    id: "2",
-    name: "Albert Flores",
-    idNumber: "MCU-09",
-    registrationDate: "2025-08-15",
-    mcuPackage: "Paket Dasar",
-    qrCode: "qr-albert",
-    status: "Pending",
   },
 ];
 
@@ -68,16 +59,24 @@ const StatusBadge = ({ status }: { status: PatientStatus }) => {
     Pending: "bg-yellow-500 hover:bg-yellow-500/90 text-white",
     Canceled: "bg-red-600 hover:bg-red-600/90 text-white",
   };
-
   return <Badge className={statusStyles[status]}>{status}</Badge>;
 };
 
-export const PatientTable = () => {
+// --- PERUBAHAN 1: Tambahkan props untuk menerima data perusahaan ---
+type PatientTableProps = {
+  companyId: string;
+  companyName: string;
+};
+
+export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // Nantinya, kamu akan fetch data pasien berdasarkan companyId
+  // useEffect(() => { fetch(`/api/patients?companyId=${companyId}`)... }, [companyId]);
 
   return (
     <div className="flex-1 p-8">
-      <Toaster richColors position="top-center" />
+      {/* Toaster dipindahkan ke page.tsx agar tidak duplikat */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <div className="relative">
@@ -94,19 +93,25 @@ export const PatientTable = () => {
           <DialogTrigger asChild>
             <Button className="bg-[#01449D] hover:bg-[#01449D]/90 text-white">
               <PlusCircle className="mr-2 h-4 w-4" />
+              {/* --- PERUBAHAN 2: Judul tombol dinamis --- */}
               Tambah Pasien
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-4xl">
             <DialogHeader>
+              {/* --- PERUBAHAN 3: Judul dialog dinamis --- */}
               <DialogTitle className="text-2xl">
-                Form Pendaftaran Pasien MCU
+                Form Pendaftaran Pasien - {companyName}
               </DialogTitle>
               <DialogDescription>
-                Lengkapi semua data di bawah ini untuk mendaftarkan pasien baru.
+                Pasien ini akan terdaftar di bawah perusahaan {companyName}.
               </DialogDescription>
             </DialogHeader>
-            <PatientRegistrationForm setOpen={setIsDialogOpen} />
+            {/* --- PERUBAHAN 4: Kirim companyId ke form --- */}
+            <PatientRegistrationForm
+              setOpen={setIsDialogOpen}
+              companyId={companyId}
+            />
           </DialogContent>
         </Dialog>
       </div>
