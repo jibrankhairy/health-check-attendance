@@ -5,17 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, Users, FileText } from "lucide-react";
 import {
-<<<<<<< HEAD
-  LayoutDashboard,
-  Settings,
-  Users,
-  Briefcase,
-  FileText,
-  MoreHorizontal
-} from "lucide-react";
-import {
-=======
->>>>>>> 7ce396ace79bb6198b54ca3285e501e97fc2e440
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -24,13 +13,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
-<<<<<<< HEAD
-  SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem,
-=======
-  SidebarMenuButton,
->>>>>>> 7ce396ace79bb6198b54ca3285e501e97fc2e440
   useSidebar,
 } from "@/components/ui/sidebar";
 import {
@@ -44,8 +27,6 @@ import { useAuth } from "@/components/context/AuthContext";
 
 export const Sidebar = () => {
   const { user, logout } = useAuth();
-<<<<<<< HEAD
-=======
   const pathname = usePathname();
 
   const navItems = [
@@ -53,7 +34,6 @@ export const Sidebar = () => {
     { href: "/dashboard/create-account", label: "Create Account", icon: Users },
     { href: "/dashboard/reports", label: "Laporan MCU", icon: FileText },
   ];
->>>>>>> 7ce396ace79bb6198b54ca3285e501e97fc2e440
   const { isMobile } = useSidebar();
 
   return (
