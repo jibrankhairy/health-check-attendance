@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 
-// Daftar pos pemeriksaan diperbarui sesuai dengan screenshot
 const CHECKPOINTS = [
   "Pemeriksaan Fisik",
   "Darah Lengkap",

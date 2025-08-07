@@ -8,12 +8,27 @@ import React, {
   ReactNode,
 } from "react";
 
-interface User {
+interface BaseUser {
   id: number;
   fullName: string;
   email: string;
-  role: "ADMINISTRASI" | "PETUGAS" | string;
 }
+
+interface AdminUser extends BaseUser {
+  role: "ADMINISTRASI";
+}
+
+interface HrdUser extends BaseUser {
+  role: "HRD";
+  companyId: string;
+  companyName: string;
+}
+
+interface PetugasUser extends BaseUser {
+  role: "PETUGAS";
+}
+
+type User = AdminUser | HrdUser | PetugasUser;
 
 interface AuthContextType {
   user: User | null;

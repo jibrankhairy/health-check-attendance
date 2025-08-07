@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-// Skema validasi khusus untuk form Petugas
 const formSchema = z.object({
   fullName: z.string().min(3, "Nama lengkap minimal 3 karakter."),
   email: z.string().email("Format email tidak valid."),
@@ -40,13 +39,11 @@ export function CreatePetugasForm() {
 
   async function onSubmit(data: FormValues) {
     try {
-      // Data yang dikirim ke API, termasuk role 'PETUGAS'
       const payload = {
         ...data,
         role: "PETUGAS",
       };
-      
-      // Mengirim data ke API endpoint BARU yang akan kita buat
+
       const response = await fetch("/api/users/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -60,7 +57,7 @@ export function CreatePetugasForm() {
       }
 
       toast.success(`Akun Petugas ${result.fullName} berhasil dibuat!`);
-      form.reset(); // Reset form setelah berhasil
+      form.reset();
     } catch (error: any) {
       toast.error(error.message);
     }
@@ -89,7 +86,11 @@ export function CreatePetugasForm() {
             <FormItem>
               <FormLabel>Email Login</FormLabel>
               <FormControl>
-                <Input type="email" placeholder="petugas@klinik.com" {...field} />
+                <Input
+                  type="email"
+                  placeholder="petugas@klinik.com"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -102,7 +103,11 @@ export function CreatePetugasForm() {
             <FormItem>
               <FormLabel>Password Akun</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="Minimal 8 karakter" {...field} />
+                <Input
+                  type="password"
+                  placeholder="Minimal 8 karakter"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

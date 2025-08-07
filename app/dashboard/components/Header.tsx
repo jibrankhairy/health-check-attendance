@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 
 type HeaderProps = {
   companyName?: string;
-  onBack: () => void;
+  onBack?: () => void;
 };
 
 export const Header = ({ companyName, onBack }: HeaderProps) => {

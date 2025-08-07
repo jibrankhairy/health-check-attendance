@@ -3,21 +3,60 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// Fungsi ini diupdate untuk mengembalikan DUA nama kolom
-function getColumnNames(checkPoint: string): { statusColumn: string; petugasColumn: string } | null {
-  const mapping: { [key: string]: { statusColumn: string; petugasColumn: string } } = {
-    pemeriksaan_fisik: { statusColumn: "pemeriksaanFisikStatus", petugasColumn: "pemeriksaanFisikPetugas" },
-    darah_lengkap: { statusColumn: "darahLengkapStatus", petugasColumn: "darahLengkapPetugas" },
-    kimia_darah: { statusColumn: "kimiaDarahStatus", petugasColumn: "kimiaDarahPetugas" },
-    treadmill: { statusColumn: "treadmillStatus", petugasColumn: "treadmillPetugas" },
-    tes_psikologi: { statusColumn: "tesPsikologiStatus", petugasColumn: "tesPsikologiPetugas" },
-    hematologi: { statusColumn: "hematologiStatus", petugasColumn: "hematologiPetugas" },
-    rontgen_thorax: { statusColumn: "rontgenThoraxStatus", petugasColumn: "rontgenThoraxPetugas" },
-    audiometri: { statusColumn: "audiometriStatus", petugasColumn: "audiometriPetugas" },
-    framingham_score: { statusColumn: "framinghamScoreStatus", petugasColumn: "framinghamScorePetugas" },
-    urinalisa: { statusColumn: "urinalisaStatus", petugasColumn: "urinalisaPetugas" },
-    ekg_elektrokardiogram: { statusColumn: "ekgStatus", petugasColumn: "ekgPetugas" },
-    spirometri: { statusColumn: "spirometriStatus", petugasColumn: "spirometriPetugas" },
+function getColumnNames(
+  checkPoint: string
+): { statusColumn: string; petugasColumn: string } | null {
+  const mapping: {
+    [key: string]: { statusColumn: string; petugasColumn: string };
+  } = {
+    pemeriksaan_fisik: {
+      statusColumn: "pemeriksaanFisikStatus",
+      petugasColumn: "pemeriksaanFisikPetugas",
+    },
+    darah_lengkap: {
+      statusColumn: "darahLengkapStatus",
+      petugasColumn: "darahLengkapPetugas",
+    },
+    kimia_darah: {
+      statusColumn: "kimiaDarahStatus",
+      petugasColumn: "kimiaDarahPetugas",
+    },
+    treadmill: {
+      statusColumn: "treadmillStatus",
+      petugasColumn: "treadmillPetugas",
+    },
+    tes_psikologi: {
+      statusColumn: "tesPsikologiStatus",
+      petugasColumn: "tesPsikologiPetugas",
+    },
+    hematologi: {
+      statusColumn: "hematologiStatus",
+      petugasColumn: "hematologiPetugas",
+    },
+    rontgen_thorax: {
+      statusColumn: "rontgenThoraxStatus",
+      petugasColumn: "rontgenThoraxPetugas",
+    },
+    audiometri: {
+      statusColumn: "audiometriStatus",
+      petugasColumn: "audiometriPetugas",
+    },
+    framingham_score: {
+      statusColumn: "framinghamScoreStatus",
+      petugasColumn: "framinghamScorePetugas",
+    },
+    urinalisa: {
+      statusColumn: "urinalisaStatus",
+      petugasColumn: "urinalisaPetugas",
+    },
+    ekg_elektrokardiogram: {
+      statusColumn: "ekgStatus",
+      petugasColumn: "ekgPetugas",
+    },
+    spirometri: {
+      statusColumn: "spirometriStatus",
+      petugasColumn: "spirometriPetugas",
+    },
   };
   return mapping[checkPoint] || null;
 }
@@ -25,17 +64,22 @@ function getColumnNames(checkPoint: string): { statusColumn: string; petugasColu
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    // Tambahkan petugasName di sini
     const { mcuResultId, checkPoint, petugasName } = body;
 
     if (!mcuResultId || !checkPoint || !petugasName) {
-      return NextResponse.json({ message: "Data tidak lengkap (ID, Pos, Nama Petugas wajib diisi)." }, { status: 400 });
+      return NextResponse.json(
+        { message: "Data tidak lengkap (ID, Pos, Nama Petugas wajib diisi)." },
+        { status: 400 }
+      );
     }
 
     const columnNames = getColumnNames(checkPoint);
 
     if (!columnNames) {
-      return NextResponse.json({ message: "Pos Pemeriksaan tidak valid." }, { status: 400 });
+      return NextResponse.json(
+        { message: "Pos Pemeriksaan tidak valid." },
+        { status: 400 }
+      );
     }
 
     const mcuRecord = await prisma.mcuResult.findUnique({
@@ -43,10 +87,12 @@ export async function POST(request: Request) {
     });
 
     if (!mcuRecord) {
-      return NextResponse.json({ message: "Data Pasien MCU tidak ditemukan." }, { status: 404 });
+      return NextResponse.json(
+        { message: "Data Pasien MCU tidak ditemukan." },
+        { status: 404 }
+      );
     }
 
-    // Update data dinamis untuk status DAN nama petugas
     const updateData: { [key: string]: any } = {};
     updateData[columnNames.statusColumn] = "COMPLETED";
     updateData[columnNames.petugasColumn] = petugasName;
@@ -57,11 +103,17 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({
-      message: `Check-in oleh ${petugasName} untuk ${checkPoint.replace(/_/g, " ")} berhasil!`,
+      message: `Check-in oleh ${petugasName} untuk ${checkPoint.replace(
+        /_/g,
+        " "
+      )} berhasil!`,
       data: updatedMcuResult,
     });
   } catch (error) {
     console.error("MCU Check-in Error:", error);
-    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }

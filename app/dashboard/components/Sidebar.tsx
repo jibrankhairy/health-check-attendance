@@ -12,14 +12,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import {
-  SidebarMenuButton,
-  useSidebar,
-} from "@/components/ui/sidebar";
-import {
-  IconLogout,
-  IconDotsVertical,
-} from "@tabler/icons-react";
+import { SidebarMenuButton, useSidebar } from "@/components/ui/sidebar";
+import { IconLogout, IconDotsVertical } from "@tabler/icons-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
@@ -29,42 +23,39 @@ export const Sidebar = () => {
   const { user, logout } = useAuth();
   const pathname = usePathname();
 
-  // 1. Tambahkan properti 'roles' di setiap item menu
   const allNavItems = [
     {
       href: "/dashboard",
       label: "Dashboard",
       icon: LayoutDashboard,
-      roles: ["ADMINISTRASI", "HRD", "PETUGAS"], // Bisa diakses semua role
+      roles: ["ADMINISTRASI", "HRD", "PETUGAS"],
     },
     {
       href: "/dashboard/create-account",
       label: "Create Account",
       icon: Users,
-      roles: ["ADMINISTRASI"], // Hanya untuk Admin Klinik
+      roles: ["ADMINISTRASI"],
     },
     {
       href: "/dashboard/reports",
       label: "Laporan MCU",
       icon: FileText,
-      roles: ["ADMINISTRASI", "PETUGAS"], // Hanya untuk Admin Klinik dan Petugas
+      roles: ["ADMINISTRASI", "PETUGAS"],
     },
   ];
 
-  // 2. Filter menu berdasarkan role user yang sedang login
   const navItems = user
     ? allNavItems.filter((item) => item.roles.includes(user.role))
     : [];
 
   const { isMobile } = useSidebar();
-  
-  // Tambahkan loading state jika data user belum siap
+
   if (!user) {
     return (
-       <aside className="w-64 flex-shrink-0 border-r bg-white flex flex-col p-6">
-         <div>Loading...</div>
-       </aside>
-    )
+      <aside className="w-64 flex-shrink-0 border-r bg-white flex flex-col p-6">
+        <div>Loading...</div>
+      </aside>
+    );
   }
 
   return (
@@ -80,7 +71,6 @@ export const Sidebar = () => {
         <h1 className="text-sm font-semibold">Klinik Yuliarpan Medika</h1>
       </div>
       <nav className="flex-1 px-4 py-6 space-y-4">
-        {/* 3. Render menu yang SUDAH DIFILTER */}
         {navItems.map((item) => (
           <Link key={item.label} href={item.href} passHref>
             <Button
@@ -94,7 +84,7 @@ export const Sidebar = () => {
         ))}
       </nav>
       <div className="mb-4">
-      <DropdownMenu>
+        <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
@@ -144,7 +134,7 @@ export const Sidebar = () => {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        </div>
+      </div>
     </aside>
   );
 };

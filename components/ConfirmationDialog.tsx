@@ -36,7 +36,6 @@ export const ConfirmationDialog = ({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Batal</AlertDialogCancel>
-          {/* Ganti AlertDialogAction dengan Button untuk styling */}
           <Button variant="destructive" onClick={onConfirm}>
             Ya, Hapus
           </Button>

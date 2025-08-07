@@ -53,7 +53,7 @@ type PatientData = {
   id: number;
   patientId: string;
   fullName: string;
-  email?: string | null;
+  email?: string;
   dob: string;
   age: number;
   department: string;
@@ -80,9 +80,15 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [viewingMcuResultId, setViewingMcuResultId] = useState<string | null>(null);
-  const [editingPatient, setEditingPatient] = useState<PatientData | null>(null);
-  const [deletingPatient, setDeletingPatient] = useState<PatientData | null>(null);
+  const [viewingMcuResultId, setViewingMcuResultId] = useState<string | null>(
+    null
+  );
+  const [editingPatient, setEditingPatient] = useState<PatientData | null>(
+    null
+  );
+  const [deletingPatient, setDeletingPatient] = useState<PatientData | null>(
+    null
+  );
 
   const fetchPatients = useCallback(async () => {
     if (!companyId) return;
@@ -121,7 +127,7 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
     if (!deletingPatient) return;
 
     const promise = fetch(`/api/patients/${deletingPatient.id}`, {
-      method: 'DELETE',
+      method: "DELETE",
     }).then(async (res) => {
       if (!res.ok) {
         const data = await res.json();
@@ -158,48 +164,63 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
         const workbook = XLSX.read(data, { type: "array" });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
-        
-        const json = XLSX.utils.sheet_to_json(worksheet, {
-            header: ["NIK", "Nama Pegawai", "Email", "Tanggal Lahir", "Bagian / Departemen"],
+
+        const json = XLSX.utils
+          .sheet_to_json(worksheet, {
+            header: [
+              "NIK",
+              "Nama Pegawai",
+              "Email",
+              "Tanggal Lahir",
+              "Bagian / Departemen",
+            ],
             raw: false,
-            dateNF: 'yyyy-mm-dd'
-        }).slice(1);
+            dateNF: "yyyy-mm-dd",
+          })
+          .slice(1);
 
         const newPatients = json.map((row: any, index: number) => {
-            if (!row["NIK"] || !row["Nama Pegawai"] || !row["Tanggal Lahir"]) {
-                throw new Error(`Data tidak lengkap di baris ${index + 2}. Pastikan NIK, Nama, dan Tanggal Lahir terisi.`);
-            }
-            
-            return {
-                nik: String(row["NIK"]),
-                fullName: String(row["Nama Pegawai"]),
-                email: row["Email"] || null,
-                dob: row["Tanggal Lahir"],
-                department: String(row["Bagian / Departemen"] || "N/A"),
-            };
+          if (!row["NIK"] || !row["Nama Pegawai"] || !row["Tanggal Lahir"]) {
+            throw new Error(
+              `Data tidak lengkap di baris ${
+                index + 2
+              }. Pastikan NIK, Nama, dan Tanggal Lahir terisi.`
+            );
+          }
+
+          return {
+            nik: String(row["NIK"]),
+            fullName: String(row["Nama Pegawai"]),
+            email: row["Email"] || null,
+            dob: row["Tanggal Lahir"],
+            department: String(row["Bagian / Departemen"] || "N/A"),
+          };
         });
-        
-        const response = await fetch('/api/patients/bulk', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ patients: newPatients, companyId }),
+
+        const response = await fetch("/api/patients/bulk", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ patients: newPatients, companyId }),
         });
 
         const resultData = await response.json();
         if (!response.ok) {
-            throw new Error(resultData.message || 'Gagal mengimpor data pasien.');
+          throw new Error(resultData.message || "Gagal mengimpor data pasien.");
         }
 
         toast.success(resultData.message);
         await fetchPatients();
-
       } catch (error) {
         console.error("Error importing patients:", error);
-        toast.error(`Error: ${error instanceof Error ? error.message : "Terjadi kesalahan"}`);
+        toast.error(
+          `Error: ${
+            error instanceof Error ? error.message : "Terjadi kesalahan"
+          }`
+        );
       } finally {
         setIsImporting(false);
-        if(fileInputRef.current) {
-            fileInputRef.current.value = "";
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
         }
       }
     };
@@ -356,10 +377,18 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                                 variant="ghost"
                                 size="icon"
                                 className="hover:text-blue-500"
-                                disabled={!patient.mcuResults || patient.mcuResults.length === 0}
+                                disabled={
+                                  !patient.mcuResults ||
+                                  patient.mcuResults.length === 0
+                                }
                                 onClick={() => {
-                                  if (patient.mcuResults && patient.mcuResults[0]) {
-                                    setViewingMcuResultId(patient.mcuResults[0].id);
+                                  if (
+                                    patient.mcuResults &&
+                                    patient.mcuResults[0]
+                                  ) {
+                                    setViewingMcuResultId(
+                                      patient.mcuResults[0].id
+                                    );
                                   }
                                 }}
                               >

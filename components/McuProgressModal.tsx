@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/table";
 import { CheckCircle, Hourglass } from "lucide-react";
 
-// 1. Update tipe data untuk menyertakan field petugas
 type McuResultData = {
   patient: { fullName: string };
   pemeriksaanFisikStatus?: string;
@@ -48,20 +47,67 @@ type McuResultData = {
   [key: string]: any;
 };
 
-// 2. Update mapping untuk menyertakan key nama petugas
 const examinationMapping = [
-  { dbKey: 'pemeriksaanFisikStatus', petugasDbKey: 'pemeriksaanFisikPetugas', displayName: 'Pemeriksaan Fisik' },
-  { dbKey: 'darahLengkapStatus', petugasDbKey: 'darahLengkapPetugas', displayName: 'Darah Lengkap' },
-  { dbKey: 'kimiaDarahStatus', petugasDbKey: 'kimiaDarahPetugas', displayName: 'Kimia Darah' },
-  { dbKey: 'treadmillStatus', petugasDbKey: 'treadmillPetugas', displayName: 'Treadmill' },
-  { dbKey: 'tesPsikologiStatus', petugasDbKey: 'tesPsikologiPetugas', displayName: 'Tes Psikologi' },
-  { dbKey: 'hematologiStatus', petugasDbKey: 'hematologiPetugas', displayName: 'Hematologi' },
-  { dbKey: 'rontgenThoraxStatus', petugasDbKey: 'rontgenThoraxPetugas', displayName: 'Rontgen Thorax' },
-  { dbKey: 'audiometriStatus', petugasDbKey: 'audiometriPetugas', displayName: 'Audiometri' },
-  { dbKey: 'framinghamScoreStatus', petugasDbKey: 'framinghamScorePetugas', displayName: 'Framingham Score' },
-  { dbKey: 'urinalisaStatus', petugasDbKey: 'urinalisaPetugas', displayName: 'Urinalisa' },
-  { dbKey: 'ekgStatus', petugasDbKey: 'ekgPetugas', displayName: 'EKG (Elektrokardiogram)' },
-  { dbKey: 'spirometriStatus', petugasDbKey: 'spirometriPetugas', displayName: 'Spirometri' },
+  {
+    dbKey: "pemeriksaanFisikStatus",
+    petugasDbKey: "pemeriksaanFisikPetugas",
+    displayName: "Pemeriksaan Fisik",
+  },
+  {
+    dbKey: "darahLengkapStatus",
+    petugasDbKey: "darahLengkapPetugas",
+    displayName: "Darah Lengkap",
+  },
+  {
+    dbKey: "kimiaDarahStatus",
+    petugasDbKey: "kimiaDarahPetugas",
+    displayName: "Kimia Darah",
+  },
+  {
+    dbKey: "treadmillStatus",
+    petugasDbKey: "treadmillPetugas",
+    displayName: "Treadmill",
+  },
+  {
+    dbKey: "tesPsikologiStatus",
+    petugasDbKey: "tesPsikologiPetugas",
+    displayName: "Tes Psikologi",
+  },
+  {
+    dbKey: "hematologiStatus",
+    petugasDbKey: "hematologiPetugas",
+    displayName: "Hematologi",
+  },
+  {
+    dbKey: "rontgenThoraxStatus",
+    petugasDbKey: "rontgenThoraxPetugas",
+    displayName: "Rontgen Thorax",
+  },
+  {
+    dbKey: "audiometriStatus",
+    petugasDbKey: "audiometriPetugas",
+    displayName: "Audiometri",
+  },
+  {
+    dbKey: "framinghamScoreStatus",
+    petugasDbKey: "framinghamScorePetugas",
+    displayName: "Framingham Score",
+  },
+  {
+    dbKey: "urinalisaStatus",
+    petugasDbKey: "urinalisaPetugas",
+    displayName: "Urinalisa",
+  },
+  {
+    dbKey: "ekgStatus",
+    petugasDbKey: "ekgPetugas",
+    displayName: "EKG (Elektrokardiogram)",
+  },
+  {
+    dbKey: "spirometriStatus",
+    petugasDbKey: "spirometriPetugas",
+    displayName: "Spirometri",
+  },
 ];
 
 interface McuProgressModalProps {
@@ -70,14 +116,18 @@ interface McuProgressModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function McuProgressModal({ mcuResultId, isOpen, onOpenChange }: McuProgressModalProps) {
+export function McuProgressModal({
+  mcuResultId,
+  isOpen,
+  onOpenChange,
+}: McuProgressModalProps) {
   const [data, setData] = useState<McuResultData | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (mcuResultId && isOpen) {
       setLoading(true);
-      setData(null); // Reset data sebelumnya
+      setData(null);
       fetch(`/api/mcu/results/${mcuResultId}`)
         .then((res) => res.json())
         .then((result) => {
@@ -91,13 +141,15 @@ export function McuProgressModal({ mcuResultId, isOpen, onOpenChange }: McuProgr
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      {/* 5. Lebarkan modal agar muat kolom baru */}
       <DialogContent className="sm:max-w-[725px]">
         <DialogHeader>
-          <DialogTitle className="text-2xl">Progres Medical Check Up</DialogTitle>
+          <DialogTitle className="text-2xl">
+            Progres Medical Check Up
+          </DialogTitle>
           {data?.patient?.fullName && (
             <DialogDescription>
-              Status pemeriksaan untuk pasien: <strong>{data.patient.fullName}</strong>
+              Status pemeriksaan untuk pasien:{" "}
+              <strong>{data.patient.fullName}</strong>
             </DialogDescription>
           )}
         </DialogHeader>
@@ -110,7 +162,6 @@ export function McuProgressModal({ mcuResultId, isOpen, onOpenChange }: McuProgr
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-[45%]">Pemeriksaan</TableHead>
-                    {/* 3. Tambah kolom 'Petugas' di header */}
                     <TableHead>Petugas</TableHead>
                     <TableHead className="text-right">Status</TableHead>
                   </TableRow>
@@ -118,15 +169,18 @@ export function McuProgressModal({ mcuResultId, isOpen, onOpenChange }: McuProgr
                 <TableBody>
                   {examinationMapping.map((item) => (
                     <TableRow key={item.dbKey}>
-                      <TableCell className="font-medium">{item.displayName}</TableCell>
-                      
-                      {/* 4. Tambah sel untuk menampilkan nama petugas */}
+                      <TableCell className="font-medium">
+                        {item.displayName}
+                      </TableCell>
+
                       <TableCell className="text-gray-600">
-                        {data[item.petugasDbKey] ? data[item.petugasDbKey] : '-'}
+                        {data[item.petugasDbKey]
+                          ? data[item.petugasDbKey]
+                          : "-"}
                       </TableCell>
 
                       <TableCell className="text-right">
-                        {data[item.dbKey] === 'COMPLETED' ? (
+                        {data[item.dbKey] === "COMPLETED" ? (
                           <span className="flex items-center justify-end gap-2 text-green-600 font-semibold">
                             <CheckCircle size={16} /> Selesai
                           </span>

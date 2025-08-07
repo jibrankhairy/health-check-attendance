@@ -22,7 +22,7 @@ const DashboardPage = () => {
       if (user.role === "HRD" && user.companyId && user.companyName) {
         handleSelectCompany(user.companyId, user.companyName);
       }
-      
+
       if (user.role === "PETUGAS") {
         router.push("/dashboard/petugas");
       }
@@ -61,11 +61,11 @@ const DashboardPage = () => {
       <Toaster richColors position="top-center" />
       <Header
         companyName={selectedCompany?.name}
-        onBack={user.role === "ADMINISTRASI" ? handleBackToCompanies : undefined}
+        onBack={
+          user.role === "ADMINISTRASI" ? handleBackToCompanies : undefined
+        }
       />
-      <main className="flex-1">
-        {renderContent()}
-      </main>
+      <main className="flex-1">{renderContent()}</main>
     </>
   );
 };

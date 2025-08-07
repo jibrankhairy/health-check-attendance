@@ -42,16 +42,18 @@ const formSchema = z.object({
   email: z
     .string()
     .email({ message: "Format email tidak valid." })
-    .optional()
-    .or(z.literal("")),
+    .or(z.literal(""))
+    .optional(),
   dob: z
     .string()
     .refine((val) => val.length > 0, { message: "Tanggal lahir harus diisi." }),
   age: z.coerce.number().min(0, { message: "Umur harus diisi." }),
   department: z.string().min(1, { message: "Departemen harus diisi." }),
-  mcuPackage: z.array(z.string()).refine((value) => value.some((item) => item), {
-    message: "Anda harus memilih setidaknya satu item pemeriksaan.",
-  }),
+  mcuPackage: z
+    .array(z.string())
+    .refine((value) => value.some((item) => item), {
+      message: "Anda harus memilih setidaknya satu item pemeriksaan.",
+    }),
 });
 
 type PatientFormValues = z.infer<typeof formSchema>;
@@ -60,7 +62,7 @@ type PatientFormProps = {
   setOpen: (open: boolean) => void;
   companyId: string;
   onPatientAdded: () => void;
-  patientToEdit?: PatientFormValues & { id: number } | null;
+  patientToEdit?: (PatientFormValues & { id: number }) | null;
 };
 
 export const PatientRegistrationForm = ({
@@ -87,7 +89,7 @@ export const PatientRegistrationForm = ({
       form.reset({
         ...patientToEdit,
         email: patientToEdit.email || "",
-        dob: new Date(patientToEdit.dob).toISOString().split('T')[0],
+        dob: new Date(patientToEdit.dob).toISOString().split("T")[0],
       });
     }
   }, [patientToEdit, form]);
@@ -111,7 +113,9 @@ export const PatientRegistrationForm = ({
 
   const onSubmit: SubmitHandler<PatientFormValues> = async (data) => {
     const isEditMode = !!patientToEdit;
-    const url = isEditMode ? `/api/patients/${patientToEdit.id}` : "/api/patients";
+    const url = isEditMode
+      ? `/api/patients/${patientToEdit.id}`
+      : "/api/patients";
     const method = isEditMode ? "PUT" : "POST";
 
     const dataToSubmit = {
@@ -132,11 +136,15 @@ export const PatientRegistrationForm = ({
     });
 
     toast.promise(promise, {
-      loading: isEditMode ? "Memperbarui data pasien..." : "Menyimpan data pasien...",
+      loading: isEditMode
+        ? "Memperbarui data pasien..."
+        : "Menyimpan data pasien...",
       success: (data: { fullName: string }) => {
         setOpen(false);
         onPatientAdded();
-        return `Pasien ${data.fullName} berhasil ${isEditMode ? 'diperbarui' : 'didaftarkan'}!`;
+        return `Pasien ${data.fullName} berhasil ${
+          isEditMode ? "diperbarui" : "didaftarkan"
+        }!`;
       },
       error: (errorData) => {
         const errors = errorData?.error;
@@ -144,7 +152,9 @@ export const PatientRegistrationForm = ({
           const errorMessages = Object.values(errors).flat().join(", ");
           return `Gagal: ${errorMessages}`;
         }
-        return errorData.message || "Gagal memproses data. Cek kembali input Anda.";
+        return (
+          errorData.message || "Gagal memproses data. Cek kembali input Anda."
+        );
       },
     });
   };

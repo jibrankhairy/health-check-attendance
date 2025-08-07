@@ -1,5 +1,3 @@
-// app/dashboard/create-account/page.tsx
-
 import React from "react";
 import {
   Card,
@@ -22,7 +20,6 @@ const CreateAccountPage = () => {
             <TabsTrigger value="petugas">Create Petugas Account</TabsTrigger>
           </TabsList>
 
-          {/* Konten untuk Tab HRD (Form yang sudah ada) */}
           <TabsContent value="hrd">
             <Card>
               <CardHeader>
@@ -30,7 +27,8 @@ const CreateAccountPage = () => {
                   Create a Partner Company Account
                 </CardTitle>
                 <CardDescription>
-                  Register a new company and a login account for their HR department.
+                  Register a new company and a login account for their HR
+                  department.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -39,7 +37,6 @@ const CreateAccountPage = () => {
             </Card>
           </TabsContent>
 
-          {/* Konten untuk Tab Petugas (Form baru) */}
           <TabsContent value="petugas">
             <Card>
               <CardHeader>

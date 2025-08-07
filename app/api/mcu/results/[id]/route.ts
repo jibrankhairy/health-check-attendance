@@ -13,12 +13,12 @@ export async function GET(
     const mcuResult = await prisma.mcuResult.findUnique({
       where: { id },
       include: {
-        patient: { // Ambil juga data pasien untuk ditampilkan
+        patient: {
           select: {
             fullName: true,
-          }
-        }
-      }
+          },
+        },
+      },
     });
 
     if (!mcuResult) {
