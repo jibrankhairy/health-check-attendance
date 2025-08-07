@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -29,8 +29,8 @@ const mcuItems = [
   { id: "hematologi", label: "Hematologi" },
   { id: "urinalisa", label: "Urinalisa" },
   { id: "kimia_darah", label: "Kimia Darah" },
-  { id: "rontgen", label: "Rontgen Thorax" },
-  { id: "ekg", label: "EKG (Elektrokardiogram)" },
+  { id: "rontgen_thorax", label: "Rontgen Thorax" },
+  { id: "ekg_elektrokardiogram", label: "EKG (Elektrokardiogram)" },
   { id: "treadmill", label: "Treadmill" },
   { id: "audiometri", label: "Audiometri" },
   { id: "spirometri", label: "Spirometri" },
@@ -49,7 +49,7 @@ const formSchema = z.object({
     .refine((val) => val.length > 0, { message: "Tanggal lahir harus diisi." }),
   age: z.coerce.number().min(0, { message: "Umur harus diisi." }),
   department: z.string().min(1, { message: "Departemen harus diisi." }),
-  mcuPackage: z.array(z.string()).refine((value) => value.length > 0, {
+  mcuPackage: z.array(z.string()).refine((value) => value.some((item) => item), {
     message: "Anda harus memilih setidaknya satu item pemeriksaan.",
   }),
 });
@@ -60,12 +60,14 @@ type PatientFormProps = {
   setOpen: (open: boolean) => void;
   companyId: string;
   onPatientAdded: () => void;
+  patientToEdit?: PatientFormValues & { id: number } | null;
 };
 
 export const PatientRegistrationForm = ({
   setOpen,
   companyId,
   onPatientAdded,
+  patientToEdit,
 }: PatientFormProps) => {
   const form = useForm<PatientFormValues>({
     resolver: zodResolver(formSchema),
@@ -79,6 +81,16 @@ export const PatientRegistrationForm = ({
       mcuPackage: [],
     },
   });
+
+  useEffect(() => {
+    if (patientToEdit) {
+      form.reset({
+        ...patientToEdit,
+        email: patientToEdit.email || "",
+        dob: new Date(patientToEdit.dob).toISOString().split('T')[0],
+      });
+    }
+  }, [patientToEdit, form]);
 
   const handleDobChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const dob = e.target.value;
@@ -98,13 +110,17 @@ export const PatientRegistrationForm = ({
   };
 
   const onSubmit: SubmitHandler<PatientFormValues> = async (data) => {
+    const isEditMode = !!patientToEdit;
+    const url = isEditMode ? `/api/patients/${patientToEdit.id}` : "/api/patients";
+    const method = isEditMode ? "PUT" : "POST";
+
     const dataToSubmit = {
       ...data,
       companyId: companyId,
     };
 
-    const promise = fetch("/api/patients", {
-      method: "POST",
+    const promise = fetch(url, {
+      method: method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(dataToSubmit),
     }).then(async (res) => {
@@ -116,16 +132,11 @@ export const PatientRegistrationForm = ({
     });
 
     toast.promise(promise, {
-      loading: "Menyimpan data pasien...",
+      loading: isEditMode ? "Memperbarui data pasien..." : "Menyimpan data pasien...",
       success: (data: { fullName: string }) => {
         setOpen(false);
         onPatientAdded();
-        form.reset();
-        form.setValue(
-          "patientId",
-          `MCU-${Math.floor(1000 + Math.random() * 9000)}`
-        );
-        return `Pasien ${data.fullName} berhasil didaftarkan!`;
+        return `Pasien ${data.fullName} berhasil ${isEditMode ? 'diperbarui' : 'didaftarkan'}!`;
       },
       error: (errorData) => {
         const errors = errorData?.error;
@@ -133,7 +144,7 @@ export const PatientRegistrationForm = ({
           const errorMessages = Object.values(errors).flat().join(", ");
           return `Gagal: ${errorMessages}`;
         }
-        return "Gagal mendaftarkan pasien. Cek kembali data Anda.";
+        return errorData.message || "Gagal memproses data. Cek kembali input Anda.";
       },
     });
   };
@@ -254,7 +265,7 @@ export const PatientRegistrationForm = ({
                   onCheckedChange={(checked) => {
                     form.setValue(
                       "mcuPackage",
-                      checked ? mcuItems.map((item) => item.id) : []
+                      checked ? mcuItems.map((item) => item.label) : []
                     );
                   }}
                   checked={form.watch("mcuPackage").length === mcuItems.length}
@@ -279,16 +290,16 @@ export const PatientRegistrationForm = ({
                       >
                         <FormControl>
                           <Checkbox
-                            checked={field.value?.includes(item.id)}
+                            checked={field.value?.includes(item.label)}
                             onCheckedChange={(checked) => {
                               return checked
                                 ? field.onChange([
                                     ...(field.value || []),
-                                    item.id,
+                                    item.label,
                                   ])
                                 : field.onChange(
                                     (field.value || []).filter(
-                                      (value: string) => value !== item.id
+                                      (value: string) => value !== item.label
                                     )
                                   );
                             }}
@@ -319,7 +330,7 @@ export const PatientRegistrationForm = ({
             className="bg-[#01449D] hover:bg-[#01449D]/90 text-white"
             disabled={form.formState.isSubmitting}
           >
-            Simpan & Buat QR Code
+            {patientToEdit ? "Simpan Perubahan" : "Simpan & Buat QR Code"}
           </Button>
         </DialogFooter>
       </form>
