@@ -1,5 +1,5 @@
 generator client {
-  provider          = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -9,12 +9,11 @@ datasource db {
 }
 
 model Company {
-  id        String   @id @unique
+  id        String    @id @unique
   name      String
-  address   String?  @db.Text
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  address   String?   @db.Text
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   users     User[]
   patients  Patient[]
 }
@@ -29,7 +28,6 @@ model User {
 
   role      Role     @relation(fields: [roleId], references: [id])
   roleId    Int
-
   company   Company? @relation(fields: [companyId], references: [id])
   companyId String?
 }
@@ -41,18 +39,54 @@ model Role {
 }
 
 model Patient {
-  id          Int      @id @default(autoincrement())
-  patientId   String   @unique 
-  fullName    String
-  email       String?
-  dob         DateTime
-  age         Int
-  department  String
-  qrCode      String   @unique
-  mcuPackage  Json
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           Int      @id @default(autoincrement())
+  patientId    String   @unique
+  fullName     String
+  email        String?
+  dob          DateTime
+  age          Int
+  department   String
+  qrCode       String   @unique
+  mcuPackage   Json
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  company     Company  @relation(fields: [companyId], references: [id])
-  companyId   String
+  company    Company  @relation(fields: [companyId], references: [id])
+  companyId  String
+
+  mcuResults McuResult[]
+}
+
+model McuResult {
+  id             String   @id @default(cuid())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  patient        Patient  @relation(fields: [patientId], references: [id])
+  patientId      Int
+
+  pemeriksaanFisikStatus    String  @default("PENDING")
+  pemeriksaanFisikPetugas   String? // Nama petugas untuk pos ini
+  darahLengkapStatus        String  @default("PENDING")
+  darahLengkapPetugas       String?
+  kimiaDarahStatus          String  @default("PENDING")
+  kimiaDarahPetugas         String?
+  treadmillStatus           String  @default("PENDING")
+  treadmillPetugas          String?
+  tesPsikologiStatus        String  @default("PENDING")
+  tesPsikologiPetugas       String?
+  hematologiStatus          String  @default("PENDING")
+  hematologiPetugas         String?
+  rontgenThoraxStatus       String  @default("PENDING")
+  rontgenThoraxPetugas      String?
+  audiometriStatus          String  @default("PENDING")
+  audiometriPetugas         String?
+  framinghamScoreStatus     String  @default("PENDING")
+  framinghamScorePetugas    String?
+  urinalisaStatus           String  @default("PENDING")
+  urinalisaPetugas          String?
+  ekgStatus                 String  @default("PENDING")
+  ekgPetugas                String?
+  spirometriStatus          String  @default("PENDING")
+  spirometriPetugas         String?
 }

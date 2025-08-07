@@ -1,3 +1,5 @@
+// app/api/auth/login/route.ts
+
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -20,6 +22,7 @@ export async function POST(req: NextRequest) {
       where: { email },
       include: {
         role: true,
+        company: true, // Tambahkan ini untuk mengambil data perusahaan
       },
     });
 
@@ -36,12 +39,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Password salah" }, { status: 401 });
     }
 
-    const token = jwt.sign(
-      { userId: user.id, role: user.role.name },
-      process.env.JWT_SECRET!,
-      { expiresIn: "1d" }
-    );
+    // --- Payload untuk Token JWT ---
+    const tokenPayload = {
+      userId: user.id,
+      role: user.role.name,
+      companyId: user.companyId, // Tambahkan companyId
+      companyName: user.company?.name, // Tambahkan companyName
+    };
 
+    const token = jwt.sign(tokenPayload, process.env.JWT_SECRET!, {
+      expiresIn: "1d",
+    });
+
+    // --- Data User yang Dikirim ke Frontend ---
     return NextResponse.json({
       message: "Login berhasil",
       token,
@@ -50,6 +60,8 @@ export async function POST(req: NextRequest) {
         fullName: user.fullName,
         email: user.email,
         role: user.role.name,
+        companyId: user.companyId, // Tambahkan companyId di sini
+        companyName: user.company?.name, // Tambahkan companyName di sini
       },
     });
   } catch (err) {

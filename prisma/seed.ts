@@ -7,9 +7,9 @@ async function main() {
   console.log("Start seeding...");
 
   const adminKlinikRole = await prisma.role.upsert({
-    where: { name: "ADMIN_KLINIK" },
+    where: { name: "ADMINISTRASIK" },
     update: {},
-    create: { name: "ADMIN_KLINIK" },
+    create: { name: "ADMINISTRASI" },
   });
 
   const petugasRole = await prisma.role.upsert({
@@ -24,7 +24,7 @@ async function main() {
     create: { name: "HRD" },
   });
 
-  console.log("Roles (ADMIN_KLINIK, PETUGAS, HRD) created/verified.");
+  console.log("Roles (ADMINISTRASI, PETUGAS, HRD) created/verified.");
 
   const hashedPasswordAdmin = await bcrypt.hash("adminklinik123", 10);
   await prisma.user.upsert({

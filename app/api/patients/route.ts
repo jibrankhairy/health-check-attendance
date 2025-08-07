@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
-import { randomUUID } from "crypto";
 import nodemailer from "nodemailer";
 import QRCode from "qrcode";
 
 const prisma = new PrismaClient();
 
+// Skema validasi tidak perlu diubah
 const createPatientSchema = z.object({
   patientId: z.string(),
   fullName: z.string().min(3, "Nama lengkap minimal 3 karakter"),
@@ -34,6 +34,9 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// ===================================================================
+// BAGIAN FUNGSI POST YANG DIPERBARUI
+// ===================================================================
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -57,25 +60,45 @@ export async function POST(request: Request) {
       companyId,
     } = validation.data;
 
-    const qrCodeId = randomUUID();
+    // Kita gunakan transaksi untuk memastikan kedua data (Patient & McuResult) berhasil dibuat
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Buat data pasien terlebih dahulu
+      const newPatient = await tx.patient.create({
+        data: {
+          patientId,
+          fullName,
+          email: email || null,
+          dob: new Date(dob),
+          age,
+          department,
+          mcuPackage,
+          companyId,
+          qrCode: "temp", // Isi dengan nilai sementara
+        },
+      });
 
-    const newPatient = await prisma.patient.create({
-      data: {
-        patientId,
-        fullName,
-        email: email || null,
-        dob: new Date(dob),
-        age,
-        department,
-        mcuPackage,
-        companyId,
-        qrCode: qrCodeId,
-      },
+      // 2. Buat record McuResult yang terhubung dengan pasien baru
+      const newMcuResult = await tx.mcuResult.create({
+        data: {
+          patientId: newPatient.id,
+        },
+      });
+
+      // 3. Update pasien dengan ID McuResult sebagai QR Code
+      const updatedPatient = await tx.patient.update({
+        where: { id: newPatient.id },
+        data: {
+          qrCode: newMcuResult.id, // Ini akan jadi isi QR Code
+        },
+      });
+
+      return { patient: updatedPatient, mcuResult: newMcuResult };
     });
 
+    // Kirim email jika ada
     if (email) {
       try {
-        const qrCodeDataUrl = await QRCode.toDataURL(qrCodeId);
+        const qrCodeDataUrl = await QRCode.toDataURL(result.patient.qrCode);
         const base64Data = qrCodeDataUrl.replace(
           /^data:image\/png;base64,/,
           ""
@@ -108,16 +131,21 @@ export async function POST(request: Request) {
       }
     }
 
-    return NextResponse.json(newPatient, { status: 201 });
+    return NextResponse.json(result.patient, { status: 201 });
   } catch (error) {
     console.error("Create Patient Error:", error);
+    // Tambahkan detail error jika ada
+    const errorMessage = error instanceof Error ? error.message : "Internal Server Error";
     return NextResponse.json(
-      { message: "Internal Server Error" },
+      { message: errorMessage },
       { status: 500 }
     );
   }
 }
 
+// ===================================================================
+// BAGIAN FUNGSI GET YANG DIPERBARUI
+// ===================================================================
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -132,14 +160,22 @@ export async function GET(request: Request) {
 
     const patients = await prisma.patient.findMany({
       where: { companyId },
+      include: {
+        mcuResults: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: { id: true }
+        }
+      },
       orderBy: { createdAt: "desc" },
     });
 
     return NextResponse.json(patients);
   } catch (error) {
     console.error("Fetch Patients Error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Internal Server Error";
     return NextResponse.json(
-      { message: "Internal Server Error" },
+      { message: errorMessage },
       { status: 500 }
     );
   }
