@@ -1,16 +1,9 @@
 "use client";
 
-import React from "react";
-import { Filter, MoreHorizontal, PlusCircle, Search } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+import { PlusCircle, Search, Eye, Pencil, Trash2, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -20,94 +13,127 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { PatientRegistrationForm } from "./PatientRegistrationForm";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { format } from "date-fns";
 
-type PatientStatus = "Approved" | "Pending" | "Canceled";
-type DummyPatient = {
-  id: string;
-  name: string;
-  idNumber: string;
-  registrationDate: string;
-  mcuPackage: string;
+// Tipe data sesuai dengan model Prisma Patient
+type PatientData = {
+  id: number;
+  patientId: string;
+  fullName: string;
+  age: number;
+  department: string;
+  mcuPackage: string[];
   qrCode: string;
-  status: PatientStatus;
+  createdAt: string;
 };
 
-const dummyPatients: DummyPatient[] = [
-  {
-    id: "1",
-    name: "Younes",
-    idNumber: "MCU-07",
-    registrationDate: "2025-09-11",
-    mcuPackage: "Paket Lengkap",
-    qrCode: "qr-younes",
-    status: "Approved",
-  },
-  {
-    id: "2",
-    name: "Albert Flores",
-    idNumber: "MCU-09",
-    registrationDate: "2025-08-15",
-    mcuPackage: "Paket Dasar",
-    qrCode: "qr-albert",
-    status: "Pending",
-  },
-  {
-    id: "3",
-    name: "Cameron Williamson",
-    idNumber: "MCU-02",
-    registrationDate: "2024-03-23",
-    mcuPackage: "Paket Lengkap",
-    qrCode: "qr-cameron",
-    status: "Approved",
-  },
-  {
-    id: "4",
-    name: "Floyd Miles",
-    idNumber: "MCU-03",
-    registrationDate: "2024-07-14",
-    mcuPackage: "Paket Karyawan",
-    qrCode: "qr-floyd",
-    status: "Pending",
-  },
-  {
-    id: "5",
-    name: "Robert Fox",
-    idNumber: "MCU-01",
-    registrationDate: "2023-03-11",
-    mcuPackage: "Paket Lengkap",
-    qrCode: "qr-robert",
-    status: "Canceled",
-  },
-];
-
-const StatusBadge = ({ status }: { status: PatientStatus }) => {
-  const statusStyles: { [key in PatientStatus]: string } = {
-    Approved: "bg-[#01449D] hover:bg-[#01449D]/90 text-white",
-    Pending: "bg-yellow-500 hover:bg-yellow-500/90 text-white",
-    Canceled: "bg-red-600 hover:bg-red-600/90 text-white",
-  };
-
-  return <Badge className={statusStyles[status]}>{status}</Badge>;
+type PatientTableProps = {
+  companyId: string;
+  companyName: string;
 };
 
-export const PatientTable = () => {
+export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [patients, setPatients] = useState<PatientData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  const fetchPatients = useCallback(async () => {
+    if (!companyId) return;
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/patients?companyId=${companyId}`);
+      if (!response.ok) throw new Error(`Error: ${response.statusText}`);
+      const data = await response.json();
+      setPatients(data);
+    } catch (error) {
+      console.error("Failed to fetch patients:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [companyId]);
+
+  useEffect(() => {
+    fetchPatients();
+  }, [fetchPatients]);
+
+  const filteredPatients = patients.filter(
+    (patient) =>
+      patient.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      patient.patientId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      patient.department.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentRows = filteredPatients.slice(indexOfFirstRow, indexOfLastRow);
+  const totalPages = Math.ceil(filteredPatients.length / rowsPerPage);
+
   return (
     <div className="flex-1 p-8">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input placeholder="Cari pasien..." className="pl-9" />
+            <Input
+              placeholder="Cari nama, ID, atau departemen..."
+              className="pl-9"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
+            />
           </div>
-          <Button variant="outline">
-            <Filter className="mr-2 h-4 w-4" />
-            Filter
-          </Button>
         </div>
-        <Button className="bg-[#01449D] hover:bg-[#01449D]/90 text-white">
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Tambah Pasien
-        </Button>
+
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-[#01449D] hover:bg-[#01449D]/90 text-white">
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Tambah Pasien
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-4xl">
+            <DialogHeader>
+              <DialogTitle className="text-2xl">
+                Form Pendaftaran Pasien - {companyName}
+              </DialogTitle>
+              <DialogDescription>
+                Pasien ini akan terdaftar di bawah perusahaan {companyName}.
+              </DialogDescription>
+            </DialogHeader>
+            <PatientRegistrationForm
+              setOpen={setIsDialogOpen}
+              companyId={companyId}
+              onPatientAdded={fetchPatients}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="rounded-lg border bg-white">
@@ -115,67 +141,162 @@ export const PatientTable = () => {
           <TableHeader>
             <TableRow>
               <TableHead className="w-[50px] text-center">No.</TableHead>
-              <TableHead>Nama</TableHead>
               <TableHead>ID Pasien</TableHead>
+              <TableHead>Nama Lengkap</TableHead>
+              <TableHead>Departemen</TableHead>
               <TableHead>Tgl. Registrasi</TableHead>
-              <TableHead>Paket MCU</TableHead>
-              <TableHead>QR Code</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Action</TableHead>
+              <TableHead className="text-center">QR Code</TableHead>
+              <TableHead className="text-center">Aksi</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {dummyPatients.map((patient, index) => (
-              <TableRow key={patient.id}>
-                <TableCell className="font-medium text-center">
-                  {index + 1}
-                </TableCell>
-                <TableCell className="font-medium">{patient.name}</TableCell>
-                <TableCell>{patient.idNumber}</TableCell>
-                <TableCell>{patient.registrationDate}</TableCell>
-                <TableCell>{patient.mcuPackage}</TableCell>
-                <TableCell>
-                  <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=40x40&data=${patient.qrCode}`}
-                    alt="QR Code"
-                  />
-                </TableCell>
-                <TableCell>
-                  <StatusBadge status={patient.status} />
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <DropdownMenuItem>Edit</DropdownMenuItem>
-                      <DropdownMenuItem>Lihat Detail</DropdownMenuItem>
-                      <DropdownMenuItem className="text-red-500">
-                        Hapus
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={7} className="h-24 text-center">
+                  <div className="flex justify-center items-center">
+                    <Loader2 className="mr-2 h-6 w-6 animate-spin" />
+                    Memuat data pasien...
+                  </div>
                 </TableCell>
               </TableRow>
-            ))}
+            ) : currentRows.length > 0 ? (
+              currentRows.map((patient, index) => (
+                <TableRow key={patient.id}>
+                  <TableCell className="font-medium text-center">
+                    {indexOfFirstRow + index + 1}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="secondary">{patient.patientId}</Badge>
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {patient.fullName}
+                  </TableCell>
+                  <TableCell>{patient.department}</TableCell>
+                  <TableCell>
+                    {format(new Date(patient.createdAt), "dd MMM yyyy")}
+                  </TableCell>
+                  <TableCell className="flex justify-center">
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=40x40&data=${patient.qrCode}`}
+                      alt={`QR Code for ${patient.fullName}`}
+                      className="rounded-sm"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <TooltipProvider>
+                      <div className="flex items-center justify-center gap-2">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="hover:text-blue-500"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Lihat Detail</p>
+                          </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="hover:text-yellow-500"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Edit Pasien</p>
+                          </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="hover:text-red-500"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Hapus Pasien</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                    </TooltipProvider>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={7} className="h-24 text-center">
+                  {searchQuery
+                    ? "Pasien tidak ditemukan."
+                    : "Belum ada data pasien untuk perusahaan ini."}
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>
 
-      <div className="flex items-center justify-between mt-6">
-        <p className="text-sm text-gray-600">
-          Showing 1 to {dummyPatients.length} of {dummyPatients.length} results
-        </p>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
-            Previous
-          </Button>
-          <Button variant="outline" size="sm">
-            Next
-          </Button>
+      {/* Pagination Controls */}
+      <div className="flex items-center justify-between mt-4">
+        <div className="text-sm text-gray-600">
+          Menampilkan {filteredPatients.length > 0 ? indexOfFirstRow + 1 : 0}{" "}
+          sampai {Math.min(indexOfLastRow, filteredPatients.length)} dari{" "}
+          {filteredPatients.length} pasien
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <p className="text-sm">Baris per halaman:</p>
+            <Select
+              value={`${rowsPerPage}`}
+              onValueChange={(value: string) => {
+                setRowsPerPage(Number(value));
+                setCurrentPage(1);
+              }}
+            >
+              <SelectTrigger className="h-8 w-[70px]">
+                <SelectValue placeholder={rowsPerPage} />
+              </SelectTrigger>
+              <SelectContent side="top">
+                {[10, 25, 50, 100].map((pageSize) => (
+                  <SelectItem key={pageSize} value={`${pageSize}`}>
+                    {pageSize}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="text-sm font-medium">
+            Halaman {currentPage} dari {totalPages || 1}
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+            >
+              Sebelumnya
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+              disabled={currentPage === totalPages || totalPages === 0}
+            >
+              Selanjutnya
+            </Button>
+          </div>
         </div>
       </div>
     </div>

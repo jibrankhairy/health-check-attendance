@@ -1,7 +1,11 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { LayoutDashboard, Users, FileText } from "lucide-react";
 import {
+<<<<<<< HEAD
   LayoutDashboard,
   Settings,
   Users,
@@ -10,6 +14,8 @@ import {
   MoreHorizontal
 } from "lucide-react";
 import {
+=======
+>>>>>>> 7ce396ace79bb6198b54ca3285e501e97fc2e440
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -18,9 +24,13 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
+<<<<<<< HEAD
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+=======
+  SidebarMenuButton,
+>>>>>>> 7ce396ace79bb6198b54ca3285e501e97fc2e440
   useSidebar,
 } from "@/components/ui/sidebar";
 import {
@@ -34,6 +44,16 @@ import { useAuth } from "@/components/context/AuthContext";
 
 export const Sidebar = () => {
   const { user, logout } = useAuth();
+<<<<<<< HEAD
+=======
+  const pathname = usePathname();
+
+  const navItems = [
+    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/dashboard/create-account", label: "Create Account", icon: Users },
+    { href: "/dashboard/reports", label: "Laporan MCU", icon: FileText },
+  ];
+>>>>>>> 7ce396ace79bb6198b54ca3285e501e97fc2e440
   const { isMobile } = useSidebar();
 
   return (
@@ -48,27 +68,18 @@ export const Sidebar = () => {
         />
         <h1 className="text-sm font-semibold">Klinik Yuliarpan Medika</h1>
       </div>
-      <nav className="flex-1 px-4 py-4 space-y-6">
-        <Button variant="secondary" className="w-full justify-start">
-          <LayoutDashboard className="mr-2 h-4 w-4" />
-          Dashboard
-        </Button>
-        <Button variant="ghost" className="w-full justify-start">
-          <Users className="mr-2 h-4 w-4" />
-          Manajemen Pasien
-        </Button>
-        <Button variant="ghost" className="w-full justify-start">
-          <FileText className="mr-2 h-4 w-4" />
-          Laporan MCU
-        </Button>
-        <Button variant="ghost" className="w-full justify-start">
-          <Briefcase className="mr-2 h-4 w-4" />
-          Paket MCU
-        </Button>
-        <Button variant="ghost" className="w-full justify-start">
-          <Settings className="mr-2 h-4 w-4" />
-          Pengaturan
-        </Button>
+      <nav className="flex-1 px-4 py-6 space-y-4">
+        {navItems.map((item) => (
+          <Link key={item.label} href={item.href} passHref>
+            <Button
+              variant={pathname === item.href ? "secondary" : "ghost"}
+              className="w-full justify-start h-11"
+            >
+              <item.icon className="mr-2 h-4 w-4" />
+              {item.label}
+            </Button>
+          </Link>
+        ))}
       </nav>
       <div className="mb-4">
       <DropdownMenu>
