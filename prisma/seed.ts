@@ -6,7 +6,6 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("Start seeding...");
 
-  // 1. Buat semua role yang dibutuhkan
   const adminKlinikRole = await prisma.role.upsert({
     where: { name: "ADMIN_KLINIK" },
     update: {},
@@ -27,7 +26,6 @@ async function main() {
 
   console.log("Roles (ADMIN_KLINIK, PETUGAS, HRD) created/verified.");
 
-  // 2. Buat HANYA user ADMIN_KLINIK
   const hashedPasswordAdmin = await bcrypt.hash("adminklinik123", 10);
   await prisma.user.upsert({
     where: { email: "admin@klinikym.com" },
@@ -37,7 +35,6 @@ async function main() {
       fullName: "Admin Klinik Utama",
       password: hashedPasswordAdmin,
       roleId: adminKlinikRole.id,
-      // companyId dikosongkan karena dia admin klinik
     },
   });
   console.log("Admin Klinik user created.");
