@@ -3,27 +3,17 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// Fungsi GET untuk mengambil data berdasarkan ID
 export async function GET(
   request: Request,
-  // PERUBAHAN: Menggunakan 'any' sebagai tipe untuk argumen kedua.
-  // Ini adalah workaround untuk masalah tipe yang kemungkinan disebabkan oleh
-  // bug atau perubahan pada Next.js v15 (versi eksperimental).
-  // Tipe yang benar ({ params }: { params: { id: string } }) terus ditolak oleh proses build.
-  { params }: any
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  try {
-    // Kita tetap pastikan tipe 'id' di dalam fungsi dengan type assertion
-    const { id } = params as { id: string };
+  const { id } = await params; // <— wajib di-await di Next 15
 
+  try {
     const mcuResult = await prisma.mcuResult.findUnique({
       where: { id },
       include: {
-        patient: {
-          include: {
-            company: true,
-          },
-        },
+        patient: { include: { company: true } },
       },
     });
 
@@ -43,21 +33,17 @@ export async function GET(
   }
 }
 
-// Fungsi PUT untuk memperbarui data berdasarkan ID
 export async function PUT(
   request: Request,
-  // PERUBAHAN: Samakan juga di fungsi PUT
-  { params }: any
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params; // <— sama, wajib di-await
   try {
-    const { id } = params as { id: string };
     const body = await request.json();
 
-    // Cek jika ada 'formAnswers' di body untuk pembaruan form
     if (body.formAnswers) {
       const { healthHistoryAnswers, dassTestAnswers, fasTestAnswers } =
         body.formAnswers;
-
       const updatedResult = await prisma.mcuResult.update({
         where: { id },
         data: {
@@ -69,7 +55,6 @@ export async function PUT(
       });
       return NextResponse.json(updatedResult);
     } else {
-      // Memperbarui dengan data lain dari body
       const updatedMcuResult = await prisma.mcuResult.update({
         where: { id },
         data: body,
