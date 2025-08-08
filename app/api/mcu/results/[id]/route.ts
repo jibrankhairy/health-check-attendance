@@ -8,7 +8,8 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
+    const { id } = params;
+
     const mcuResult = await prisma.mcuResult.findUnique({
       where: { id },
       include: {
@@ -60,11 +61,7 @@ export async function PUT(
       return NextResponse.json(updatedResult);
     } else {
       const cleanedData: { [key: string]: any } = {};
-
-      const dataToUpdate = {
-        ...cleanedData,
-      };
-
+      const dataToUpdate = { ...cleanedData };
       const updatedMcuResult = await prisma.mcuResult.update({
         where: { id },
         data: dataToUpdate,
