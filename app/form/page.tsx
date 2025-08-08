@@ -57,8 +57,6 @@ const MultiStepFormPage = () => {
 
   const handleFinalSubmit = async (lastStepData: FasFormValues) => {
     const finalData = { ...allFormData, ...lastStepData };
-    console.log("DATA FINAL SIAP DIKIRIM:", finalData);
-
     const payload = { formAnswers: finalData };
 
     const promise = fetch(`/api/mcu/results/${patientDetails.resultId}`, {
@@ -114,12 +112,12 @@ const MultiStepFormPage = () => {
       case 3:
         return "Kuesioner Tes Psikologi (FAS)";
       default:
-        return "";
+        return ""; // Kosongkan untuk step 0
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center py-12 px-4 form-bg">
+    <div className="min-h-screen flex flex-col items-center py-8 sm:py-12 px-4 form-bg">
       <style jsx global>{`
         .form-bg {
           background: linear-gradient(to bottom right, #f0f4ff, #e6e9f0);
@@ -143,23 +141,37 @@ const MultiStepFormPage = () => {
       `}</style>
       <Toaster richColors position="top-center" />
 
-      <ProgressStepper currentStep={step} />
-
-      {step > 0 && step < 4 ? (
-        <Card className="w-full max-w-4xl">
-          <CardHeader>
-            <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
-            <CardDescription>
-              Selamat datang,{" "}
-              <span className="font-bold">{patientDetails.name}</span>. Mohon
-              isi semua pertanyaan di bawah ini.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>{renderStepContent()}</CardContent>
-        </Card>
-      ) : (
-        renderStepContent()
+      {step === 0 && (
+        <div className="w-full max-w-4xl mb-8 text-center animate-fade-in">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
+            Formulir Pemeriksaan Kesehatan Awal
+          </h1>
+        </div>
       )}
+
+      {step < 4 && <ProgressStepper currentStep={step} />}
+
+      <div className="w-full flex justify-center mt-8">
+        {step > 0 && step < 4 ? (
+          <Card className="w-full max-w-4xl">
+            <CardHeader>
+              <CardTitle className="text-xl sm:text-2xl">
+                {getStepTitle()}
+              </CardTitle>
+              <CardDescription>
+                Selamat datang,{" "}
+                <span className="font-bold">{patientDetails.name}</span>. Mohon
+                isi semua pertanyaan di bawah ini.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>{renderStepContent()}</CardContent>
+          </Card>
+        ) : (
+          // Tampilan tanpa Card besar untuk Verifikasi (step 0) dan Halaman Sukses (step 4)
+          // Ini akan menjaga ukuran Card verifikasi tetap kecil.
+          renderStepContent()
+        )}
+      </div>
     </div>
   );
 };

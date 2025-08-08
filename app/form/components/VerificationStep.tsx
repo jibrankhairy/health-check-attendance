@@ -2,14 +2,7 @@
 import React, { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
 export const VerificationStep = ({
@@ -44,7 +37,7 @@ export const VerificationStep = ({
     <Card className="w-full max-w-md animate-fade-in border-0 shadow-none">
       <CardContent className="pt-6">
         <div className="space-y-2">
-          <label htmlFor="patientId" className="text-sm font-medium">
+          <label htmlFor="patientId" className="text-lg font-medium block mb-6">
             Masukkan ID Pasien Anda
           </label>
           <Input
