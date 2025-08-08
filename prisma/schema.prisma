@@ -25,7 +25,6 @@ model User {
   password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
   role      Role     @relation(fields: [roleId], references: [id])
   roleId    Int
   company   Company? @relation(fields: [companyId], references: [id])
@@ -39,54 +38,176 @@ model Role {
 }
 
 model Patient {
-  id           Int      @id @default(autoincrement())
-  patientId    String   @unique
-  fullName     String
-  email        String?
-  dob          DateTime
-  age          Int
-  department   String
-  qrCode       String   @unique
-  mcuPackage   Json
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  company    Company  @relation(fields: [companyId], references: [id])
-  companyId  String
-
-  mcuResults McuResult[]
+  id          Int         @id @default(autoincrement())
+  patientId   String      @unique
+  fullName    String
+  email       String?
+  dob         DateTime
+  age         Int
+  department  String
+  qrCode      String      @unique
+  mcuPackage  Json
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  company     Company     @relation(fields: [companyId], references: [id])
+  companyId   String
+  mcuResults  McuResult[]
 }
 
 model McuResult {
-  id             String   @id @default(cuid())
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  status    String   @default("IN_PROGRESS")
 
-  patient        Patient  @relation(fields: [patientId], references: [id])
-  patientId      Int
+  patient   Patient @relation(fields: [patientId], references: [id])
+  patientId Int
 
-  pemeriksaanFisikStatus    String  @default("PENDING")
-  pemeriksaanFisikPetugas   String? // Nama petugas untuk pos ini
-  darahLengkapStatus        String  @default("PENDING")
-  darahLengkapPetugas       String?
-  kimiaDarahStatus          String  @default("PENDING")
-  kimiaDarahPetugas         String?
-  treadmillStatus           String  @default("PENDING")
-  treadmillPetugas          String?
-  tesPsikologiStatus        String  @default("PENDING")
-  tesPsikologiPetugas       String?
-  hematologiStatus          String  @default("PENDING")
-  hematologiPetugas         String?
-  rontgenThoraxStatus       String  @default("PENDING")
-  rontgenThoraxPetugas      String?
-  audiometriStatus          String  @default("PENDING")
-  audiometriPetugas         String?
-  framinghamScoreStatus     String  @default("PENDING")
-  framinghamScorePetugas    String?
-  urinalisaStatus           String  @default("PENDING")
-  urinalisaPetugas          String?
-  ekgStatus                 String  @default("PENDING")
-  ekgPetugas                String?
-  spirometriStatus          String  @default("PENDING")
-  spirometriPetugas         String?
+  // --- Pemeriksaan Fisik ---
+  beratBadan          Float?
+  tinggiBadan         Float?
+  bmi                 String?
+  lingkarPerut        String?
+  tekananDarah        String?
+  nadi                String?
+  suhu                String?
+  pernafasan          String?
+  fisikKondisiUmum    String? @db.Text
+  fisikKesadaran      String? @db.Text
+  fisikKulit          String? @db.Text
+  fisikKepalaLeher    String? @db.Text
+
+  // --- Mata ---
+  visusOd             String?
+  visusOs             String?
+  butaWarna           String?
+  kacamata            String?
+  kacamataOd          String?
+  kacamataOs          String?
+  lapangPandang       String?
+  fisikMataLainnya    String? @db.Text
+
+  // --- THT & Pendengaran (Baru) ---
+  fisikTelinga        String? @db.Text
+  fisikHidung         String? @db.Text
+  fisikTenggorokan    String? @db.Text
+
+  // --- Sistem Lainnya (Fisik) ---
+  fisikKardiovaskular String? @db.Text
+  fisikPernafasan     String? @db.Text
+  fisikPencernaan     String? @db.Text
+  fisikEkstremitas    String? @db.Text
+
+  // --- Darah Lengkap & Hematologi (DIUBAH KE TEXT) ---
+  hemoglobin                String? @db.Text
+  leukosit                  String? @db.Text
+  trombosit                 String? @db.Text
+  hematokrit                String? @db.Text
+  eritrosit                 String? @db.Text
+  led                       String? @db.Text
+  mcv                       String? @db.Text
+  mch                       String? @db.Text
+  mchc                      String? @db.Text
+  rdw                       String? @db.Text
+  mpv                       String? @db.Text
+  pdw                       String? @db.Text
+  hitungJenisEosinofil      String? @db.Text
+  hitungJenisBasofil        String? @db.Text
+  hitungJenisNeutrofilStab  String? @db.Text
+  hitungJenisNeutrofilSegmen String? @db.Text
+  hitungJenisLimfosit       String? @db.Text
+  hitungJenisMonosit        String? @db.Text
+
+  // --- Kimia Darah (DIUBAH KE TEXT) ---
+  gulaDarahPuasa      String? @db.Text
+  gulaDarah2JamPP     String? @db.Text
+  sgot                String? @db.Text
+  sgpt                String? @db.Text
+  asamUrat            String? @db.Text
+  kolesterolTotal     String? @db.Text
+  trigliserida        String? @db.Text
+  ureum               String? @db.Text
+  kreatinin           String? @db.Text
+  hdl                 String? @db.Text
+  ldl                 String? @db.Text
+  hbsag               String? @db.Text
+  bilirubinTotal      String? @db.Text
+  bilirubinDirect     String? @db.Text
+  alkaliPhosphatase   String? @db.Text
+
+  // --- Urinalisa (DIUBAH KE TEXT) ---
+  urinWarna             String? @db.Text
+  urinKejernihan        String? @db.Text
+  urinBau               String? @db.Text
+  urinPh                String? @db.Text
+  urinBeratJenis        String? @db.Text
+  urinProtein           String? @db.Text
+  urinGlukosa           String? @db.Text
+  urinBilirubin         String? @db.Text
+  urinUrobilinogen      String? @db.Text
+  urinKeton             String? @db.Text
+  urinNitrit            String? @db.Text
+  urinLeukositEsterase  String? @db.Text
+  urinBlood             String? @db.Text
+  urinSedimenEritrosit  String? @db.Text
+  urinSedimenLeukosit   String? @db.Text
+  urinSedimenEpitel     String? @db.Text
+  urinCaOxalat          String? @db.Text
+  urinUridAcid          String? @db.Text
+  urinGranulaCast       String? @db.Text
+
+  // --- Penunjang Medis ---
+  kesanRontgen      String? @db.Text
+  kesanEkg          String? @db.Text
+  kesanUsgAbdomen   String? @db.Text
+  kesanUsgMammae    String? @db.Text
+
+  // --- Audiometri ---
+  audiometriTelingaKanan String?
+  audiometriTelingaKiri  String?
+  kesimpulanAudiometri   String? @db.Text
+
+  // --- Spirometri ---
+  spirometriFvc        String?
+  spirometriFev1       String?
+  spirometriFev1Fvc    String?
+  kesimpulanSpirometri String? @db.Text
+
+  // --- Lainnya ---
+  framinghamScore        String?
+  kesimpulanTesPsikologi String? @db.Text
+
+  // --- Kesimpulan Akhir ---
+  kesimpulan String? @db.Text
+  saran      String? @db.Text
+
+  // --- Field status per pos (tetap ada) ---
+  pemeriksaanFisikStatus   String  @default("PENDING")
+  pemeriksaanFisikPetugas  String?
+  darahLengkapStatus       String  @default("PENDING")
+  darahLengkapPetugas      String?
+  kimiaDarahStatus         String  @default("PENDING")
+  kimiaDarahPetugas        String?
+  treadmillStatus          String  @default("PENDING")
+  treadmillPetugas         String?
+  tesPsikologiStatus       String  @default("PENDING")
+  tesPsikologiPetugas      String?
+  hematologiStatus         String  @default("PENDING")
+  hematologiPetugas        String?
+  rontgenThoraxStatus      String  @default("PENDING")
+  rontgenThoraxPetugas     String?
+  audiometriStatus         String  @default("PENDING")
+  audiometriPetugas        String?
+  framinghamScoreStatus    String  @default("PENDING")
+  framinghamScorePetugas   String?
+  urinalisaStatus          String  @default("PENDING")
+  urinalisaPetugas         String?
+  ekgStatus                String  @default("PENDING")
+  ekgPetugas               String?
+  spirometriStatus         String  @default("PENDING")
+  spirometriPetugas        String?
+  usgMammaeStatus          String  @default("PENDING")
+  usgMammaePetugas         String?
+  usgAbdomenStatus         String  @default("PENDING")
+  usgAbdomenPetugas        String?
 }

@@ -7,7 +7,7 @@ async function main() {
   console.log("Start seeding...");
 
   const adminKlinikRole = await prisma.role.upsert({
-    where: { name: "ADMINISTRASIK" },
+    where: { name: "ADMINISTRASI" },
     update: {},
     create: { name: "ADMINISTRASI" },
   });

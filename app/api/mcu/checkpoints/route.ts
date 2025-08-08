@@ -13,6 +13,8 @@ const CHECKPOINTS = [
   "Urinalisa",
   "EKG (Elektrokardiogram)",
   "Spirometri",
+  "USG Mammae",
+  "USG Abdomen",
 ];
 
 export async function GET() {

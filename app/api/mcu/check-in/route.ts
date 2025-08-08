@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+// Fungsi ini diupdate untuk mengembalikan DUA nama kolom
 function getColumnNames(
   checkPoint: string
 ): { statusColumn: string; petugasColumn: string } | null {
@@ -10,7 +11,7 @@ function getColumnNames(
     [key: string]: { statusColumn: string; petugasColumn: string };
   } = {
     pemeriksaan_fisik: {
-      statusColumn: "pemeriksaanFisikStatus",
+      statusColumn: "psemeriksaanFisikStatus",
       petugasColumn: "pemeriksaanFisikPetugas",
     },
     darah_lengkap: {
@@ -56,6 +57,14 @@ function getColumnNames(
     spirometri: {
       statusColumn: "spirometriStatus",
       petugasColumn: "spirometriPetugas",
+    },
+    usg_mammae: {
+      statusColumn: "usgMammaeStatus",
+      petugasColumn: "usgMammaePetugas",
+    },
+    usg_abdomen: {
+      statusColumn: "usgAbdomenStatus",
+      petugasColumn: "usgAbdomenPetugas",
     },
   };
   return mapping[checkPoint] || null;

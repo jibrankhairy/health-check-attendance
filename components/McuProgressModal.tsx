@@ -44,6 +44,10 @@ type McuResultData = {
   ekgPetugas?: string;
   spirometriStatus?: string;
   spirometriPetugas?: string;
+  usgMammaeStatus?: string;
+  usgMammaePetugas?: string;
+  usgAbdomenStatus?: string;
+  usgAbdomenPetugas?: string;
   [key: string]: any;
 };
 
@@ -107,6 +111,16 @@ const examinationMapping = [
     dbKey: "spirometriStatus",
     petugasDbKey: "spirometriPetugas",
     displayName: "Spirometri",
+  },
+  {
+    dbKey: "usgMammaeStatus",
+    petugasDbKey: "usgMammaePetugas",
+    displayName: "USG Mammae",
+  },
+  {
+    dbKey: "usgAbdomenStatus",
+    petugasDbKey: "usgAbdomenPetugas",
+    displayName: "USG Abdomen",
   },
 ];
 
