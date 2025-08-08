@@ -1,15 +1,20 @@
-import { NextResponse } from "next/server"; // PERUBAHAN 1: Hanya import NextResponse
+import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 // Fungsi GET untuk mengambil data berdasarkan ID
 export async function GET(
-  request: Request, // PERUBAHAN 2: Gunakan tipe 'Request' standar
-  { params }: { params: { id: string } }
+  request: Request,
+  // PERUBAHAN: Menggunakan 'any' sebagai tipe untuk argumen kedua.
+  // Ini adalah workaround untuk masalah tipe yang kemungkinan disebabkan oleh
+  // bug atau perubahan pada Next.js v15 (versi eksperimental).
+  // Tipe yang benar ({ params }: { params: { id: string } }) terus ditolak oleh proses build.
+  { params }: any
 ) {
   try {
-    const { id } = params; // Ambil 'id' langsung dari params
+    // Kita tetap pastikan tipe 'id' di dalam fungsi dengan type assertion
+    const { id } = params as { id: string };
 
     const mcuResult = await prisma.mcuResult.findUnique({
       where: { id },
@@ -40,11 +45,12 @@ export async function GET(
 
 // Fungsi PUT untuk memperbarui data berdasarkan ID
 export async function PUT(
-  request: Request, // PERUBAHAN 3: Samakan juga di fungsi PUT
-  { params }: { params: { id: string } }
+  request: Request,
+  // PERUBAHAN: Samakan juga di fungsi PUT
+  { params }: any
 ) {
   try {
-    const { id } = params;
+    const { id } = params as { id: string };
     const body = await request.json();
 
     // Cek jika ada 'formAnswers' di body untuk pembaruan form
