@@ -1,12 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server"; // PERUBAHAN 1: Hanya import NextResponse
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 // Fungsi GET untuk mengambil data berdasarkan ID
 export async function GET(
-  request: NextRequest,
-  // PERUBAHAN 1: Langsung destructuring 'params' dari argumen kedua
+  request: Request, // PERUBAHAN 2: Gunakan tipe 'Request' standar
   { params }: { params: { id: string } }
 ) {
   try {
@@ -41,8 +40,7 @@ export async function GET(
 
 // Fungsi PUT untuk memperbarui data berdasarkan ID
 export async function PUT(
-  request: NextRequest,
-  // PERUBAHAN 2: Samakan juga di fungsi PUT
+  request: Request, // PERUBAHAN 3: Samakan juga di fungsi PUT
   { params }: { params: { id: string } }
 ) {
   try {
@@ -65,11 +63,10 @@ export async function PUT(
       });
       return NextResponse.json(updatedResult);
     } else {
-      // Logika ini sepertinya belum selesai, 'cleanedData' kosong.
-      // Saya biarkan seperti aslinya, tapi mungkin perlu Anda periksa kembali.
+      // Memperbarui dengan data lain dari body
       const updatedMcuResult = await prisma.mcuResult.update({
         where: { id },
-        data: body, // Asumsi: memperbarui dengan data lain dari body
+        data: body,
       });
       return NextResponse.json(updatedMcuResult);
     }
