@@ -45,6 +45,10 @@ type McuResultData = {
   ekgPetugas?: string;
   spirometriStatus?: string;
   spirometriPetugas?: string;
+  usgMammaeStatus?: string;
+  usgMammaePetugas?: string;
+  usgAbdomenStatus?: string;
+  usgAbdomenPetugas?: string;
   [key: string]: any;
 };
 
@@ -62,6 +66,8 @@ const examinationMapping = [
   { dbKey: 'urinalisaStatus', petugasDbKey: 'urinalisaPetugas', displayName: 'Urinalisa' },
   { dbKey: 'ekgStatus', petugasDbKey: 'ekgPetugas', displayName: 'EKG (Elektrokardiogram)' },
   { dbKey: 'spirometriStatus', petugasDbKey: 'spirometriPetugas', displayName: 'Spirometri' },
+  { dbKey: 'usgMammaeStatus', petugasDbKey: 'usgMammaePetugas', displayName: 'USG Mammae' },
+  { dbKey: 'usgAbdomenStatus', petugasDbKey: 'usgAbdomenPetugas', displayName: 'USG Abdomen' },
 ];
 
 interface McuProgressModalProps {

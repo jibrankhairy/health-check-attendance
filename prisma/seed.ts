@@ -8,7 +8,7 @@ async function main() {
 
   // 1. Buat semua role yang dibutuhkan
   const adminKlinikRole = await prisma.role.upsert({
-    where: { name: "ADMINISTRASIK" },
+    where: { name: "ADMINISTRASI" },
     update: {},
     create: { name: "ADMINISTRASI" },
   });

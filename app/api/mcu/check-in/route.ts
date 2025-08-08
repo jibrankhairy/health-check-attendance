@@ -18,6 +18,8 @@ function getColumnNames(checkPoint: string): { statusColumn: string; petugasColu
     urinalisa: { statusColumn: "urinalisaStatus", petugasColumn: "urinalisaPetugas" },
     ekg_elektrokardiogram: { statusColumn: "ekgStatus", petugasColumn: "ekgPetugas" },
     spirometri: { statusColumn: "spirometriStatus", petugasColumn: "spirometriPetugas" },
+    usg_mammae: { statusColumn: "usgMammaeStatus", petugasColumn: "usgMammaePetugas" },
+    usg_abdomen: { statusColumn: "usgAbdomenStatus", petugasColumn: "usgAbdomenPetugas" },
   };
   return mapping[checkPoint] || null;
 }

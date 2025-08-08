@@ -34,6 +34,8 @@ const mcuItems = [
   { id: "treadmill", label: "Treadmill" },
   { id: "audiometri", label: "Audiometri" },
   { id: "spirometri", label: "Spirometri" },
+  { id: "usg_mammae", label: "USG Mammae" },
+  { id: "usg_abdomen", label: "USG Abdomen" },
 ];
 
 const formSchema = z.object({

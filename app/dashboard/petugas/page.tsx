@@ -44,53 +44,8 @@ const PetugasDashboardPage = () => {
     fetchCheckPoints();
   }, []);
 
+  // Effect #1: Hanya untuk mengambil daftar kamera saat modal dibuka
   useEffect(() => {
-    const startScanner = (cameraId: string) => {
-      const qrboxFunction = (viewfinderWidth: number, viewfinderHeight: number) => {
-        const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-        const qrboxSize = Math.floor(minEdge * 0.7);
-        return {
-          width: qrboxSize,
-          height: qrboxSize,
-        };
-      };
-
-      const config: Html5QrcodeCameraScanConfig = { 
-        fps: 10, 
-        qrbox: qrboxFunction,
-        aspectRatio: 1.0,
-      };
-
-      if (!qrScannerRef.current) {
-        qrScannerRef.current = new Html5Qrcode('qr-reader-container', false);
-      }
-
-      const qrScanner = qrScannerRef.current;
-
-      if (qrScanner && !qrScanner.isScanning) {
-        qrScanner.start(
-          cameraId,
-          config,
-          (decodedText) => {
-            if (qrScanner.isScanning) {
-              qrScanner.stop();
-            }
-            handleScanResult(decodedText);
-          },
-          (errorMessage) => { /* Abaikan error per frame */ }
-        ).catch((err) => {
-          toast.error("Gagal memulai kamera. Pastikan izin sudah diberikan.");
-          console.error(err);
-        });
-      }
-    };
-
-    const stopScanner = () => {
-      if (qrScannerRef.current && qrScannerRef.current.isScanning) {
-        qrScannerRef.current.stop().catch(err => console.error("Gagal menghentikan scanner.", err));
-      }
-    };
-    
     if (showScanner) {
       Html5Qrcode.getCameras().then(devices => {
         if (devices && devices.length) {
@@ -104,48 +59,59 @@ const PetugasDashboardPage = () => {
         console.error(err);
       });
     }
+  }, [showScanner]);
 
+  // Effect #2: Hanya untuk mengontrol start dan stop scanner (FIXED)
+  useEffect(() => {
     if (showScanner && selectedCameraId) {
-      startScanner(selectedCameraId);
-    } else {
-      stopScanner();
+      const qrScanner = new Html5Qrcode('qr-reader-container', false);
+      qrScannerRef.current = qrScanner;
+
+      const config: Html5QrcodeCameraScanConfig = { 
+        fps: 10, 
+        qrbox: { width: 250, height: 250 },
+        aspectRatio: 1.0,
+      };
+
+      qrScanner.start(
+        selectedCameraId,
+        config,
+        (decodedText) => {
+          if (!isFetching) {
+            handleScanResult(decodedText);
+          }
+        },
+        (errorMessage) => { /* Abaikan error per frame */ }
+      ).catch((err) => {
+        toast.error("Gagal memulai kamera. Pastikan izin sudah diberikan.");
+      });
+
+      // Fungsi cleanup yang akan berjalan saat modal ditutup atau kamera diganti
+      return () => {
+        if (qrScannerRef.current && qrScannerRef.current.isScanning) {
+          qrScannerRef.current.stop()
+            .catch(err => console.error("Gagal menghentikan scanner dengan bersih.", err));
+        }
+      };
     }
-
-    return () => {
-      stopScanner();
-    };
-
   }, [showScanner, selectedCameraId]);
 
   const handleScanResult = async (mcuResultId: string) => {
     if (user && selectedCheckPoint && !isFetching) {
       setIsFetching(true);
-      setShowScanner(false);
-      toast.info(`QR terdeteksi: ${mcuResultId}. Memproses check-in untuk ${selectedCheckPoint}...`);
+      setShowScanner(false); // Tutup modal setelah scan berhasil
+      toast.info(`QR terdeteksi: ${mcuResultId}. Memproses...`);
       
       try {
-        const formattedCheckPoint = selectedCheckPoint
-          .toLowerCase()
-          .replace(/ /g, "_")
-          .replace(/[()]/g, "");
-
+        const formattedCheckPoint = selectedCheckPoint.toLowerCase().replace(/ /g, "_").replace(/[()]/g, "");
         const response = await fetch('/api/mcu/check-in', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            mcuResultId, 
-            checkPoint: formattedCheckPoint,
-            petugasName: user.fullName // <-- Perubahan ada di sini
-          }),
+          body: JSON.stringify({ mcuResultId, checkPoint: formattedCheckPoint, petugasName: user.fullName }),
         });
-        
         const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.message || "Gagal melakukan check-in.");
-        }
-        
-        toast.success(data.message); // Pesan sukses dari API
-
+        if (!response.ok) throw new Error(data.message);
+        toast.success(data.message);
       } catch (err: any) {
         toast.error(`Gagal: ${err.message}`);
       } finally {
@@ -215,9 +181,7 @@ const PetugasDashboardPage = () => {
                   </SelectTrigger>
                   <SelectContent>
                     {checkPoints.map(point => (
-                      <SelectItem key={point} value={point} className="text-base md:text-lg py-2">
-                        {point}
-                      </SelectItem>
+                      <SelectItem key={point} value={point} className="text-base md:text-lg py-2">{point}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -228,15 +192,11 @@ const PetugasDashboardPage = () => {
                   <h3 className="text-lg md:text-xl font-semibold text-slate-800">Langkah 2: Scan QR Pasien</h3>
                 </div>
                 <Button 
-                  onClick={() => setShowScanner(true)}
-                  disabled={!selectedCheckPoint}
-                  className="w-full h-16 md:h-20 text-xl md:text-2xl font-bold rounded-xl shadow-lg transition-all duration-300 transform 
-                             disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed
-                             enabled:bg-green-500 enabled:hover:bg-green-600 enabled:shadow-green-500/50 enabled:hover:scale-105
-                             flex items-center gap-4"
+                  onClick={() => setShowScanner(true)} 
+                  disabled={!selectedCheckPoint} 
+                  className="w-full h-16 md:h-20 text-xl md:text-2xl font-bold rounded-xl shadow-lg transition-all duration-300 transform disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed enabled:bg-green-500 enabled:hover:bg-green-600 enabled:shadow-green-500/50 enabled:hover:scale-105 flex items-center gap-4"
                 >
-                  {selectedCheckPoint ? ( <><ScanLine size={32} /><span>Mulai Scan</span></> ) 
-                                     : ( <><Lock size={28} /><span>Pilih Pos Dulu</span></> )}
+                  {selectedCheckPoint ? ( <><ScanLine size={32} /><span>Mulai Scan</span></> ) : ( <><Lock size={28} /><span>Pilih Pos Dulu</span></> )}
                 </Button>
               </div>
             </CardContent>
@@ -247,9 +207,7 @@ const PetugasDashboardPage = () => {
           <div className="fixed inset-0 bg-black bg-opacity-90 flex flex-col items-center justify-center z-50 p-4">
             <div className="relative bg-black border-4 border-slate-700 p-2 rounded-2xl shadow-2xl w-full max-w-md">
               <div className="absolute top-4 right-4 z-10">
-                <Button onClick={() => setShowScanner(false)} variant="destructive" size="icon" className="rounded-full h-10 w-10">
-                  <X size={24} />
-                </Button>
+                <Button onClick={() => setShowScanner(false)} variant="destructive" size="icon" className="rounded-full h-10 w-10"><X size={24} /></Button>
               </div>
               <div className="p-4 md:p-6 bg-slate-800 rounded-t-lg text-white text-center">
                 <p className="text-sm text-slate-400">Scan untuk Pos</p>
@@ -257,19 +215,12 @@ const PetugasDashboardPage = () => {
               </div>
               <div className="p-4 bg-slate-900 space-y-3">
                 <div className="flex items-center gap-2 text-white">
-                  <Video size={16} />
-                  <label className="text-sm font-medium">Pilih Kamera</label>
+                  <Video size={16} /><label className="text-sm font-medium">Pilih Kamera</label>
                 </div>
                 <Select onValueChange={setSelectedCameraId} value={selectedCameraId}>
-                  <SelectTrigger className="w-full bg-slate-700 border-slate-600 text-white">
-                    <SelectValue placeholder="Memilih kamera..." />
-                  </SelectTrigger>
+                  <SelectTrigger className="w-full bg-slate-700 border-slate-600 text-white"><SelectValue placeholder="Memilih kamera..." /></SelectTrigger>
                   <SelectContent>
-                    {cameras.map(camera => (
-                      <SelectItem key={camera.id} value={camera.id}>
-                        {camera.label}
-                      </SelectItem>
-                    ))}
+                    {cameras.map(camera => (<SelectItem key={camera.id} value={camera.id}>{camera.label}</SelectItem>))}
                   </SelectContent>
                 </Select>
               </div>
