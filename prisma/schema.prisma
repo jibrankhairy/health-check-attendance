@@ -64,6 +64,11 @@ model McuResult {
   patient   Patient @relation(fields: [patientId], references: [id])
   patientId Int
 
+  healthHistoryAnswers  Json?
+  dassTestAnswers       Json?
+  fasTestAnswers        Json?
+  formSubmittedAt       DateTime?
+
   // --- Pemeriksaan Fisik ---
   beratBadan          Float?
   tinggiBadan         Float?

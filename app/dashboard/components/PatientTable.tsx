@@ -56,7 +56,7 @@ type PatientData = {
   email?: string;
   dob: string;
   age: number;
-  gender: "LAKI-LAKI" | "PEREMPUAN";
+  gender: "Laki- Laki" | "Perempuan";
   department: string;
   mcuPackage: string[];
   qrCode: string;
@@ -172,9 +172,9 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
               "NIK",
               "Nama Pegawai",
               "Email",
+              "Jenis Kelamin",
               "Tanggal Lahir",
               "Bagian / Departemen",
-              "Jenis Kelamin",
             ],
             raw: false,
             dateNF: "yyyy-mm-dd",
