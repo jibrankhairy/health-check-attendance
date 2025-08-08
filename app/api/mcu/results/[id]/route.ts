@@ -1,13 +1,17 @@
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params; // <— wajib di-await di Next 15
+function getIdFromRequest(req: NextRequest) {
+  // /api/patients/123 -> "123"
+  const parts = req.nextUrl.pathname.split("/");
+  return parts[parts.length - 1]!;
+}
+
+export async function GET(request: NextRequest) {
+  const id = getIdFromRequest(request);
 
   try {
     const mcuResult = await prisma.mcuResult.findUnique({
@@ -33,11 +37,9 @@ export async function GET(
   }
 }
 
-export async function PUT(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params; // <— sama, wajib di-await
+export async function PUT(request: NextRequest) {
+  const id = getIdFromRequest(request);
+
   try {
     const body = await request.json();
 
@@ -54,13 +56,13 @@ export async function PUT(
         },
       });
       return NextResponse.json(updatedResult);
-    } else {
-      const updatedMcuResult = await prisma.mcuResult.update({
-        where: { id },
-        data: body,
-      });
-      return NextResponse.json(updatedMcuResult);
     }
+
+    const updatedMcuResult = await prisma.mcuResult.update({
+      where: { id },
+      data: body,
+    });
+    return NextResponse.json(updatedMcuResult);
   } catch (error) {
     console.error("Update MCU Result Error:", error);
     return NextResponse.json(
