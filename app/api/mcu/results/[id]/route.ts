@@ -1,14 +1,15 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server"; // PERUBAHAN 1: Kembalikan ke NextRequest
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  // PERUBAHAN 2: Gunakan 'context' sebagai parameter untuk keamanan tipe data
+  context: { params: { id: string } }
 ) {
   try {
-    const { id } = params;
+    const { id } = context.params; // Ambil 'id' dari context.params
 
     const mcuResult = await prisma.mcuResult.findUnique({
       where: { id },
@@ -39,10 +40,11 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  // PERUBAHAN 3: Samakan juga di fungsi PUT
+  context: { params: { id: string } }
 ) {
   try {
-    const { id } = params;
+    const { id } = context.params;
     const body = await request.json();
 
     if (body.formAnswers) {
