@@ -44,6 +44,7 @@ model Patient {
   email       String?
   dob         DateTime
   age         Int
+  gender      String
   department  String
   qrCode      String      @unique
   mcuPackage  Json

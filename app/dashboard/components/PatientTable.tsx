@@ -56,6 +56,7 @@ type PatientData = {
   email?: string;
   dob: string;
   age: number;
+  gender: "LAKI-LAKI" | "PEREMPUAN";
   department: string;
   mcuPackage: string[];
   qrCode: string;
@@ -173,6 +174,7 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
               "Email",
               "Tanggal Lahir",
               "Bagian / Departemen",
+              "Jenis Kelamin",
             ],
             raw: false,
             dateNF: "yyyy-mm-dd",
@@ -194,6 +196,7 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
             email: row["Email"] || null,
             dob: row["Tanggal Lahir"],
             department: String(row["Bagian / Departemen"] || "N/A"),
+            gender: String(row["Jenis Kelamin"]),
           };
         });
 

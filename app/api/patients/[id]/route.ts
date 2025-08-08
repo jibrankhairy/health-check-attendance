@@ -15,6 +15,7 @@ const updatePatientSchema = z.object({
     .string()
     .refine((val) => !isNaN(Date.parse(val)), "Tanggal lahir tidak valid"),
   age: z.coerce.number().min(0, "Umur harus diisi"),
+  gender: z.string().min(1, "Jenis kelamin harus diisi"),
   department: z.string().min(1, "Departemen harus diisi"),
   mcuPackage: z.array(z.string()).min(1, "Pilih minimal satu paket MCU"),
 });
@@ -75,7 +76,7 @@ export async function PUT(
       );
     }
 
-    const { fullName, email, dob, age, department, mcuPackage } =
+    const { fullName, email, dob, age, gender, department, mcuPackage } =
       validation.data;
 
     const updatedPatient = await prisma.patient.update({
@@ -85,6 +86,7 @@ export async function PUT(
         email: email || null,
         dob: new Date(dob),
         age,
+        gender,
         department,
         mcuPackage,
       },

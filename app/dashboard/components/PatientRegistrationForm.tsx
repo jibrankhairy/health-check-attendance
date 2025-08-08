@@ -20,6 +20,13 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { DialogFooter } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const mcuItems = [
   { id: "pemeriksaan_fisik", label: "Pemeriksaan Fisik" },
@@ -34,8 +41,8 @@ const mcuItems = [
   { id: "treadmill", label: "Treadmill" },
   { id: "audiometri", label: "Audiometri" },
   { id: "spirometri", label: "Spirometri" },
-  { id: "usg_mammae", label: "USG Mammae" },
   { id: "usg_abdomen", label: "USG Abdomen" },
+  { id: "usg_mammae", label: "USG Mammae" },
 ];
 
 const formSchema = z.object({
@@ -50,6 +57,7 @@ const formSchema = z.object({
     .string()
     .refine((val) => val.length > 0, { message: "Tanggal lahir harus diisi." }),
   age: z.coerce.number().min(0, { message: "Umur harus diisi." }),
+  gender: z.string().min(1, { message: "Jenis kelamin harus diisi." }),
   department: z.string().min(1, { message: "Departemen harus diisi." }),
   mcuPackage: z
     .array(z.string())
@@ -81,6 +89,7 @@ export const PatientRegistrationForm = ({
       email: "",
       dob: "",
       age: 0,
+      gender: "",
       department: "",
       mcuPackage: [],
     },
@@ -209,7 +218,7 @@ export const PatientRegistrationForm = ({
             </FormItem>
           )}
         />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="dob"
@@ -237,6 +246,33 @@ export const PatientRegistrationForm = ({
                     className="bg-gray-100"
                   />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="gender"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Jenis Kelamin</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                  value={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih jenis kelamin" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="Laki-laki">Laki-laki</SelectItem>
+                    <SelectItem value="Perempuan">Perempuan</SelectItem>
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
@@ -277,7 +313,7 @@ export const PatientRegistrationForm = ({
                   onCheckedChange={(checked) => {
                     form.setValue(
                       "mcuPackage",
-                      checked ? mcuItems.map((item) => item.label) : []
+                      checked ? mcuItems.map((item) => item.id) : []
                     );
                   }}
                   checked={form.watch("mcuPackage").length === mcuItems.length}
@@ -302,16 +338,16 @@ export const PatientRegistrationForm = ({
                       >
                         <FormControl>
                           <Checkbox
-                            checked={field.value?.includes(item.label)}
+                            checked={field.value?.includes(item.id)}
                             onCheckedChange={(checked) => {
                               return checked
                                 ? field.onChange([
                                     ...(field.value || []),
-                                    item.label,
+                                    item.id,
                                   ])
                                 : field.onChange(
                                     (field.value || []).filter(
-                                      (value: string) => value !== item.label
+                                      (value: string) => value !== item.id
                                     )
                                   );
                             }}
