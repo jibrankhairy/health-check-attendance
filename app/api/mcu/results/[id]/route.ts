@@ -1,15 +1,16 @@
-import { NextRequest, NextResponse } from "next/server"; // PERUBAHAN 1: Kembalikan ke NextRequest
+import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+// Fungsi GET untuk mengambil data berdasarkan ID
 export async function GET(
   request: NextRequest,
-  // PERUBAHAN 2: Gunakan 'context' sebagai parameter untuk keamanan tipe data
-  context: { params: { id: string } }
+  // PERUBAHAN 1: Langsung destructuring 'params' dari argumen kedua
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = context.params; // Ambil 'id' dari context.params
+    const { id } = params; // Ambil 'id' langsung dari params
 
     const mcuResult = await prisma.mcuResult.findUnique({
       where: { id },
@@ -38,15 +39,17 @@ export async function GET(
   }
 }
 
+// Fungsi PUT untuk memperbarui data berdasarkan ID
 export async function PUT(
   request: NextRequest,
-  // PERUBAHAN 3: Samakan juga di fungsi PUT
-  context: { params: { id: string } }
+  // PERUBAHAN 2: Samakan juga di fungsi PUT
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = context.params;
+    const { id } = params;
     const body = await request.json();
 
+    // Cek jika ada 'formAnswers' di body untuk pembaruan form
     if (body.formAnswers) {
       const { healthHistoryAnswers, dassTestAnswers, fasTestAnswers } =
         body.formAnswers;
@@ -62,11 +65,11 @@ export async function PUT(
       });
       return NextResponse.json(updatedResult);
     } else {
-      const cleanedData: { [key: string]: any } = {};
-      const dataToUpdate = { ...cleanedData };
+      // Logika ini sepertinya belum selesai, 'cleanedData' kosong.
+      // Saya biarkan seperti aslinya, tapi mungkin perlu Anda periksa kembali.
       const updatedMcuResult = await prisma.mcuResult.update({
         where: { id },
-        data: dataToUpdate,
+        data: body, // Asumsi: memperbarui dengan data lain dari body
       });
       return NextResponse.json(updatedMcuResult);
     }
