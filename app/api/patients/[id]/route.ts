@@ -20,23 +20,21 @@ const updatePatientSchema = z.object({
   mcuPackage: z.array(z.string()).min(1, "Pilih minimal satu paket MCU"),
 });
 
+function parseNumericId(idStr: string) {
+  const id = Number(idStr);
+  if (Number.isNaN(id)) throw new Error("ID Pasien tidak valid");
+  return id;
+}
+
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> } // <-- Promise
 ) {
   try {
-    const id = parseInt(params.id);
-    if (isNaN(id)) {
-      return NextResponse.json(
-        { message: "ID Pasien tidak valid" },
-        { status: 400 }
-      );
-    }
+    const { id: idStr } = await params; // <-- await
+    const id = parseNumericId(idStr);
 
-    const patient = await prisma.patient.findUnique({
-      where: { id },
-    });
-
+    const patient = await prisma.patient.findUnique({ where: { id } });
     if (!patient) {
       return NextResponse.json(
         { message: "Pasien tidak ditemukan" },
@@ -45,6 +43,12 @@ export async function GET(
     }
     return NextResponse.json(patient);
   } catch (error) {
+    if ((error as Error).message === "ID Pasien tidak valid") {
+      return NextResponse.json(
+        { message: (error as Error).message },
+        { status: 400 }
+      );
+    }
     console.error("GET Patient Error:", error);
     return NextResponse.json(
       { message: "Internal Server Error" },
@@ -55,20 +59,14 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
-    if (isNaN(id)) {
-      return NextResponse.json(
-        { message: "ID Pasien tidak valid" },
-        { status: 400 }
-      );
-    }
+    const { id: idStr } = await params;
+    const id = parseNumericId(idStr);
 
     const body = await request.json();
     const validation = updatePatientSchema.safeParse(body);
-
     if (!validation.success) {
       return NextResponse.json(
         { error: validation.error.flatten().fieldErrors },
@@ -94,6 +92,12 @@ export async function PUT(
 
     return NextResponse.json(updatedPatient);
   } catch (error) {
+    if ((error as Error).message === "ID Pasien tidak valid") {
+      return NextResponse.json(
+        { message: (error as Error).message },
+        { status: 400 }
+      );
+    }
     console.error("PUT Patient Error:", error);
     return NextResponse.json(
       { message: "Internal Server Error" },
@@ -104,25 +108,15 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
-    if (isNaN(id)) {
-      return NextResponse.json(
-        { message: "ID Pasien tidak valid" },
-        { status: 400 }
-      );
-    }
+    const { id: idStr } = await params;
+    const id = parseNumericId(idStr);
 
     await prisma.$transaction(async (tx) => {
-      await tx.mcuResult.deleteMany({
-        where: { patientId: id },
-      });
-
-      await tx.patient.delete({
-        where: { id },
-      });
+      await tx.mcuResult.deleteMany({ where: { patientId: id } });
+      await tx.patient.delete({ where: { id } });
     });
 
     return NextResponse.json(
@@ -130,6 +124,12 @@ export async function DELETE(
       { status: 200 }
     );
   } catch (error) {
+    if ((error as Error).message === "ID Pasien tidak valid") {
+      return NextResponse.json(
+        { message: (error as Error).message },
+        { status: 400 }
+      );
+    }
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === "P2025"
