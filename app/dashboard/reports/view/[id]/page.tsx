@@ -1,14 +1,15 @@
-import React from 'react';
-import { McuReportDocument } from './McuReportDocument'; // Komponen ini akan kita buat selanjutnya
+import React from "react";
+import { McuReportDocument } from "./McuReportDocument";
 
-// Halaman ini akan menerima ID laporan dari URL, misal: /dashboard/reports/view/xyz
-const ViewReportPage = ({ params }: { params: { id:string } }) => {
+export default async function ViewReportPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params; // wajib await
   return (
-    // Kita sengaja tidak pakai layout dashboard standar agar halaman cetaknya bersih
     <div className="bg-gray-100 min-h-screen">
-      <McuReportDocument mcuResultId={params.id} />
+      <McuReportDocument mcuResultId={id} />
     </div>
   );
-};
-
-export default ViewReportPage;
+}
