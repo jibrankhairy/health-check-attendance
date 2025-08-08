@@ -1,23 +1,22 @@
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-function getIdFromRequest(req: NextRequest) {
-  // /api/patients/123 -> "123"
-  const parts = req.nextUrl.pathname.split("/");
-  return parts[parts.length - 1]!;
-}
-
-export async function GET(request: NextRequest) {
-  const id = getIdFromRequest(request);
-
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
+    const { id } = await params;
     const mcuResult = await prisma.mcuResult.findUnique({
       where: { id },
       include: {
-        patient: { include: { company: true } },
+        patient: {
+          include: {
+            company: true,
+          },
+        },
       },
     });
 
@@ -37,15 +36,18 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function PUT(request: NextRequest) {
-  const id = getIdFromRequest(request);
-
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
+    const { id } = params;
     const body = await request.json();
 
     if (body.formAnswers) {
       const { healthHistoryAnswers, dassTestAnswers, fasTestAnswers } =
         body.formAnswers;
+
       const updatedResult = await prisma.mcuResult.update({
         where: { id },
         data: {
@@ -56,13 +58,19 @@ export async function PUT(request: NextRequest) {
         },
       });
       return NextResponse.json(updatedResult);
-    }
+    } else {
+      const cleanedData: { [key: string]: any } = {};
 
-    const updatedMcuResult = await prisma.mcuResult.update({
-      where: { id },
-      data: body,
-    });
-    return NextResponse.json(updatedMcuResult);
+      const dataToUpdate = {
+        ...cleanedData,
+      };
+
+      const updatedMcuResult = await prisma.mcuResult.update({
+        where: { id },
+        data: dataToUpdate,
+      });
+      return NextResponse.json(updatedMcuResult);
+    }
   } catch (error) {
     console.error("Update MCU Result Error:", error);
     return NextResponse.json(
