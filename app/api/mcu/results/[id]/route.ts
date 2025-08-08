@@ -5,18 +5,14 @@ const prisma = new PrismaClient();
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> } // <-- Promise
 ) {
+  const { id } = await params; // <-- wajib await
   try {
-    const { id } = await params;
     const mcuResult = await prisma.mcuResult.findUnique({
       where: { id },
       include: {
-        patient: {
-          include: {
-            company: true,
-          },
-        },
+        patient: { include: { company: true } },
       },
     });
 
@@ -38,16 +34,15 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> } // <-- Promise
 ) {
+  const { id } = await params; // <-- wajib await
   try {
-    const { id } = params;
     const body = await request.json();
 
     if (body.formAnswers) {
       const { healthHistoryAnswers, dassTestAnswers, fasTestAnswers } =
         body.formAnswers;
-
       const updatedResult = await prisma.mcuResult.update({
         where: { id },
         data: {
@@ -58,19 +53,14 @@ export async function PUT(
         },
       });
       return NextResponse.json(updatedResult);
-    } else {
-      const cleanedData: { [key: string]: any } = {};
-
-      const dataToUpdate = {
-        ...cleanedData,
-      };
-
-      const updatedMcuResult = await prisma.mcuResult.update({
-        where: { id },
-        data: dataToUpdate,
-      });
-      return NextResponse.json(updatedMcuResult);
     }
+
+    // contoh update lain
+    const updatedMcuResult = await prisma.mcuResult.update({
+      where: { id },
+      data: body,
+    });
+    return NextResponse.json(updatedMcuResult);
   } catch (error) {
     console.error("Update MCU Result Error:", error);
     return NextResponse.json(
