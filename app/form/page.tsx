@@ -260,7 +260,7 @@ const MultiStepFormPage = () => {
       {step === 0 && (
         <div className="w-full max-w-4xl mb-8 text-center animate-fade-in">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
-            Formulir Pemeriksaan Kesehatan Awal
+            Formulir Riwayat Kesehatan Dan Tes Psikologi
           </h1>
         </div>
       )}

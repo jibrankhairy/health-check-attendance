@@ -99,10 +99,20 @@ export const allDassQuestions = [
 ];
 
 const answerOptions = [
-  { value: "0", label: "Tidak pernah" },
-  { value: "1", label: "Kadang-kadang" },
-  { value: "2", label: "Sering" },
-  { value: "3", label: "Sangat sering" },
+  { value: "0", label: "Tidak berlaku untuk saya sama sekali" },
+  {
+    value: "1",
+    label: "Diterapkan pada saya sampai tingkat tertentu, atau beberapa waktu",
+  },
+  {
+    value: "2",
+    label:
+      "Diterapkan pada saya dalam tingkat yang cukup besar atau sebagian besar waktu",
+  },
+  {
+    value: "3",
+    label: "Berlaku sangat banyak atau sebagian besar waktu bagi saya",
+  },
 ];
 
 const schemaObject = Object.fromEntries(
@@ -113,11 +123,10 @@ const schemaObject = Object.fromEntries(
 );
 const dassFormSchema = z.object(schemaObject);
 
-// --- PERUBAHAN 1: Ekspor tipe jawaban mentah, bukan hasil kalkulasi ---
 export type DassFormValues = z.infer<typeof dassFormSchema>;
 
 type DassFormProps = {
-  onNext: (data: DassFormValues) => void; // Kirim jawaban mentah
+  onNext: (data: DassFormValues) => void;
   onBack: () => void;
   defaultValues: any;
 };
@@ -128,7 +137,6 @@ export const DassForm = ({ onNext, onBack, defaultValues }: DassFormProps) => {
     defaultValues,
   });
 
-  // PERUBAHAN 2: onSubmit sekarang hanya mengirim data mentah
   const onSubmit = (data: DassFormValues) => {
     onNext(data);
   };
@@ -139,10 +147,23 @@ export const DassForm = ({ onNext, onBack, defaultValues }: DassFormProps) => {
         onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-10 animate-fade-in"
       >
-        <p className="text-sm text-gray-600">
-          Pilih salah satu jawaban yang paling sesuai dengan kondisi Anda selama
-          seminggu terakhir.
-        </p>
+        <div>
+          <p className="text-sm text-gray-600">
+            Pilih salah satu jawaban yang paling sesuai dengan kondisi Anda
+            selama seminggu terakhir.
+          </p>
+          <div className="mt-4 text-xs text-gray-500 border rounded-lg p-3 bg-gray-50">
+            <b>Keterangan:</b>
+            <ul className="list-disc list-inside grid grid-cols-2 sm:grid-cols-4 gap-x-4">
+              {answerOptions.map((opt) => (
+                <li key={opt.value}>
+                  <b>{opt.value}</b> = {opt.label}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
         <div className="space-y-8">
           {allDassQuestions.map((q, index) => (
             <FormField
@@ -150,15 +171,17 @@ export const DassForm = ({ onNext, onBack, defaultValues }: DassFormProps) => {
               control={form.control}
               name={q.id as keyof DassFormValues}
               render={({ field }) => (
-                <FormItem className="rounded-lg border p-4 shadow-sm">
-                  <FormLabel className="text-base">
+                // --- PERUBAHAN UTAMA DI SINI ---
+                <FormItem className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-4 shadow-sm">
+                  <FormLabel className="text-base mb-4 sm:mb-0 sm:pr-4">
                     {index + 1}. {q.text}
                   </FormLabel>
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
                       defaultValue={field.value}
-                      className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-2 pt-4"
+                      // Layout dibuat fleksibel dan simetris
+                      className="flex items-center justify-around sm:justify-between w-full sm:w-[240px] flex-shrink-0"
                     >
                       {answerOptions.map((opt) => (
                         <FormItem
@@ -168,19 +191,20 @@ export const DassForm = ({ onNext, onBack, defaultValues }: DassFormProps) => {
                           <FormControl>
                             <RadioGroupItem value={opt.value} />
                           </FormControl>
-                          <FormLabel className="font-normal text-sm">
-                            {opt.label}
+                          <FormLabel className="font-normal">
+                            {opt.value}
                           </FormLabel>
                         </FormItem>
                       ))}
                     </RadioGroup>
                   </FormControl>
-                  <FormMessage className="pt-2" />
+                  <FormMessage className="w-full sm:w-auto text-right mt-2 sm:mt-0" />
                 </FormItem>
               )}
             />
           ))}
         </div>
+
         <CardFooter className="px-0 pt-8 flex justify-between">
           <Button type="button" variant="outline" onClick={onBack}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Kembali
