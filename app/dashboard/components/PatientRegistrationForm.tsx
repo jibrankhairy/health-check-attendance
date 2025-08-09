@@ -56,7 +56,7 @@ const formSchema = z.object({
   dob: z
     .string()
     .refine((val) => val.length > 0, { message: "Tanggal lahir harus diisi." }),
-  age: z.coerce.number().min(0, { message: "Umur harus diisi." }),
+  age: z.number().min(0, "Umur tidak boleh negatif."),
   gender: z.string().min(1, { message: "Jenis kelamin harus diisi." }),
   department: z.string().min(1, { message: "Departemen harus diisi." }),
   mcuPackage: z
