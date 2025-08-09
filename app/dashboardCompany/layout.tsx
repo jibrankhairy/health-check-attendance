@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
-import { Sidebar } from "./components/Sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AuthProvider } from "@/components/context/AuthContext";
+import { Sidebar } from "./components/Sidebar";
 import AuthGuard from "@/components/AuthGuard";
 
 export default function DashboardLayout({
@@ -13,7 +13,7 @@ export default function DashboardLayout({
 }) {
   return (
     <AuthProvider>
-      <AuthGuard allowedRoles={["ADMINISTRASI"]}>
+      <AuthGuard allowedRoles={["HRD"]}>
         <SidebarProvider>
           <div className="flex min-h-screen w-full bg-gray-50 font-sans">
             <Sidebar />

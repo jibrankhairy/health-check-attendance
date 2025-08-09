@@ -3,22 +3,35 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Spinner from "./ui/spinner";
+import { useAuth } from "./context/AuthContext";
 
-export const AuthGuard = ({ children }: { children: React.ReactNode }) => {
+type AuthGuardProps = {
+  children: React.ReactNode;
+  allowedRoles: string[];
+};
+
+export const AuthGuard = ({ children, allowedRoles }: AuthGuardProps) => {
+  const { user } = useAuth();
   const router = useRouter();
-  const [isChecking, setIsChecking] = useState(true);
+  const [isVerified, setIsVerified] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
-
-    if (!token) {
-      router.push("/");
+    if (user) {
+      if (allowedRoles.includes(user.role)) {
+        setIsVerified(true);
+      } else {
+        console.error("Akses ditolak: Role tidak sesuai.");
+        router.push("/");
+      }
     } else {
-      setIsChecking(false);
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        router.push("/");
+      }
     }
-  }, [router]);
+  }, [user, router, allowedRoles]);
 
-  if (isChecking) {
+  if (!isVerified) {
     return (
       <div className="w-screen h-screen flex items-center justify-center">
         <Spinner />
@@ -28,3 +41,5 @@ export const AuthGuard = ({ children }: { children: React.ReactNode }) => {
 
   return <>{children}</>;
 };
+
+export default AuthGuard;

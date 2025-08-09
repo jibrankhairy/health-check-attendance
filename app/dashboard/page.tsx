@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { PatientTable } from "@/components/dashboard/PatientTable";
 import { CompanyTable } from "./components/CompanyTable";
-import { PatientTable } from "./components/PatientTable";
 import { Toaster } from "sonner";
 import { Header } from "./components/Header";
 import { useAuth } from "@/components/context/AuthContext";

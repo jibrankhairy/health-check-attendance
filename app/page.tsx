@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import React, { useState, FormEvent } from "react";
 import { toast } from "sonner";
 
@@ -45,6 +46,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -75,7 +77,16 @@ export default function LoginPage() {
       localStorage.setItem("user", JSON.stringify(data.user));
 
       setTimeout(() => {
-        window.location.href = "/dashboard";
+        const userRole = data.user.role;
+        if (userRole === "ADMINISTRASI") {
+          router.push("/dashboard");
+        } else if (userRole === "HRD") {
+          router.push("/dashboardCompany");
+        } else if (userRole === "PETUGAS") {
+          router.push("/dashboardPetugas");
+        } else {
+          router.push("/");
+        }
       }, 500);
     } catch (err: any) {
       toast.error(err.message);
