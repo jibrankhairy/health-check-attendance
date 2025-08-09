@@ -21,7 +21,15 @@ import { VerificationStep } from "./components/VerificationStep";
 import { ProgressStepper } from "./components/ProgressStepper";
 import { SubmittedStep } from "./components/SubmittedStep";
 
-type AllFormData = Partial<HealthHistoryValues & DassResult & FasFormValues>;
+// =================================================================
+// PERUBAHAN 1: Ubah struktur AllFormData
+// Tiap form punya "slot" datanya sendiri untuk menghindari konflik tipe.
+// =================================================================
+type AllFormData = {
+  healthHistory?: HealthHistoryValues;
+  dass?: DassResult;
+  fas?: FasFormValues; // Akan diisi di langkah terakhir
+};
 
 const MultiStepFormPage = () => {
   const [step, setStep] = useState(0);
@@ -30,6 +38,7 @@ const MultiStepFormPage = () => {
     resultId: "",
   });
 
+  // Gunakan tipe AllFormData yang baru
   const [allFormData, setAllFormData] = useState<AllFormData>({});
 
   const handleVerificationSuccess = (details: {
@@ -40,11 +49,29 @@ const MultiStepFormPage = () => {
     setStep(1);
   };
 
+  // =================================================================
+  // PERUBAHAN 2: Ganti total fungsi handleNextStep
+  // Fungsi ini sekarang lebih pintar, menyimpan data ke slot yang benar.
+  // =================================================================
   const handleNextStep = (
     currentStepData: HealthHistoryValues | DassResult
   ) => {
     setAllFormData((prevData) => {
-      const updatedData = { ...prevData, ...currentStepData };
+      let updatedData: AllFormData;
+
+      // Cek apakah ini data dari Health History (punya properti 'asma')
+      if ("asma" in currentStepData) {
+        updatedData = { ...prevData, healthHistory: currentStepData };
+      }
+      // Cek apakah ini data dari DASS (punya properti skor)
+      else if ("dass_depression_score" in currentStepData) {
+        updatedData = { ...prevData, dass: currentStepData };
+      }
+      // Fallback jika tidak cocok keduanya (seharusnya tidak terjadi)
+      else {
+        updatedData = prevData;
+      }
+
       console.log("Data terkumpul:", updatedData);
       return updatedData;
     });
@@ -55,8 +82,18 @@ const MultiStepFormPage = () => {
     setStep((prev) => prev - 1);
   };
 
+  // =================================================================
+  // PERUBAHAN 3: Ubah cara data digabung di handleFinalSubmit
+  // Gabungkan semua data dari tiap slot menjadi satu objek datar di sini.
+  // =================================================================
   const handleFinalSubmit = async (lastStepData: FasFormValues) => {
-    const finalData = { ...allFormData, ...lastStepData };
+    // Gabungkan semua data dari tiap slot menjadi satu objek
+    const finalData = {
+      ...allFormData.healthHistory,
+      ...allFormData.dass,
+      ...lastStepData,
+    };
+
     const payload = { formAnswers: finalData };
 
     const promise = fetch(`/api/mcu/results/${patientDetails.resultId}`, {
@@ -167,8 +204,6 @@ const MultiStepFormPage = () => {
             <CardContent>{renderStepContent()}</CardContent>
           </Card>
         ) : (
-          // Tampilan tanpa Card besar untuk Verifikasi (step 0) dan Halaman Sukses (step 4)
-          // Ini akan menjaga ukuran Card verifikasi tetap kecil.
           renderStepContent()
         )}
       </div>
