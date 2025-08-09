@@ -28,11 +28,22 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Loader2 } from "lucide-react";
 
+interface Patient {
+  fullName: string;
+  mcuPackage: string[];
+  // bisa tambahkan properti lain dari patient jika ada
+}
+
+interface PatientData {
+  patient: Patient;
+  // bisa tambahkan properti lain dari data mcuResult jika ada
+}
+
 // --- PERUBAHAN BESAR: Skema validasi diperluas untuk semua field dari semua PDF ---
 const formSchema = z.object({
   // Pemeriksaan Fisik
-  beratBadan: z.coerce.number().optional(),
-  tinggiBadan: z.coerce.number().optional(),
+  beratBadan: z.number().optional(),
+  tinggiBadan: z.number().optional(),
   bmi: z.string().optional(),
   lingkarPerut: z.string().optional(),
   tekananDarah: z.string().optional(),
@@ -1531,7 +1542,7 @@ interface McuResultFormProps {
 
 export const McuResultForm = ({ mcuResultId }: McuResultFormProps) => {
   const router = useRouter();
-  const [patientData, setPatientData] = useState<any>(null);
+  const [patientData, setPatientData] = useState<PatientData | null>(null);
   const [loading, setLoading] = useState(true);
 
   const form = useForm<FormValues>({
