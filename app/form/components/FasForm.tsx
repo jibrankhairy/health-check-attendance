@@ -59,19 +59,21 @@ const fasFormSchema = z.object(schemaObject);
 export type FasFormValues = z.infer<typeof fasFormSchema>;
 
 type FasFormProps = {
-  onSubmit: (data: FasFormValues) => void;
+  onNext: (data: FasFormValues) => void;
   onBack: () => void;
+  defaultValues: any;
 };
 
-export const FasForm = ({ onSubmit, onBack }: FasFormProps) => {
+export const FasForm = ({ onNext, onBack, defaultValues }: FasFormProps) => {
   const form = useForm<FasFormValues>({
     resolver: zodResolver(fasFormSchema),
+    defaultValues,
   });
 
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(onSubmit)}
+        onSubmit={form.handleSubmit(onNext)}
         className="space-y-10 animate-fade-in"
       >
         <p className="text-sm text-gray-600">
@@ -124,12 +126,10 @@ export const FasForm = ({ onSubmit, onBack }: FasFormProps) => {
           </Button>
           <Button
             type="submit"
-            className="bg-green-600 hover:bg-green-600/90 text-white"
+            className="bg-[#01449D] hover:bg-[#01449D]/90 text-white"
             disabled={form.formState.isSubmitting}
           >
-            {form.formState.isSubmitting
-              ? "Mengirim..."
-              : "Kirim Semua Jawaban"}
+            Lanjutkan
           </Button>
         </CardFooter>
       </form>

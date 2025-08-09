@@ -15,20 +15,81 @@ import {
   HealthHistoryForm,
   HealthHistoryValues,
 } from "./components/HealthHistoryForm";
-import { DassForm, DassResult } from "./components/DassForm";
+
+import {
+  DassForm,
+  DassFormValues,
+  allDassQuestions,
+} from "./components/DassForm";
+
 import { FasForm, FasFormValues } from "./components/FasForm";
 import { VerificationStep } from "./components/VerificationStep";
 import { ProgressStepper } from "./components/ProgressStepper";
 import { SubmittedStep } from "./components/SubmittedStep";
+import { ConsentForm } from "./components/ConsentForm";
 
-// =================================================================
-// PERUBAHAN 1: Ubah struktur AllFormData
-// Tiap form punya "slot" datanya sendiri untuk menghindari konflik tipe.
-// =================================================================
+type DassResult = {
+  dass_depression_score: number;
+  dass_depression_level: string;
+  dass_anxiety_score: number;
+  dass_anxiety_level: string;
+  dass_stress_score: number;
+  dass_stress_level: string;
+};
+
 type AllFormData = {
-  healthHistory?: HealthHistoryValues;
-  dass?: DassResult;
-  fas?: FasFormValues; // Akan diisi di langkah terakhir
+  healthHistory?: Partial<HealthHistoryValues>;
+  dass?: Partial<DassFormValues>;
+  fas?: Partial<FasFormValues>;
+};
+
+const calculateDassScores = (data: Partial<DassFormValues>): DassResult => {
+  const getLevel = (score: number, type: "d" | "a" | "s"): string => {
+    if (type === "d") {
+      if (score <= 9) return "Normal";
+      if (score <= 13) return "Ringan";
+      if (score <= 20) return "Sedang";
+      if (score <= 27) return "Parah";
+      return "Sangat Parah";
+    }
+    if (type === "a") {
+      if (score <= 7) return "Normal";
+      if (score <= 9) return "Ringan";
+      if (score <= 14) return "Sedang";
+      if (score <= 19) return "Parah";
+      return "Sangat Parah";
+    }
+    if (score <= 14) return "Normal";
+    if (score <= 18) return "Ringan";
+    if (score <= 25) return "Sedang";
+    if (score <= 33) return "Parah";
+    return "Sangat Parah";
+  };
+
+  let depressionSum = 0;
+  let anxietySum = 0;
+  let stressSum = 0;
+
+  allDassQuestions.forEach((q) => {
+    const raw = data[q.id as keyof DassFormValues];
+    const score = parseInt((raw as string) ?? "0", 10);
+    if (q.scale === "d") depressionSum += score;
+    else if (q.scale === "a") anxietySum += score;
+    else if (q.scale === "s") stressSum += score;
+  });
+
+  const depressionScore = depressionSum * 2;
+  const anxietyScore = anxietySum * 2;
+  const stressScore = stressSum * 2;
+
+  return {
+    dass_depression_score: depressionScore,
+    dass_depression_level: getLevel(depressionScore, "d"),
+    dass_anxiety_score: anxietyScore,
+    dass_anxiety_level: getLevel(anxietyScore, "a"),
+    dass_stress_score: stressScore,
+    dass_stress_level: getLevel(stressScore, "s"),
+  };
 };
 
 const MultiStepFormPage = () => {
@@ -37,8 +98,6 @@ const MultiStepFormPage = () => {
     name: "",
     resultId: "",
   });
-
-  // Gunakan tipe AllFormData yang baru
   const [allFormData, setAllFormData] = useState<AllFormData>({});
 
   const handleVerificationSuccess = (details: {
@@ -49,52 +108,42 @@ const MultiStepFormPage = () => {
     setStep(1);
   };
 
-  // =================================================================
-  // PERUBAHAN 2: Ganti total fungsi handleNextStep
-  // Fungsi ini sekarang lebih pintar, menyimpan data ke slot yang benar.
-  // =================================================================
-  const handleNextStep = (
-    currentStepData: HealthHistoryValues | DassResult
-  ) => {
-    setAllFormData((prevData) => {
-      let updatedData: AllFormData;
-
-      // Cek apakah ini data dari Health History (punya properti 'asma')
-      if ("asma" in currentStepData) {
-        updatedData = { ...prevData, healthHistory: currentStepData };
-      }
-      // Cek apakah ini data dari DASS (punya properti skor)
-      else if ("dass_depression_score" in currentStepData) {
-        updatedData = { ...prevData, dass: currentStepData };
-      }
-      // Fallback jika tidak cocok keduanya (seharusnya tidak terjadi)
-      else {
-        updatedData = prevData;
-      }
-
-      console.log("Data terkumpul:", updatedData);
-      return updatedData;
-    });
+  const handleHealthNext = (data: HealthHistoryValues) => {
+    setAllFormData((prev) => ({ ...prev, healthHistory: data }));
     setStep((prev) => prev + 1);
   };
 
-  const handlePrevStep = () => {
-    setStep((prev) => prev - 1);
+  const handleDassNext = (data: DassFormValues) => {
+    setAllFormData((prev) => ({ ...prev, dass: data }));
+    setStep((prev) => prev + 1);
   };
 
-  // =================================================================
-  // PERUBAHAN 3: Ubah cara data digabung di handleFinalSubmit
-  // Gabungkan semua data dari tiap slot menjadi satu objek datar di sini.
-  // =================================================================
-  const handleFinalSubmit = async (lastStepData: FasFormValues) => {
-    // Gabungkan semua data dari tiap slot menjadi satu objek
-    const finalData = {
-      ...allFormData.healthHistory,
-      ...allFormData.dass,
-      ...lastStepData,
+  const handleFasNext = (data: FasFormValues) => {
+    setAllFormData((prev) => ({ ...prev, fas: data }));
+    setStep((prev) => prev + 1);
+  };
+
+  const handlePrevStep = () => setStep((prev) => prev - 1);
+
+  const handleFinalSubmit = async () => {
+    const dassResults = allFormData.dass
+      ? calculateDassScores(allFormData.dass)
+      : undefined;
+
+    const payload = {
+      formAnswers: {
+        healthHistoryAnswers: allFormData.healthHistory ?? null,
+        dassTestAnswers: allFormData.dass
+          ? {
+              raw: allFormData.dass,
+              result: dassResults!,
+            }
+          : null,
+        fasTestAnswers: allFormData.fas ?? null,
+      },
     };
 
-    const payload = { formAnswers: finalData };
+    console.log("DATA FINAL SIAP DIKIRIM:", payload);
 
     const promise = fetch(`/api/mcu/results/${patientDetails.resultId}`, {
       method: "PUT",
@@ -111,7 +160,7 @@ const MultiStepFormPage = () => {
     toast.promise(promise, {
       loading: "Mengirim semua jawaban...",
       success: () => {
-        setStep(4);
+        setStep(5);
         return "Semua jawaban berhasil dikirim!";
       },
       error: (err) => err.message || "Terjadi kesalahan.",
@@ -122,19 +171,44 @@ const MultiStepFormPage = () => {
     switch (step) {
       case 0:
         return <VerificationStep onVerified={handleVerificationSuccess} />;
+
       case 1:
         return (
           <HealthHistoryForm
-            onNext={handleNextStep}
+            onNext={handleHealthNext}
             onBack={() => setStep(0)}
+            defaultValues={
+              (allFormData.healthHistory ?? {}) as Partial<HealthHistoryValues>
+            }
           />
         );
+
       case 2:
-        return <DassForm onNext={handleNextStep} onBack={handlePrevStep} />;
+        return (
+          <DassForm
+            onNext={handleDassNext}
+            onBack={handlePrevStep}
+            defaultValues={(allFormData.dass ?? {}) as Partial<DassFormValues>}
+          />
+        );
+
       case 3:
-        return <FasForm onSubmit={handleFinalSubmit} onBack={handlePrevStep} />;
+        return (
+          <FasForm
+            onNext={handleFasNext}
+            onBack={handlePrevStep}
+            defaultValues={(allFormData.fas ?? {}) as Partial<FasFormValues>}
+          />
+        );
+
       case 4:
+        return (
+          <ConsentForm onSubmit={handleFinalSubmit} onBack={handlePrevStep} />
+        );
+
+      case 5:
         return <SubmittedStep patientName={patientDetails.name} />;
+
       default:
         return <VerificationStep onVerified={handleVerificationSuccess} />;
     }
@@ -142,14 +216,18 @@ const MultiStepFormPage = () => {
 
   const getStepTitle = () => {
     switch (step) {
+      case 0:
+        return "Verifikasi ID Pasien";
       case 1:
         return "Kuesioner Riwayat Kesehatan";
       case 2:
         return "Kuesioner Tes Psikologi (DASS-21)";
       case 3:
         return "Kuesioner Tes Psikologi (FAS)";
+      case 4:
+        return "Pernyataan Persetujuan";
       default:
-        return ""; // Kosongkan untuk step 0
+        return "";
     }
   };
 
@@ -176,6 +254,7 @@ const MultiStepFormPage = () => {
           }
         }
       `}</style>
+
       <Toaster richColors position="top-center" />
 
       {step === 0 && (
@@ -186,20 +265,22 @@ const MultiStepFormPage = () => {
         </div>
       )}
 
-      {step < 4 && <ProgressStepper currentStep={step} />}
+      {step < 5 && <ProgressStepper currentStep={step} />}
 
       <div className="w-full flex justify-center mt-8">
-        {step > 0 && step < 4 ? (
+        {step > 0 && step < 5 ? (
           <Card className="w-full max-w-4xl">
             <CardHeader>
               <CardTitle className="text-xl sm:text-2xl">
                 {getStepTitle()}
               </CardTitle>
-              <CardDescription>
-                Selamat datang,{" "}
-                <span className="font-bold">{patientDetails.name}</span>. Mohon
-                isi semua pertanyaan di bawah ini.
-              </CardDescription>
+              {step < 4 && (
+                <CardDescription>
+                  Selamat datang,{" "}
+                  <span className="font-bold">{patientDetails.name}</span>.
+                  Mohon isi semua pertanyaan di bawah ini.
+                </CardDescription>
+              )}
             </CardHeader>
             <CardContent>{renderStepContent()}</CardContent>
           </Card>
