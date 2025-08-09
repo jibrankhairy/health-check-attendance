@@ -9,10 +9,12 @@ import {
   Trash2,
   Loader2,
   Upload,
+  QrCode,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -90,6 +92,11 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
   const [deletingPatient, setDeletingPatient] = useState<PatientData | null>(
     null
   );
+
+  const [selectedPatients, setSelectedPatients] = useState<Set<number>>(
+    new Set()
+  );
+  const [isDownloadingAllQrs, setIsDownloadingAllQrs] = useState(false);
 
   const fetchPatients = useCallback(async () => {
     if (!companyId) return;
@@ -231,6 +238,99 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
     reader.readAsArrayBuffer(file);
   };
 
+  const handleDownloadQr = async (
+    qrCode: string,
+    patientName: string,
+    isBulk: boolean = false
+  ) => {
+    const toastId = !isBulk ? toast.loading("Mengunduh QR Code...") : null;
+    try {
+      const response = await fetch(
+        `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${qrCode}`
+      );
+      if (!response.ok) throw new Error("Gagal mengunduh gambar QR Code.");
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `QR_${patientName.replace(/\s/g, "_")}.png`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+
+      if (toastId) {
+        toast.success("QR Code berhasil diunduh.", { id: toastId });
+      }
+    } catch (error) {
+      console.error("Download QR error:", error);
+      if (toastId) {
+        toast.error("Gagal mengunduh QR Code.", { id: toastId });
+      } else {
+        throw error;
+      }
+    }
+  };
+
+  const handleSelectPatient = (patientId: number, checked: boolean) => {
+    setSelectedPatients((prev) => {
+      const newSet = new Set(prev);
+      if (checked) {
+        newSet.add(patientId);
+      } else {
+        newSet.delete(patientId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAllOnPage = (checked: boolean) => {
+    const pagePatientIds = currentRows.map((p) => p.id);
+    setSelectedPatients((prev) => {
+      const newSet = new Set(prev);
+      if (checked) {
+        pagePatientIds.forEach((id) => newSet.add(id));
+      } else {
+        pagePatientIds.forEach((id) => newSet.delete(id));
+      }
+      return newSet;
+    });
+  };
+
+  const handleDownloadAllSelectedQrs = async () => {
+    if (selectedPatients.size === 0) {
+      return;
+    }
+    setIsDownloadingAllQrs(true);
+    const toastId = toast.loading(
+      `Mengunduh ${selectedPatients.size} QR code...`
+    );
+
+    try {
+      const patientsToDownload = patients.filter((p) =>
+        selectedPatients.has(p.id)
+      );
+
+      const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
+
+      for (const patient of patientsToDownload) {
+        await handleDownloadQr(patient.qrCode, patient.fullName, true);
+        await delay(300);
+      }
+
+      toast.success(`${selectedPatients.size} QR Code berhasil diunduh.`, {
+        id: toastId,
+      });
+    } catch (error) {
+      console.error("Bulk download QR error:", error);
+      toast.error("Gagal mengunduh semua QR Code.", { id: toastId });
+    } finally {
+      setIsDownloadingAllQrs(false);
+      setSelectedPatients(new Set());
+    }
+  };
+
   const filteredPatients = patients.filter(
     (patient) =>
       patient.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -242,6 +342,10 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
   const currentRows = filteredPatients.slice(indexOfFirstRow, indexOfLastRow);
   const totalPages = Math.ceil(filteredPatients.length / rowsPerPage);
+
+  const areAllOnPageSelected =
+    currentRows.length > 0 &&
+    currentRows.every((p) => selectedPatients.has(p.id));
 
   return (
     <>
@@ -270,6 +374,20 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
               className="hidden"
               accept=".xlsx, .xls"
             />
+            <Button
+              onClick={handleDownloadAllSelectedQrs}
+              disabled={isDownloadingAllQrs || selectedPatients.size === 0}
+              className="bg-[#01449D] hover:bg-[#01449D]/90 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isDownloadingAllQrs ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <QrCode className="mr-2 h-4 w-4" />
+              )}
+              Unduh QR{" "}
+              {selectedPatients.size > 0 && `(${selectedPatients.size})`}
+            </Button>
+
             <Button
               variant="outline"
               onClick={handleImportClick}
@@ -336,12 +454,30 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                 <TableHead>Tgl. Registrasi</TableHead>
                 <TableHead className="text-center">QR Code</TableHead>
                 <TableHead className="text-center">Aksi</TableHead>
+                <TableHead className="w-auto text-center">
+                  <div className="flex items-center justify-center gap-2">
+                    <Checkbox
+                      id="selectAll"
+                      checked={areAllOnPageSelected}
+                      onCheckedChange={(checked) =>
+                        handleSelectAllOnPage(checked as boolean)
+                      }
+                      aria-label="Pilih semua baris di halaman ini"
+                    />
+                    <label
+                      htmlFor="selectAll"
+                      className="text-sm font-medium cursor-pointer"
+                    >
+                      Unduh QR
+                    </label>
+                  </div>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center">
+                  <TableCell colSpan={8} className="h-24 text-center">
                     <div className="flex justify-center items-center">
                       <Loader2 className="mr-2 h-6 w-6 animate-spin" />
                       Memuat data pasien...
@@ -350,7 +486,10 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                 </TableRow>
               ) : currentRows.length > 0 ? (
                 currentRows.map((patient, index) => (
-                  <TableRow key={patient.id}>
+                  <TableRow
+                    key={patient.id}
+                    data-state={selectedPatients.has(patient.id) && "selected"}
+                  >
                     <TableCell className="font-medium text-center">
                       {indexOfFirstRow + index + 1}
                     </TableCell>
@@ -373,7 +512,7 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                     </TableCell>
                     <TableCell>
                       <TooltipProvider>
-                        <div className="flex items-center justify-center gap-2">
+                        <div className="flex items-center justify-center gap-1">
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button
@@ -422,6 +561,26 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                               <Button
                                 variant="ghost"
                                 size="icon"
+                                className="hover:text-green-500"
+                                onClick={() =>
+                                  handleDownloadQr(
+                                    patient.qrCode,
+                                    patient.fullName
+                                  )
+                                }
+                              >
+                                <QrCode className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Unduh QR Code</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
                                 className="hover:text-red-500"
                                 onClick={() => setDeletingPatient(patient)}
                               >
@@ -435,11 +594,22 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                         </div>
                       </TooltipProvider>
                     </TableCell>
+                    <TableCell className="text-center">
+                      <Checkbox
+                        checked={selectedPatients.has(patient.id)}
+                        onCheckedChange={(checked) =>
+                          handleSelectPatient(patient.id, checked as boolean)
+                        }
+                        aria-label={`Pilih baris ${
+                          indexOfFirstRow + index + 1
+                        }`}
+                      />
+                    </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center">
+                  <TableCell colSpan={8} className="h-24 text-center">
                     {searchQuery
                       ? "Pasien tidak ditemukan."
                       : "Belum ada data pasien untuk perusahaan ini."}
