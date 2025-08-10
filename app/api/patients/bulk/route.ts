@@ -64,16 +64,8 @@ export async function POST(request: Request) {
       const dob = new Date(patientData.dob);
       if (isNaN(dob.getTime())) continue;
 
-      // Cek duplikasi berdasarkan NIK (yang kita simpan di qrCode sebelumnya)
-      // Kita akan ganti ini, tapi untuk sementara biarkan untuk mencegah duplikat
-      const existingPatientByNik = await prisma.patient.findFirst({
-        where: { patientId: patientData.nik },
-      });
-      if (existingPatientByNik) continue;
-
-      // --- LOGIKA BARU YANG DISINKRONKAN ---
       const result = await prisma.$transaction(async (tx) => {
-        const age = calculateAge(dob);
+        const age = patientData.age || calculateAge(dob);
         const newPatientId = await generateUniquePatientId();
 
         const newPatient = await tx.patient.create({
@@ -84,9 +76,12 @@ export async function POST(request: Request) {
             dob: dob,
             age: age,
             gender: patientData.gender || "N/A",
-            department: patientData.department || "N/A",
-            qrCode: "temp", // Nilai sementara
-            mcuPackage: [], // <-- FIX: Gunakan array kosong
+            position: patientData.position || "N/A",
+            division: patientData.division || "N/A",
+            status: patientData.status || "N/A",
+            location: patientData.location || "N/A",
+            mcuPackage: patientData.mcuPackage || [],
+            qrCode: "temp",
             companyId: companyId,
           },
         });
@@ -100,7 +95,7 @@ export async function POST(request: Request) {
         const updatedPatient = await tx.patient.update({
           where: { id: newPatient.id },
           data: {
-            qrCode: newMcuResult.id, // Gunakan ID McuResult sebagai QR Code
+            qrCode: newMcuResult.id,
           },
         });
 
@@ -111,7 +106,6 @@ export async function POST(request: Request) {
       createdCount++;
     }
 
-    // Kirim email untuk semua pasien yang berhasil dibuat
     for (const patient of createdPatients) {
       if (patient.email) {
         try {
@@ -125,7 +119,13 @@ export async function POST(request: Request) {
             from: process.env.EMAIL_FROM,
             to: patient.email,
             subject: `QR Code Pendaftaran MCU untuk ${patient.fullName}`,
-            html: `<p>Pendaftaran Anda berhasil. Tunjukkan QR Code ini kepada petugas.</p><br><img src="cid:qrcode"/>`,
+            html: `<p><h1>Pendaftaran MCU Berhasil</h1>
+            <p>Halo <strong>${patient.fullName}</strong>,</p>
+            <p>Pendaftaran Anda untuk Medical Check Up telah berhasil dengan nomor pasien <strong>${patient.patientId}</strong>.</p>
+            <p>Silakan tunjukkan QR Code di bawah ini kepada petugas saat tiba di lokasi.</p>
+            <p>Terima kasih.</p>
+            <br>
+            <img src="cid:qrcode"/>`,
             attachments: [
               {
                 filename: "qrcode.png",
@@ -146,7 +146,9 @@ export async function POST(request: Request) {
 
     if (createdCount === 0) {
       return NextResponse.json(
-        { message: `Tidak ada pasien baru yang ditambahkan.` },
+        {
+          message: `Tidak ada pasien baru yang ditambahkan. Mungkin data sudah ada.`,
+        },
         { status: 200 }
       );
     }

@@ -45,7 +45,10 @@ model Patient {
   dob         DateTime
   age         Int
   gender      String
-  department  String
+  position    String
+  division    String
+  status      String
+  location    String
   qrCode      String      @unique
   mcuPackage  Json
   createdAt   DateTime    @default(now())

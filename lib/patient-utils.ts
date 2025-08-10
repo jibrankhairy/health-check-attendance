@@ -1,13 +1,7 @@
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
-import { PatientData } from "@/components/dashboard/PatientTable";
+import { type PatientData } from "@/components/dashboard/PatientTable";
 
-/**
- * Memproses file Excel yang diimpor untuk membuat pasien secara massal.
- * @param file - File Excel (dari input).
- * @param companyId - ID perusahaan.
- * @param onComplete - Callback untuk me-refresh data setelah selesai.
- */
 export const processImportedExcelFile = async (
   file: File,
   companyId: string,
@@ -23,38 +17,67 @@ export const processImportedExcelFile = async (
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
 
-      const json = XLSX.utils
-        .sheet_to_json(worksheet, {
-          header: [
-            "NIK",
-            "Nama Pegawai",
-            "Email",
-            "Jenis Kelamin",
-            "Tanggal Lahir",
-            "Bagian / Departemen",
-          ],
-          raw: false,
-          dateNF: "yyyy-mm-dd",
-        })
-        .slice(1);
+      const json = XLSX.utils.sheet_to_json(worksheet, {
+        raw: false,
+        dateNF: "yyyy-mm-dd",
+      });
+
+      if (!json || json.length === 0) {
+        throw new Error("File Excel kosong atau format tidak sesuai.");
+      }
 
       const newPatients = json.map((row: any, index: number) => {
-        if (!row["NIK"] || !row["Nama Pegawai"] || !row["Tanggal Lahir"]) {
+        const nik = row["NIK"];
+        const name = row["Name"];
+        const dob = row["Date of birth"];
+
+        if (!nik || !name || !dob) {
           throw new Error(
-            `Data tidak lengkap di baris ${
+            `Data NIK, Name, atau Date of Birth kosong di baris Excel ${
               index + 2
-            }. Pastikan NIK, Nama, dan Tanggal Lahir terisi.`
+            }.`
           );
         }
+
+        const mcuPackage = [];
+        const mainPackage = row["Package"];
+        if (mainPackage && String(mainPackage).trim() !== "") {
+          mcuPackage.push(String(mainPackage).trim());
+        }
+
+        const addOnColumns = [
+          "EKG",
+          "Treadmill",
+          "Audiometry",
+          "Spirometry",
+          "Panel Hepatitits",
+          "Biomonitoring",
+        ];
+        addOnColumns.forEach((addOnName) => {
+          if (row[addOnName] && String(row[addOnName]).trim() !== "") {
+            mcuPackage.push(addOnName);
+          }
+        });
+
         return {
-          nik: String(row["NIK"]),
-          fullName: String(row["Nama Pegawai"]),
+          nik: String(nik),
+          fullName: String(name),
           email: row["Email"] || null,
-          dob: row["Tanggal Lahir"],
-          department: String(row["Bagian / Departemen"] || "N/A"),
-          gender: String(row["Jenis Kelamin"]),
+          dob: dob,
+          age: parseInt(row["Age"], 10),
+          position: String(row["Position"]),
+          division: String(row["Division"]),
+          status: String(row["Status"]),
+          location: String(row["Location"]),
+          gender: String(row["Gender"]),
+          mcuPackage: mcuPackage,
         };
       });
+
+      if (newPatients.length === 0) {
+        toast.info("Tidak ada data pasien yang valid untuk diimpor.");
+        return;
+      }
 
       const response = await fetch("/api/patients/bulk", {
         method: "POST",
@@ -68,7 +91,7 @@ export const processImportedExcelFile = async (
       }
 
       toast.success(resultData.message);
-      onComplete(); // Refresh data pasien
+      onComplete();
     } catch (error) {
       console.error("Error importing patients:", error);
       toast.error(
@@ -78,11 +101,6 @@ export const processImportedExcelFile = async (
   };
 };
 
-/**
- * Mengunduh satu gambar QR code.
- * @param qrCode - Data string untuk QR code.
- * @param patientName - Nama pasien untuk nama file.
- */
 export const downloadQrCode = async (qrCode: string, patientName: string) => {
   const toastId = toast.loading("Mengunduh QR Code...");
   try {
@@ -107,10 +125,6 @@ export const downloadQrCode = async (qrCode: string, patientName: string) => {
   }
 };
 
-/**
- * Mengunduh beberapa QR code secara berurutan.
- * @param patients - Array pasien yang QR code-nya akan diunduh.
- */
 export const downloadMultipleQrCodes = async (patients: PatientData[]) => {
   const toastId = toast.loading(`Mengunduh ${patients.length} QR code...`);
   const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));

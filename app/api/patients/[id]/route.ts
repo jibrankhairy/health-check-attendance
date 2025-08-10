@@ -16,7 +16,10 @@ const updatePatientSchema = z.object({
     .refine((val) => !isNaN(Date.parse(val)), "Tanggal lahir tidak valid"),
   age: z.coerce.number().min(0, "Umur harus diisi"),
   gender: z.string().min(1, "Jenis kelamin harus diisi"),
-  department: z.string().min(1, "Departemen harus diisi"),
+  position: z.string().min(1, "Posisi harus diisi."),
+  division: z.string().min(1, "Divisi harus diisi."),
+  status: z.string().min(1, "Status harus diisi."),
+  location: z.string().min(1, "Lokasi harus diisi."),
   mcuPackage: z.array(z.string()).min(1, "Pilih minimal satu paket MCU"),
 });
 
@@ -28,10 +31,10 @@ function parseNumericId(idStr: string) {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> } // <-- Promise
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: idStr } = await params; // <-- await
+    const { id: idStr } = await params;
     const id = parseNumericId(idStr);
 
     const patient = await prisma.patient.findUnique({ where: { id } });
@@ -74,8 +77,18 @@ export async function PUT(
       );
     }
 
-    const { fullName, email, dob, age, gender, department, mcuPackage } =
-      validation.data;
+    const {
+      fullName,
+      email,
+      dob,
+      age,
+      gender,
+      position,
+      division,
+      status,
+      location,
+      mcuPackage,
+    } = validation.data;
 
     const updatedPatient = await prisma.patient.update({
       where: { id },
@@ -85,7 +98,10 @@ export async function PUT(
         dob: new Date(dob),
         age,
         gender,
-        department,
+        position,
+        division,
+        status,
+        location,
         mcuPackage,
       },
     });
