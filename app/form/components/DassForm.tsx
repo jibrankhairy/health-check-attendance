@@ -178,7 +178,6 @@ export const DassForm = ({ onNext, onBack, defaultValues }: DassFormProps) => {
               control={form.control}
               name={q.id as keyof DassFormValues}
               render={({ field }) => (
-                // --- PERUBAHAN UTAMA DI SINI ---
                 <FormItem className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-4 shadow-sm">
                   <FormLabel className="text-base mb-4 sm:mb-0 sm:pr-4">
                     {index + 1}. {q.text}
@@ -187,7 +186,6 @@ export const DassForm = ({ onNext, onBack, defaultValues }: DassFormProps) => {
                     <RadioGroup
                       onValueChange={field.onChange}
                       defaultValue={field.value}
-                      // Layout dibuat fleksibel dan simetris
                       className="flex items-center justify-around sm:justify-between w-full sm:w-[240px] flex-shrink-0"
                     >
                       {answerOptions.map((opt) => (

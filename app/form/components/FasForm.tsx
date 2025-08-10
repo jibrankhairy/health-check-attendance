@@ -48,6 +48,14 @@ const answerOptions = [
   { value: "5", label: "Selalu" },
 ];
 
+const descOptions = [
+  { value: "1", label: "Tidak Pernah" },
+  { value: "2", label: "Kadang-kadang (sesekali dalam sebulan)" },
+  { value: "3", label: "Secara teratur (beberapa kali dalam sebulan)" },
+  { value: "4", label: "Sering (setiap minggu)" },
+  { value: "5", label: "Selalu (setiap hari)" },
+];
+
 const schemaObject = Object.fromEntries(
   fasQuestions.map((q) => [
     q.id,
@@ -76,10 +84,24 @@ export const FasForm = ({ onNext, onBack, defaultValues }: FasFormProps) => {
         onSubmit={form.handleSubmit(onNext)}
         className="space-y-10 animate-fade-in"
       >
-        <p className="text-sm text-gray-600">
-          Pilih salah satu jawaban yang paling sesuai dengan apa yang Anda
-          rasakan.
-        </p>
+        <div>
+          <p className="text-sm text-gray-600">
+            Pilih salah satu jawaban yang paling sesuai dengan apa yang Anda
+            rasakan.
+          </p>
+          <div className="mt-4 text-xs text-gray-500 border rounded-lg p-3 bg-gray-50">
+            <b>Keterangan:</b>
+            <ul className="list-disc list-inside grid grid-cols-2 sm:grid-cols-4 gap-x-4">
+              {descOptions.map((opt) => {
+                return (
+                  <li key={opt.value}>
+                    <b>{opt.value}</b> = {opt.label}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </div>
 
         <div className="space-y-8">
           {fasQuestions.map((q, index) => (
