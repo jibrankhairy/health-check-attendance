@@ -80,6 +80,7 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
     editingPatient,
     deletingPatient,
     viewingMcuResultId,
+    viewingPatientPackage, // <-- Ambil state baru
     searchQuery,
     currentPage,
     rowsPerPage,
@@ -90,11 +91,13 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
     setEditingPatient,
     setDeletingPatient,
     setViewingMcuResultId,
+    setViewingPatientPackage, // <-- Ambil setter baru
     setSearchQuery,
     setCurrentPage,
     setRowsPerPage,
     handleDeleteConfirm,
     handleEditClick,
+    handleViewProgressClick, // <-- Ambil handler baru
     handleFileChange,
     handleDownloadAllSelectedQrs,
     handleSelectPatient,
@@ -275,16 +278,7 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                                   !patient.mcuResults ||
                                   patient.mcuResults.length === 0
                                 }
-                                onClick={() => {
-                                  if (
-                                    patient.mcuResults &&
-                                    patient.mcuResults[0]
-                                  ) {
-                                    setViewingMcuResultId(
-                                      patient.mcuResults[0].id
-                                    );
-                                  }
-                                }}
+                                onClick={() => handleViewProgressClick(patient)} // <-- Gunakan handler baru
                               >
                                 <Eye className="h-4 w-4" />
                               </Button>
@@ -433,8 +427,12 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
 
       <McuProgressModal
         mcuResultId={viewingMcuResultId}
+        packageItems={viewingPatientPackage} // <-- Kirim data paket ke modal
         isOpen={!!viewingMcuResultId}
-        onOpenChange={() => setViewingMcuResultId(null)}
+        onOpenChange={() => {
+          setViewingMcuResultId(null);
+          setViewingPatientPackage(null); // <-- Reset state saat modal ditutup
+        }}
       />
       <ConfirmationDialog
         isOpen={!!deletingPatient}

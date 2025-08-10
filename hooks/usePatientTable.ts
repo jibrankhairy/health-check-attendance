@@ -16,9 +16,13 @@ export const usePatientTable = (companyId: string) => {
   const [deletingPatient, setDeletingPatient] = useState<PatientData | null>(
     null
   );
+
   const [viewingMcuResultId, setViewingMcuResultId] = useState<string | null>(
     null
   );
+  const [viewingPatientPackage, setViewingPatientPackage] = useState<
+    string[] | null
+  >(null);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -82,6 +86,13 @@ export const usePatientTable = (companyId: string) => {
     } catch (error) {
       console.error(error);
       toast.error("Gagal memuat data pasien untuk diedit.");
+    }
+  };
+
+  const handleViewProgressClick = (patient: PatientData) => {
+    if (patient.mcuResults && patient.mcuResults.length > 0) {
+      setViewingMcuResultId(patient.mcuResults[0].id);
+      setViewingPatientPackage(patient.mcuPackage);
     }
   };
 
@@ -165,6 +176,7 @@ export const usePatientTable = (companyId: string) => {
     editingPatient,
     deletingPatient,
     viewingMcuResultId,
+    viewingPatientPackage, // <-- Ekspor state baru
     searchQuery,
     currentPage,
     rowsPerPage,
@@ -177,6 +189,7 @@ export const usePatientTable = (companyId: string) => {
     setEditingPatient,
     setDeletingPatient,
     setViewingMcuResultId,
+    setViewingPatientPackage,
     setSearchQuery,
     setCurrentPage,
     setRowsPerPage,
@@ -185,6 +198,7 @@ export const usePatientTable = (companyId: string) => {
     fetchPatients,
     handleDeleteConfirm,
     handleEditClick,
+    handleViewProgressClick,
     handleFileChange,
     handleDownloadAllSelectedQrs,
     handleSelectPatient,
