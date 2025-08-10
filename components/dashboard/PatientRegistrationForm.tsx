@@ -1,11 +1,7 @@
 "use client";
 
-import React, { useEffect } from "react";
-import { useForm, SubmitHandler } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { toast } from "sonner";
-
+import React from "react";
+import { cn } from "@/lib/utils"; // Import cn utility untuk class conditional
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -27,152 +23,64 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+// import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"; // RadioGroup sudah tidak dipakai
+import { usePatientForm, type PatientFormValues } from "@/hooks/usePatientForm"; // Sesuaikan path jika perlu
+import { mcuPackages, addOnItems } from "@/lib/mcu-data"; // Sesuaikan path jika perlu
 
-const mcuItems = [
-  { id: "pemeriksaan_fisik", label: "Pemeriksaan Fisik" },
-  { id: "tes_psikologi", label: "Tes Psikologi" },
-  { id: "framingham_score", label: "Framingham Score" },
-  { id: "darah_lengkap", label: "Darah Lengkap" },
-  { id: "hematologi", label: "Hematologi" },
-  { id: "urinalisa", label: "Urinalisa" },
-  { id: "kimia_darah", label: "Kimia Darah" },
-  { id: "rontgen_thorax", label: "Rontgen Thorax" },
-  { id: "ekg_elektrokardiogram", label: "EKG (Elektrokardiogram)" },
-  { id: "treadmill", label: "Treadmill" },
-  { id: "audiometri", label: "Audiometri" },
-  { id: "spirometri", label: "Spirometri" },
-  { id: "usg_abdomen", label: "USG Abdomen" },
-  { id: "usg_mammae", label: "USG Mammae" },
-];
-
-const formSchema = z.object({
-  patientId: z.string().min(1, "ID Pasien tidak boleh kosong."),
-  fullName: z.string().min(3, { message: "Nama lengkap minimal 3 karakter." }),
-  email: z
-    .string()
-    .email({ message: "Format email tidak valid." })
-    .or(z.literal(""))
-    .optional(),
-  dob: z
-    .string()
-    .refine((val) => val.length > 0, { message: "Tanggal lahir harus diisi." }),
-  age: z.number().min(0, "Umur tidak boleh negatif."),
-  gender: z.string().min(1, { message: "Jenis kelamin harus diisi." }),
-  department: z.string().min(1, { message: "Departemen harus diisi." }),
-  mcuPackage: z
-    .array(z.string())
-    .refine((value) => value.some((item) => item), {
-      message: "Anda harus memilih setidaknya satu item pemeriksaan.",
-    }),
-});
-
-type PatientFormValues = z.infer<typeof formSchema>;
+type PatientToEdit = Omit<PatientFormValues, "selectedPackage" | "addOns"> & {
+  id: number;
+  mcuPackage: string[];
+};
 
 type PatientFormProps = {
   setOpen: (open: boolean) => void;
   companyId: string;
   onPatientAdded: () => void;
-  patientToEdit?: (PatientFormValues & { id: number }) | null;
+  patientToEdit?: PatientToEdit | null;
 };
 
-export const PatientRegistrationForm = ({
-  setOpen,
-  companyId,
-  onPatientAdded,
-  patientToEdit,
-}: PatientFormProps) => {
-  const form = useForm<PatientFormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      patientId: `MCU-${Math.floor(1000 + Math.random() * 9000)}`,
-      fullName: "",
-      email: "",
-      dob: "",
-      age: 0,
-      gender: "",
-      department: "",
-      mcuPackage: [],
-    },
-  });
+// Komponen Card untuk Pilihan Paket
+const PackageCard = ({
+  label,
+  isSelected,
+  onClick,
+}: {
+  label: string;
+  isSelected: boolean;
+  onClick: () => void;
+}) => (
+  <div
+    onClick={onClick}
+    className={cn(
+      "border-2 rounded-lg p-4 text-center cursor-pointer transition-all duration-200 ease-in-out transform hover:-translate-y-1",
+      isSelected
+        ? "border-blue-600 bg-blue-50 ring-2 ring-blue-300"
+        : "border-gray-200 bg-white hover:border-blue-400"
+    )}
+  >
+    <h3
+      className={cn(
+        "font-semibold",
+        isSelected ? "text-blue-800" : "text-gray-700"
+      )}
+    >
+      {label}
+    </h3>
+  </div>
+);
 
-  useEffect(() => {
-    if (patientToEdit) {
-      form.reset({
-        ...patientToEdit,
-        email: patientToEdit.email || "",
-        dob: new Date(patientToEdit.dob).toISOString().split("T")[0],
-      });
-    }
-  }, [patientToEdit, form]);
-
-  const handleDobChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const dob = e.target.value;
-    form.setValue("dob", dob);
-    if (dob) {
-      const birthDate = new Date(dob);
-      const today = new Date();
-      let age = today.getFullYear() - birthDate.getFullYear();
-      const m = today.getMonth() - birthDate.getMonth();
-      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
-      }
-      form.setValue("age", age >= 0 ? age : 0);
-    } else {
-      form.setValue("age", 0);
-    }
-  };
-
-  const onSubmit: SubmitHandler<PatientFormValues> = async (data) => {
-    const isEditMode = !!patientToEdit;
-    const url = isEditMode
-      ? `/api/patients/${patientToEdit.id}`
-      : "/api/patients";
-    const method = isEditMode ? "PUT" : "POST";
-
-    const dataToSubmit = {
-      ...data,
-      companyId: companyId,
-    };
-
-    const promise = fetch(url, {
-      method: method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(dataToSubmit),
-    }).then(async (res) => {
-      const responseData = await res.json();
-      if (!res.ok) {
-        throw responseData;
-      }
-      return responseData;
-    });
-
-    toast.promise(promise, {
-      loading: isEditMode
-        ? "Memperbarui data pasien..."
-        : "Menyimpan data pasien...",
-      success: (data: { fullName: string }) => {
-        setOpen(false);
-        onPatientAdded();
-        return `Pasien ${data.fullName} berhasil ${
-          isEditMode ? "diperbarui" : "didaftarkan"
-        }!`;
-      },
-      error: (errorData) => {
-        const errors = errorData?.error;
-        if (errors) {
-          const errorMessages = Object.values(errors).flat().join(", ");
-          return `Gagal: ${errorMessages}`;
-        }
-        return (
-          errorData.message || "Gagal memproses data. Cek kembali input Anda."
-        );
-      },
-    });
-  };
+export const PatientRegistrationForm = (props: PatientFormProps) => {
+  const { form, onSubmit, handleDobChange, selectedPackageDetails } =
+    usePatientForm(props);
+  const { patientToEdit } = props;
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-4 max-h-[80vh] overflow-y-auto pr-4"
+      >
+        {/* --- Data Diri Pasien --- */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -260,8 +168,8 @@ export const PatientRegistrationForm = ({
                 <FormLabel>Jenis Kelamin</FormLabel>
                 <Select
                   onValueChange={field.onChange}
-                  defaultValue={field.value}
                   value={field.value}
+                  defaultValue={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -294,48 +202,66 @@ export const PatientRegistrationForm = ({
 
         <Separator />
 
+        {/* --- Pilihan Paket MCU (Card UI) --- */}
         <FormField
           control={form.control}
-          name="mcuPackage"
+          name="selectedPackage"
+          render={({ field }) => (
+            <FormItem className="space-y-3">
+              <FormLabel className="text-base">Pilih Paket MCU</FormLabel>
+              <FormControl>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+                  {mcuPackages.map((pkg) => (
+                    <PackageCard
+                      key={pkg.id}
+                      label={pkg.label}
+                      isSelected={field.value === pkg.id}
+                      onClick={() => field.onChange(pkg.id)}
+                    />
+                  ))}
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* --- Rincian Paket Terpilih --- */}
+        {selectedPackageDetails.length > 0 && (
+          <div className="p-4 bg-gray-50 border rounded-md">
+            <h4 className="font-semibold mb-2 text-gray-800">
+              Rincian Paket Terpilih:
+            </h4>
+            <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
+              {selectedPackageDetails.map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* --- Pilihan Add-On --- */}
+        <FormField
+          control={form.control}
+          name="addOns"
           render={() => (
             <FormItem>
               <div className="mb-4">
                 <FormLabel className="text-base">
-                  Paket Medical Check Up
+                  Pemeriksaan Tambahan (Add-on)
                 </FormLabel>
                 <FormDescription>
-                  Pilih item pemeriksaan yang akan diambil.
+                  Pilih item jika ada pemeriksaan tambahan di luar paket.
                 </FormDescription>
               </div>
-              <div className="flex items-center space-x-2 p-2 rounded-md bg-gray-50 border">
-                <Checkbox
-                  id="select-all"
-                  onCheckedChange={(checked) => {
-                    form.setValue(
-                      "mcuPackage",
-                      checked ? mcuItems.map((item) => item.id) : []
-                    );
-                  }}
-                  checked={form.watch("mcuPackage").length === mcuItems.length}
-                />
-                <label
-                  htmlFor="select-all"
-                  className="text-sm font-medium leading-none"
-                >
-                  Pilih Semua (Paket Lengkap)
-                </label>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-                {mcuItems.map((item) => (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {addOnItems.map((item) => (
                   <FormField
                     key={item.id}
                     control={form.control}
-                    name="mcuPackage"
+                    name="addOns"
                     render={({ field }) => (
-                      <FormItem
-                        key={item.id}
-                        className="flex flex-row items-start space-x-3 space-y-0"
-                      >
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                         <FormControl>
                           <Checkbox
                             checked={field.value?.includes(item.id)}
@@ -347,7 +273,7 @@ export const PatientRegistrationForm = ({
                                   ])
                                 : field.onChange(
                                     (field.value || []).filter(
-                                      (value: string) => value !== item.id
+                                      (value) => value !== item.id
                                     )
                                   );
                             }}
@@ -365,11 +291,12 @@ export const PatientRegistrationForm = ({
             </FormItem>
           )}
         />
-        <DialogFooter className="pt-4">
+
+        <DialogFooter className="pt-4 sticky bottom-0 bg-white pb-2 -mb-2">
           <Button
             type="button"
             variant="outline"
-            onClick={() => setOpen(false)}
+            onClick={() => props.setOpen(false)}
           >
             Batal
           </Button>
