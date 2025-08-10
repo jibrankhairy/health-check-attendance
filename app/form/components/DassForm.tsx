@@ -21,97 +21,104 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 export const allDassQuestions = [
   {
     id: "dass1",
-    text: "Saya merasa sulit untuk menenangkan diri.",
+    text: "Sangatlah sulit bagi saya untuk beristirahat.",
     scale: "s",
   },
-  { id: "dass2", text: "Saya menyadari mulut saya kering.", scale: "a" },
+  {
+    id: "dass2",
+    text: "Saya menyadari bahwa mulut saya terasa kering.",
+    scale: "a",
+  },
   {
     id: "dass3",
-    text: "Saya sepertinya tidak bisa merasakan perasaan positif sama sekali.",
+    text: "Saya tidak pernah merasakan pengalaman mengenai perasaan yang positif.",
     scale: "d",
   },
   {
     id: "dass4",
-    text: "Saya mengalami kesulitan bernapas (misalnya, napas yang sangat cepat, sesak napas saat tidak melakukan aktivitas fisik).",
+    text: "Saya sangat sulit untuk bernapas (misalnya untuk menarik napas maupun kehilangan napas ketika melakukan aktivitas fisik).",
     scale: "a",
   },
   {
     id: "dass5",
-    text: "Saya merasa sulit untuk berinisiatif melakukan sesuatu.",
+    text: "Saya mengalami kesulitan untuk berinisiatif melakukan sesuatu hal.",
     scale: "d",
   },
   {
     id: "dass6",
-    text: "Saya cenderung bereaksi berlebihan terhadap situasi.",
+    text: "Saya bereaksi secara berlebihan ketika menghadapi sesuatu hal.",
     scale: "s",
   },
   {
     id: "dass7",
-    text: "Saya mengalami gemetar (misalnya pada tangan).",
+    text: "Saya sering mengalami tremor (misalnya pada bagian tangan).",
     scale: "a",
   },
   {
     id: "dass8",
-    text: "Saya merasa bahwa saya menggunakan banyak energi saraf.",
+    text: "Saya merasa bahwa saya seringkali merasa cemas.",
     scale: "s",
   },
   {
     id: "dass9",
-    text: "Saya khawatir tentang situasi di mana saya mungkin panik dan mempermalukan diri sendiri.",
+    text: "Saya sering merasa khawatir, yang membuat saya merasa panik dan terkadang kehilangan akal sehat.",
     scale: "a",
   },
   {
     id: "dass10",
-    text: "Saya merasa bahwa saya tidak memiliki apa pun untuk dinantikan.",
+    text: "Saya merasa psimis untuk menantikan sesuatu di masa depan.",
     scale: "d",
   },
-  { id: "dass11", text: "Saya merasa gelisah.", scale: "s" },
-  { id: "dass12", text: "Saya merasa sulit untuk rileks.", scale: "s" },
-  { id: "dass13", text: "Saya merasa sedih dan murung.", scale: "d" },
+  { id: "dass11", text: "Saya sering merasa gelisah.", scale: "s" },
+  { id: "dass12", text: "Saya sulit untuk merasa relaks.", scale: "s" },
+  { id: "dass13", text: "Saya sering merasa patah semangat.", scale: "d" },
   {
     id: "dass14",
-    text: "Saya tidak toleran terhadap apa pun yang menghalangi saya untuk melanjutkan apa yang saya lakukan.",
+    text: "Saya mudah terganggu dengan hal-hal yang menghalangi saya.",
     scale: "s",
   },
-  { id: "dass15", text: "Saya merasa hampir panik.", scale: "a" },
+  { id: "dass15", text: "Saya mudah merasa panik.", scale: "a" },
   {
     id: "dass16",
-    text: "Saya tidak dapat menjadi antusias terhadap apa pun.",
+    text: "Saya sulit untuk merasa bersemangat ketika melakukan sesuatu.",
     scale: "d",
   },
   {
     id: "dass17",
-    text: "Saya merasa tidak berharga sebagai pribadi.",
+    text: "Saya merasa tidak berguna.",
     scale: "d",
   },
   { id: "dass18", text: "Saya merasa agak sensitif.", scale: "s" },
   {
     id: "dass19",
-    text: "Saya menyadari aksi jantung saya tanpa aktivitas fisik (misalnya, merasakan peningkatan detak jantung, jantung berhenti berdetak).",
+    text: "Jantung saya berdebar-debar sekalipun tidak melakukan aktivitas fisik apapun.",
     scale: "a",
   },
   {
     id: "dass20",
-    text: "Saya merasa takut tanpa alasan yang jelas.",
+    text: "Saya sering merasa takut tanpa alasan yang jelas.",
     scale: "a",
   },
-  { id: "dass21", text: "Saya merasa hidup tidak berarti.", scale: "d" },
+  {
+    id: "dass21",
+    text: "Saya merasa bahwa hidup ini tidak berarti.",
+    scale: "d",
+  },
 ];
 
 const answerOptions = [
-  { value: "0", label: "Tidak berlaku untuk saya sama sekali" },
+  { value: "0", label: "Tidak menggambarkan diri saya sama sekali." },
   {
     value: "1",
-    label: "Diterapkan pada saya sampai tingkat tertentu, atau beberapa waktu",
+    label: "Kadang-kadang menggambarkan diri saya.",
   },
   {
     value: "2",
-    label:
-      "Diterapkan pada saya dalam tingkat yang cukup besar atau sebagian besar waktu",
+    label: "Seringkali menggambarkan diri saya.",
   },
   {
     value: "3",
-    label: "Berlaku sangat banyak atau sebagian besar waktu bagi saya",
+    label: "Seluruhnya menggambarkan diri saya.",
   },
 ];
 

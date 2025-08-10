@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { toast, Toaster } from "sonner";
 
 import {
@@ -257,13 +258,20 @@ const MultiStepFormPage = () => {
 
       <Toaster richColors position="top-center" />
 
-      {step === 0 && (
-        <div className="w-full max-w-4xl mb-8 text-center animate-fade-in">
+      <div className="w-full max-w-4xl mb-8 text-center animate-fade-in">
+        <Image
+          src="/images/logo-klinik.png"
+          alt="Logo Klinik"
+          width={150}
+          height={50}
+          className="mx-auto mb-4"
+        />
+        {step === 0 && (
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
-            Formulir Riwayat Kesehatan Dan Tes Psikologi
+            Formulir Riwayat Kesehatan Dan Tes Psikologi
           </h1>
-        </div>
-      )}
+        )}
+      </div>
 
       {step < 5 && <ProgressStepper currentStep={step} />}
 
