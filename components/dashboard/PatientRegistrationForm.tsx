@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { cn } from "@/lib/utils"; // Import cn utility untuk class conditional
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -23,9 +23,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-// import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"; // RadioGroup sudah tidak dipakai
-import { usePatientForm, type PatientFormValues } from "@/hooks/usePatientForm"; // Sesuaikan path jika perlu
-import { mcuPackages, addOnItems } from "@/lib/mcu-data"; // Sesuaikan path jika perlu
+import { usePatientForm, type PatientFormValues } from "@/hooks/usePatientForm";
+import { mcuPackages, addOnItems } from "@/lib/mcu-data";
 
 type PatientToEdit = Omit<PatientFormValues, "selectedPackage" | "addOns"> & {
   id: number;
@@ -39,7 +38,6 @@ type PatientFormProps = {
   patientToEdit?: PatientToEdit | null;
 };
 
-// Komponen Card untuk Pilihan Paket
 const PackageCard = ({
   label,
   isSelected,
@@ -80,7 +78,6 @@ export const PatientRegistrationForm = (props: PatientFormProps) => {
         onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-4 max-h-[80vh] overflow-y-auto pr-4"
       >
-        {/* --- Data Diri Pasien --- */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -159,6 +156,7 @@ export const PatientRegistrationForm = (props: PatientFormProps) => {
             )}
           />
         </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -168,8 +166,8 @@ export const PatientRegistrationForm = (props: PatientFormProps) => {
                 <FormLabel>Jenis Kelamin</FormLabel>
                 <Select
                   onValueChange={field.onChange}
-                  value={field.value}
-                  defaultValue={field.value}
+                  value={field.value || ""}
+                  defaultValue={field.value || ""}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -187,22 +185,62 @@ export const PatientRegistrationForm = (props: PatientFormProps) => {
           />
           <FormField
             control={form.control}
-            name="department"
+            name="position"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Departemen</FormLabel>
+                <FormLabel>Posisi / Jabatan</FormLabel>
                 <FormControl>
-                  <Input placeholder="cth: Produksi" {...field} />
+                  <Input placeholder="cth: Staff" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
         </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="division"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Divisi</FormLabel>
+                <FormControl>
+                  <Input placeholder="cth: Human Resources" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Status Karyawan</FormLabel>
+                <FormControl>
+                  <Input placeholder="cth: Karyawan Tetap" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <FormField
+          control={form.control}
+          name="location"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Lokasi Kerja</FormLabel>
+              <FormControl>
+                <Input placeholder="cth: Jakarta" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <Separator />
 
-        {/* --- Pilihan Paket MCU (Card UI) --- */}
         <FormField
           control={form.control}
           name="selectedPackage"
@@ -225,8 +263,6 @@ export const PatientRegistrationForm = (props: PatientFormProps) => {
             </FormItem>
           )}
         />
-
-        {/* --- Rincian Paket Terpilih --- */}
         {selectedPackageDetails.length > 0 && (
           <div className="p-4 bg-gray-50 border rounded-md">
             <h4 className="font-semibold mb-2 text-gray-800">
@@ -239,8 +275,6 @@ export const PatientRegistrationForm = (props: PatientFormProps) => {
             </ul>
           </div>
         )}
-
-        {/* --- Pilihan Add-On --- */}
         <FormField
           control={form.control}
           name="addOns"

@@ -4,7 +4,7 @@ import {
   downloadMultipleQrCodes,
   processImportedExcelFile,
 } from "@/lib/patient-utils";
-import { PatientData } from "@/components/dashboard/PatientTable";
+import { type PatientData } from "@/components/dashboard/PatientTable";
 
 export const usePatientTable = (companyId: string) => {
   const [patients, setPatients] = useState<PatientData[]>([]);
@@ -92,7 +92,7 @@ export const usePatientTable = (companyId: string) => {
   const handleViewProgressClick = (patient: PatientData) => {
     if (patient.mcuResults && patient.mcuResults.length > 0) {
       setViewingMcuResultId(patient.mcuResults[0].id);
-      setViewingPatientPackage(patient.mcuPackage);
+      setViewingPatientPackage(patient.mcuPackage as string[]);
     }
   };
 
@@ -129,7 +129,8 @@ export const usePatientTable = (companyId: string) => {
         (patient) =>
           patient.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
           patient.patientId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          patient.department.toLowerCase().includes(searchQuery.toLowerCase())
+          (patient.position &&
+            patient.position.toLowerCase().includes(searchQuery.toLowerCase()))
       ),
     [patients, searchQuery]
   );
@@ -169,22 +170,19 @@ export const usePatientTable = (companyId: string) => {
   );
 
   return {
-    // State
     patients,
     loading,
     isDialogOpen,
     editingPatient,
     deletingPatient,
     viewingMcuResultId,
-    viewingPatientPackage, // <-- Ekspor state baru
+    viewingPatientPackage,
     searchQuery,
     currentPage,
     rowsPerPage,
     selectedPatients,
     isDownloadingAllQrs,
     isImporting,
-
-    // Setters
     setIsDialogOpen,
     setEditingPatient,
     setDeletingPatient,
@@ -193,8 +191,6 @@ export const usePatientTable = (companyId: string) => {
     setSearchQuery,
     setCurrentPage,
     setRowsPerPage,
-
-    // Handlers
     fetchPatients,
     handleDeleteConfirm,
     handleEditClick,
@@ -203,8 +199,6 @@ export const usePatientTable = (companyId: string) => {
     handleDownloadAllSelectedQrs,
     handleSelectPatient,
     handleSelectAllOnPage,
-
-    // Derived State
     filteredPatients,
     currentRows,
     totalPages,

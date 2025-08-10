@@ -51,6 +51,7 @@ import { ConfirmationDialog } from "@/components/ConfirmationDialog";
 import { usePatientTable } from "@/hooks/usePatientTable";
 import { downloadQrCode } from "@/lib/patient-utils";
 
+// Tipe data sudah sinkron dengan schema.prisma
 export type PatientData = {
   id: number;
   patientId: string;
@@ -58,9 +59,12 @@ export type PatientData = {
   email?: string;
   dob: string;
   age: number;
-  gender: "Laki- Laki" | "Perempuan";
-  department: string;
-  mcuPackage: string[];
+  gender: string;
+  position: string;
+  division: string;
+  status: string;
+  location: string;
+  mcuPackage: any;
   qrCode: string;
   createdAt: string;
   mcuResults: { id: string }[];
@@ -80,7 +84,7 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
     editingPatient,
     deletingPatient,
     viewingMcuResultId,
-    viewingPatientPackage, // <-- Ambil state baru
+    viewingPatientPackage,
     searchQuery,
     currentPage,
     rowsPerPage,
@@ -91,13 +95,13 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
     setEditingPatient,
     setDeletingPatient,
     setViewingMcuResultId,
-    setViewingPatientPackage, // <-- Ambil setter baru
+    setViewingPatientPackage,
     setSearchQuery,
     setCurrentPage,
     setRowsPerPage,
     handleDeleteConfirm,
     handleEditClick,
-    handleViewProgressClick, // <-- Ambil handler baru
+    handleViewProgressClick,
     handleFileChange,
     handleDownloadAllSelectedQrs,
     handleSelectPatient,
@@ -116,7 +120,7 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
-              placeholder="Cari nama, ID, atau departemen..."
+              placeholder="Cari nama, ID, atau posisi..."
               className="pl-9"
               value={searchQuery}
               onChange={(e) => {
@@ -205,10 +209,11 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                 <TableHead className="w-[50px] text-center">No.</TableHead>
                 <TableHead>ID Pasien</TableHead>
                 <TableHead>Nama Lengkap</TableHead>
-                <TableHead>Departemen</TableHead>
+                {/* --- PERUBAHAN DI SINI --- */}
+                <TableHead>Divisi</TableHead>
                 <TableHead>Tgl. Registrasi</TableHead>
                 <TableHead className="text-center">QR Code</TableHead>
-                <TableHead className="text-center">Aksi</TableHead>
+                <TableHead className="w-[180px] text-center">Aksi</TableHead>
                 <TableHead className="w-auto text-center">
                   <div className="flex items-center justify-center gap-2">
                     <Checkbox
@@ -254,7 +259,8 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                     <TableCell className="font-medium">
                       {patient.fullName}
                     </TableCell>
-                    <TableCell>{patient.department}</TableCell>
+                    {/* --- PERUBAHAN DI SINI --- */}
+                    <TableCell>{patient.division}</TableCell>
                     <TableCell>
                       {format(new Date(patient.createdAt), "dd MMM yyyy")}
                     </TableCell>
@@ -278,7 +284,7 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                                   !patient.mcuResults ||
                                   patient.mcuResults.length === 0
                                 }
-                                onClick={() => handleViewProgressClick(patient)} // <-- Gunakan handler baru
+                                onClick={() => handleViewProgressClick(patient)}
                               >
                                 <Eye className="h-4 w-4" />
                               </Button>
@@ -427,11 +433,11 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
 
       <McuProgressModal
         mcuResultId={viewingMcuResultId}
-        packageItems={viewingPatientPackage} // <-- Kirim data paket ke modal
+        packageItems={viewingPatientPackage as string[] | null}
         isOpen={!!viewingMcuResultId}
         onOpenChange={() => {
           setViewingMcuResultId(null);
-          setViewingPatientPackage(null); // <-- Reset state saat modal ditutup
+          setViewingPatientPackage(null);
         }}
       />
       <ConfirmationDialog
