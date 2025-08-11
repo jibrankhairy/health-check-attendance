@@ -1,6 +1,7 @@
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
 import { type PatientData } from "@/components/dashboard/PatientTable";
+import { mcuPackages } from "@/lib/mcu-data";
 
 export const processImportedExcelFile = async (
   file: File,
@@ -40,9 +41,21 @@ export const processImportedExcelFile = async (
         }
 
         const mcuPackage = [];
-        const mainPackage = row["Package"];
-        if (mainPackage && String(mainPackage).trim() !== "") {
-          mcuPackage.push(String(mainPackage).trim());
+        const mainPackageFromExcel = row["Package"];
+
+        if (
+          mainPackageFromExcel &&
+          String(mainPackageFromExcel).trim() !== ""
+        ) {
+          const matchedPackage = mcuPackages.find((p) =>
+            p.label
+              .toLowerCase()
+              .includes(String(mainPackageFromExcel).trim().toLowerCase())
+          );
+
+          if (matchedPackage) {
+            mcuPackage.push(matchedPackage.id);
+          }
         }
 
         const addOnColumns = [
@@ -50,11 +63,16 @@ export const processImportedExcelFile = async (
           "Treadmill",
           "Audiometry",
           "Spirometry",
-          "Panel Hepatitits",
+          "Panel Hepatitis",
           "Biomonitoring",
         ];
         addOnColumns.forEach((addOnName) => {
-          if (row[addOnName] && String(row[addOnName]).trim() !== "") {
+          const excelAddOnName =
+            addOnName === "Panel Hepatitis" ? "Panel Hepatitits" : addOnName;
+          if (
+            row[excelAddOnName] &&
+            String(row[excelAddOnName]).trim() !== ""
+          ) {
             mcuPackage.push(addOnName);
           }
         });
