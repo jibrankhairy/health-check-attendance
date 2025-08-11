@@ -9,16 +9,16 @@ import {
   Trash2,
   Loader2,
   Upload,
-  QrCode,
   Mail,
   MoreVertical,
   Briefcase,
   Calendar,
+  Printer,
+  Download,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -71,7 +71,6 @@ import { format } from "date-fns";
 import { McuProgressModal } from "@/components/McuProgressModal";
 import { ConfirmationDialog } from "@/components/ConfirmationDialog";
 import { usePatientTable } from "@/hooks/usePatientTable";
-import { downloadQrCode } from "@/lib/patient-utils";
 
 export type PatientData = {
   id: number;
@@ -89,7 +88,7 @@ export type PatientData = {
   mcuPackage: any;
   qrCode: string;
   createdAt: string;
-  mcuResults: { id: string }[];
+  mcuResults: { id: string; fileUrl?: string }[];
 };
 
 type PatientTableProps = {
@@ -110,8 +109,6 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
     searchQuery,
     currentPage,
     rowsPerPage,
-    selectedPatients,
-    isDownloadingAllQrs,
     isImporting,
     setIsDialogOpen,
     setEditingPatient,
@@ -125,14 +122,10 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
     handleEditClick,
     handleViewProgressClick,
     handleFileChange,
-    handleDownloadAllSelectedQrs,
-    handleSelectPatient,
-    handleSelectAllOnPage,
     fetchPatients,
     filteredPatients,
     currentRows,
     totalPages,
-    areAllOnPageSelected,
     isImportConfirmOpen,
     setIsImportConfirmOpen,
     parsedPatients,
@@ -141,6 +134,50 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
     handleSendQrEmail,
     setParsedPatients,
   } = usePatientTable(companyId);
+
+  const handlePrintQr = (patient: PatientData) => {
+    const printWindow = window.open("", "_blank");
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Print QR Code</title>
+            <style>
+              @page { margin: 0; size: 58mm auto; }
+              body {
+                font-family: 'Arial', sans-serif;
+                font-size: 10pt;
+                text-align: center;
+                margin: 5mm;
+                padding: 0;
+                width: 48mm;
+              }
+              .qr-code { width: 150px; height: 150px; margin: 10px auto; }
+              .info { text-align: left; margin-top: 10px; word-wrap: break-word; }
+              .info p { margin: 2px 0; font-weight: bold; }
+              .info span { font-weight: normal; }
+            </style>
+          </head>
+          <body>
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${patient.qrCode}" alt="QR Code" class="qr-code" />
+            <div class="info">
+              <p>Nama: <span>${patient.fullName}</span></p>
+              <p>ID: <span>${patient.patientId}</span></p>
+              <p>NIK: <span>${patient.nik}</span></p>
+            </div>
+            <script>
+              window.onload = function() {
+                window.focus();
+                window.print();
+                window.close();
+              }
+            </script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    }
+  };
 
   const renderPatientActions = (patient: PatientData) => (
     <>
@@ -166,11 +203,9 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
         )}
         <span>Kirim Email</span>
       </DropdownMenuItem>
-      <DropdownMenuItem
-        onClick={() => downloadQrCode(patient.qrCode, patient.fullName)}
-      >
-        <QrCode className="mr-2 h-4 w-4" />
-        <span>Unduh QR</span>
+      <DropdownMenuItem onClick={() => handlePrintQr(patient)}>
+        <Printer className="mr-2 h-4 w-4" />
+        <span>Print QR</span>
       </DropdownMenuItem>
       <DropdownMenuSeparator />
       <DropdownMenuItem
@@ -208,32 +243,6 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
               accept=".xlsx, .xls"
             />
             <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    onClick={handleDownloadAllSelectedQrs}
-                    disabled={
-                      isDownloadingAllQrs || selectedPatients.size === 0
-                    }
-                    size="icon"
-                    className="bg-[#01449D] hover:bg-[#01449D]/90 text-white disabled:opacity-50 disabled:cursor-not-allowed md:w-auto md:px-4"
-                  >
-                    {isDownloadingAllQrs ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <QrCode className="h-4 w-4" />
-                    )}
-                    <span className="hidden md:inline ml-2">
-                      Unduh QR{" "}
-                      {selectedPatients.size > 0 &&
-                        `(${selectedPatients.size})`}
-                    </span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent className="md:hidden">
-                  <p>Unduh QR Terpilih</p>
-                </TooltipContent>
-              </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
@@ -301,236 +310,213 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
           </div>
         </div>
 
-        <div className="hidden md:block rounded-lg border bg-white">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[50px] text-center">No.</TableHead>
-                <TableHead>ID Pasien</TableHead>
-                <TableHead>Nama Lengkap</TableHead>
-                <TableHead>Divisi</TableHead>
-                <TableHead>Tgl. Registrasi</TableHead>
-                <TableHead className="text-center">QR Code</TableHead>
-                <TableHead className="w-[200px] text-center">Aksi</TableHead>
-                <TableHead className="w-auto text-center">
-                  <div className="flex items-center justify-center gap-2">
-                    <Checkbox
-                      id="selectAllDesktop"
-                      checked={areAllOnPageSelected}
-                      onCheckedChange={(checked) =>
-                        handleSelectAllOnPage(checked as boolean)
-                      }
-                      aria-label="Pilih semua baris di halaman ini"
-                    />
-                  </div>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
+        <div className="rounded-lg border bg-white">
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={8} className="h-24 text-center">
-                    <div className="flex justify-center items-center">
-                      <Loader2 className="mr-2 h-6 w-6 animate-spin" /> Memuat
-                      data pasien...
-                    </div>
-                  </TableCell>
+                  <TableHead className="w-[50px] text-center">No.</TableHead>
+                  <TableHead>ID Pasien</TableHead>
+                  <TableHead>Nama Lengkap</TableHead>
+                  <TableHead>Divisi</TableHead>
+                  <TableHead>Tgl. Registrasi</TableHead>
+                  <TableHead className="text-center">QR Code</TableHead>
+                  <TableHead className="w-[200px] text-center">Aksi</TableHead>
+                  <TableHead className="text-center">Hasil</TableHead>
                 </TableRow>
-              ) : currentRows.length > 0 ? (
-                currentRows.map((patient, index) => (
-                  <TableRow
-                    key={patient.id}
-                    data-state={selectedPatients.has(patient.id) && "selected"}
-                  >
-                    <TableCell className="font-medium text-center">
-                      {currentPage * rowsPerPage - rowsPerPage + index + 1}
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="h-24 text-center">
+                      <div className="flex justify-center items-center">
+                        <Loader2 className="mr-2 h-6 w-6 animate-spin" /> Memuat
+                        data pasien...
+                      </div>
                     </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary">{patient.patientId}</Badge>
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {patient.fullName}
-                    </TableCell>
-                    <TableCell>{patient.division}</TableCell>
-                    <TableCell>
-                      {format(new Date(patient.createdAt), "dd MMM yyyy")}
-                    </TableCell>
-                    <TableCell className="flex justify-center">
-                      <img
-                        src={`https://api.qrserver.com/v1/create-qr-code/?size=40x40&data=${patient.qrCode}`}
-                        alt={`QR Code for ${patient.fullName}`}
-                        className="rounded-sm"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <TooltipProvider>
-                        <div className="flex items-center justify-center gap-1">
+                  </TableRow>
+                ) : currentRows.length > 0 ? (
+                  currentRows.map((patient, index) => (
+                    <TableRow key={patient.id}>
+                      <TableCell className="font-medium text-center">
+                        {currentPage * rowsPerPage - rowsPerPage + index + 1}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">{patient.patientId}</Badge>
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {patient.fullName}
+                      </TableCell>
+                      <TableCell>{patient.division}</TableCell>
+                      <TableCell>
+                        {format(new Date(patient.createdAt), "dd MMM yyyy")}
+                      </TableCell>
+                      <TableCell className="flex justify-center">
+                        <img
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=40x40&data=${patient.qrCode}`}
+                          alt={`QR Code for ${patient.fullName}`}
+                          className="rounded-sm"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <TooltipProvider>
+                          <div className="flex items-center justify-center gap-1">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="hover:text-blue-500"
+                                  disabled={
+                                    !patient.mcuResults ||
+                                    patient.mcuResults.length === 0
+                                  }
+                                  onClick={() =>
+                                    handleViewProgressClick(patient)
+                                  }
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Lihat Progres MCU</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="hover:text-yellow-500"
+                                  onClick={() => handleEditClick(patient.id)}
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Edit Pasien</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="hover:text-sky-500"
+                                  disabled={
+                                    !patient.email ||
+                                    isSendingEmail === patient.id
+                                  }
+                                  onClick={() => handleSendQrEmail(patient)}
+                                >
+                                  {isSendingEmail === patient.id ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <Mail className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Kirim QR ke Email</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="hover:text-indigo-500"
+                                  onClick={() => handlePrintQr(patient)}
+                                >
+                                  <Printer className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Print QR Code</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="hover:text-red-500"
+                                  onClick={() => setDeletingPatient(patient)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Hapus Pasien</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </div>
+                        </TooltipProvider>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button
-                                variant="ghost"
+                                variant="outline"
                                 size="icon"
-                                className="hover:text-blue-500"
                                 disabled={
                                   !patient.mcuResults ||
-                                  patient.mcuResults.length === 0
+                                  patient.mcuResults.length === 0 ||
+                                  !patient.mcuResults[0].fileUrl
                                 }
-                                onClick={() => handleViewProgressClick(patient)}
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Lihat Progres MCU</p>
-                            </TooltipContent>
-                          </Tooltip>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="hover:text-yellow-500"
-                                onClick={() => handleEditClick(patient.id)}
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Edit Pasien</p>
-                            </TooltipContent>
-                          </Tooltip>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="hover:text-sky-500"
-                                disabled={
-                                  !patient.email ||
-                                  isSendingEmail === patient.id
-                                }
-                                onClick={() => handleSendQrEmail(patient)}
-                              >
-                                {isSendingEmail === patient.id ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <Mail className="h-4 w-4" />
-                                )}
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Kirim QR ke Email</p>
-                            </TooltipContent>
-                          </Tooltip>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="hover:text-green-500"
                                 onClick={() =>
-                                  downloadQrCode(
-                                    patient.qrCode,
-                                    patient.fullName
+                                  window.open(
+                                    patient.mcuResults[0]?.fileUrl,
+                                    "_blank"
                                   )
                                 }
                               >
-                                <QrCode className="h-4 w-4" />
+                                <Download className="h-4 w-4" />
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>Unduh QR Code</p>
+                              <p>
+                                {!patient.mcuResults ||
+                                patient.mcuResults.length === 0 ||
+                                !patient.mcuResults[0].fileUrl
+                                  ? "Hasil belum tersedia"
+                                  : "Unduh Hasil MCU"}
+                              </p>
                             </TooltipContent>
                           </Tooltip>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="hover:text-red-500"
-                                onClick={() => setDeletingPatient(patient)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Hapus Pasien</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </div>
-                      </TooltipProvider>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Checkbox
-                        checked={selectedPatients.has(patient.id)}
-                        onCheckedChange={(checked) =>
-                          handleSelectPatient(patient.id, checked as boolean)
-                        }
-                        aria-label={`Pilih baris ${
-                          currentPage * rowsPerPage - rowsPerPage + index + 1
-                        }`}
-                      />
+                        </TooltipProvider>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={8} className="h-24 text-center">
+                      {searchQuery
+                        ? "Pasien tidak ditemukan."
+                        : "Belum ada data pasien."}
                     </TableCell>
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={8} className="h-24 text-center">
-                    {searchQuery
-                      ? "Pasien tidak ditemukan."
-                      : "Belum ada data pasien untuk perusahaan ini."}
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-
-        <div className="md:hidden space-y-4">
-          <div className="flex items-center justify-between text-sm px-1">
-            <label
-              htmlFor="selectAllMobile"
-              className="text-muted-foreground font-medium"
-            >
-              Pilih semua di halaman ini
-            </label>
-            <Checkbox
-              id="selectAllMobile"
-              checked={areAllOnPageSelected}
-              onCheckedChange={(checked) =>
-                handleSelectAllOnPage(checked as boolean)
-              }
-              aria-label="Pilih semua pasien di halaman ini"
-            />
+                )}
+              </TableBody>
+            </Table>
           </div>
-          {loading ? (
-            <div className="flex justify-center items-center h-24">
-              <Loader2 className="mr-2 h-6 w-6 animate-spin" /> Memuat...
-            </div>
-          ) : currentRows.length > 0 ? (
-            currentRows.map((patient) => (
-              <Card
-                key={patient.id}
-                className="data-[state=selected]:bg-blue-50 data-[state=selected]:border-blue-200"
-                data-state={
-                  selectedPatients.has(patient.id) ? "selected" : "unselected"
-                }
-              >
-                <CardHeader className="flex flex-row items-start justify-between pb-2">
-                  <div className="space-y-1">
-                    <CardTitle className="text-base">
-                      {patient.fullName}
-                    </CardTitle>
-                    <Badge variant="secondary">{patient.patientId}</Badge>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      checked={selectedPatients.has(patient.id)}
-                      onCheckedChange={(checked) =>
-                        handleSelectPatient(patient.id, checked as boolean)
-                      }
-                      aria-label={`Pilih ${patient.fullName}`}
-                    />
+
+          <div className="md:hidden space-y-4">
+            {loading ? (
+              <div className="flex justify-center items-center h-24">
+                <Loader2 className="mr-2 h-6 w-6 animate-spin" /> Memuat...
+              </div>
+            ) : currentRows.length > 0 ? (
+              currentRows.map((patient) => (
+                <Card key={patient.id}>
+                  <CardHeader className="flex flex-row items-start justify-between pb-2">
+                    <div className="space-y-1">
+                      <CardTitle className="text-base">
+                        {patient.fullName}
+                      </CardTitle>
+                      <Badge variant="secondary">{patient.patientId}</Badge>
+                    </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon">
@@ -541,29 +527,47 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                         {renderPatientActions(patient)}
                       </DropdownMenuContent>
                     </DropdownMenu>
-                  </div>
-                </CardHeader>
-                <CardContent className="text-sm text-muted-foreground space-y-2 pt-2">
-                  <div className="flex items-center">
-                    <Briefcase className="mr-2 h-4 w-4" />
-                    <span>{patient.division}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Calendar className="mr-2 h-4 w-4" />
-                    <span>
-                      Reg: {format(new Date(patient.createdAt), "dd MMM yyyy")}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          ) : (
-            <div className="text-center py-12 text-gray-500">
-              {searchQuery
-                ? "Pasien tidak ditemukan."
-                : "Belum ada data pasien."}
-            </div>
-          )}
+                  </CardHeader>
+                  <CardContent className="text-sm text-muted-foreground space-y-2 pt-2">
+                    <div className="flex items-center">
+                      <Briefcase className="mr-2 h-4 w-4" />
+                      <span>{patient.division}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Calendar className="mr-2 h-4 w-4" />
+                      <span>
+                        Reg:{" "}
+                        {format(new Date(patient.createdAt), "dd MMM yyyy")}
+                      </span>
+                    </div>
+                    <div className="pt-2">
+                      <Button
+                        className="w-full"
+                        variant="outline"
+                        disabled={
+                          !patient.mcuResults ||
+                          patient.mcuResults.length === 0 ||
+                          !patient.mcuResults[0].fileUrl
+                        }
+                        onClick={() =>
+                          window.open(patient.mcuResults[0]?.fileUrl, "_blank")
+                        }
+                      >
+                        <Download className="mr-2 h-4 w-4" />
+                        Unduh Hasil MCU
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <div className="text-center py-12 text-gray-500">
+                {searchQuery
+                  ? "Pasien tidak ditemukan."
+                  : "Belum ada data pasien."}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 mt-4">
