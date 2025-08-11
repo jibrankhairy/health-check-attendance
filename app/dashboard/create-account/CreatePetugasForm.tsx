@@ -71,7 +71,7 @@ export function CreatePetugasForm() {
           name="fullName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Full Name</FormLabel>
+              <FormLabel>Nama Lengkap</FormLabel>
               <FormControl>
                 <Input placeholder="cth: Budi Santoso" {...field} />
               </FormControl>
@@ -84,7 +84,7 @@ export function CreatePetugasForm() {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email Login</FormLabel>
+              <FormLabel>Login Email</FormLabel>
               <FormControl>
                 <Input
                   type="email"
@@ -120,7 +120,7 @@ export function CreatePetugasForm() {
             disabled={isSubmitting}
             className="bg-[#01449D] hover:bg-[#01449D]/90 text-white"
           >
-            {isSubmitting ? "Saving..." : "Create Account"}
+            {isSubmitting ? "Menyimpan..." : "Buat Akun"}
           </Button>
         </div>
       </form>

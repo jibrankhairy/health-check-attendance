@@ -73,7 +73,7 @@ export function CreateCompanyForm() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div>
-            <h3 className="text-lg font-medium">Company Information</h3>
+            <h3 className="text-lg font-medium">Informasi Perusahaan</h3>
             <Separator className="my-2" />
           </div>
           <FormField
@@ -81,7 +81,7 @@ export function CreateCompanyForm() {
             name="companyName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Company name</FormLabel>
+                <FormLabel>Nama Perusahaan</FormLabel>
                 <FormControl>
                   <Input placeholder="cth: PT. Sejahtera Abadi" {...field} />
                 </FormControl>
@@ -94,7 +94,7 @@ export function CreateCompanyForm() {
             name="companyAddress"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Company Address (Optional)</FormLabel>
+                <FormLabel>Alamat Perusahaan (Optional)</FormLabel>
                 <FormControl>
                   <Textarea
                     placeholder="Enter the complete company address"
@@ -108,7 +108,7 @@ export function CreateCompanyForm() {
 
           <div className="pt-4">
             <h3 className="text-lg font-medium">
-              HRD Login Account Information
+              Informasi Akun Login Perusahaan
             </h3>
             <Separator className="my-2" />
           </div>
@@ -117,7 +117,7 @@ export function CreateCompanyForm() {
             name="hrdFullName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Full Name of HRD</FormLabel>
+                <FormLabel>Nama Lengkap PPIC</FormLabel>
                 <FormControl>
                   <Input placeholder="cth: Siti Aisyah" {...field} />
                 </FormControl>
@@ -130,7 +130,7 @@ export function CreateCompanyForm() {
             name="hrdEmail"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>HRD Email Login</FormLabel>
+                <FormLabel>Login Email Perusahaan</FormLabel>
                 <FormControl>
                   <Input
                     type="email"
@@ -147,7 +147,7 @@ export function CreateCompanyForm() {
             name="hrdPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>HR Account Password</FormLabel>
+                <FormLabel>Password Akun Perusahaan</FormLabel>
                 <FormControl>
                   <Input
                     type="password"
@@ -166,7 +166,7 @@ export function CreateCompanyForm() {
               disabled={isSubmitting}
               className="bg-[#01449D] hover:bg-[#01449D]/90 text-white"
             >
-              {isSubmitting ? "Saving..." : "Save and Create Account"}
+              {isSubmitting ? "Menyimpan..." : "Simpan dan Buat Akun"}
             </Button>
           </div>
         </form>

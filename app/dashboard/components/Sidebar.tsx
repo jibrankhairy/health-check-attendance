@@ -32,7 +32,7 @@ export const Sidebar = () => {
     },
     {
       href: "/dashboard/create-account",
-      label: "Create Account",
+      label: "Buat Akun",
       icon: Users,
       roles: ["ADMINISTRASI"],
     },
