@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { PatientTable } from "@/components/dashboard/PatientTable";
 import { CompanyTable } from "./components/CompanyTable";
+import { DashboardStats } from "./components/DashboardStats";
 import { Toaster } from "sonner";
 import { Header } from "./components/Header";
 import { useAuth } from "@/components/context/AuthContext";
@@ -49,11 +50,18 @@ const DashboardPage = () => {
           companyName={selectedCompany.name}
         />
       );
-    } else if (user.role === "ADMINISTRASI") {
-      return <CompanyTable onSelectCompany={handleSelectCompany} />;
-    } else {
-      return <div className="p-4 md:p-8">Memuat data perusahaan Anda...</div>;
     }
+
+    if (user.role === "ADMINISTRASI") {
+      return (
+        <>
+          <DashboardStats />
+          <CompanyTable onSelectCompany={handleSelectCompany} />
+        </>
+      );
+    }
+
+    return <div className="p-4 md:p-8">Memuat data perusahaan Anda...</div>;
   };
 
   return (

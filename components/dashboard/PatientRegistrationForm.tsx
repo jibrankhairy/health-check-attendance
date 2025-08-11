@@ -191,8 +191,8 @@ export const PatientRegistrationForm = (props: PatientFormProps) => {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="Laki-laki">Laki-laki</SelectItem>
-                    <SelectItem value="Perempuan">Perempuan</SelectItem>
+                    <SelectItem value="Male">Laki-laki</SelectItem>
+                    <SelectItem value="Female">Perempuan</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
