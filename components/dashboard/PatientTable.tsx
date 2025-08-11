@@ -65,6 +65,7 @@ import { downloadQrCode } from "@/lib/patient-utils";
 export type PatientData = {
   id: number;
   patientId: string;
+  nik: string;
   fullName: string;
   email?: string;
   dob: string;
@@ -127,6 +128,7 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
     handleConfirmImport,
     isSendingEmail,
     handleSendQrEmail,
+    setParsedPatients,
   } = usePatientTable(companyId);
 
   return (
@@ -483,7 +485,7 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => (parsedPatients.length = 0)}>
+            <AlertDialogCancel onClick={() => setParsedPatients([])}>
               Batal
             </AlertDialogCancel>
             <AlertDialogAction onClick={() => handleConfirmImport(false)}>

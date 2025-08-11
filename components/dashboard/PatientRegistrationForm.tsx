@@ -28,7 +28,8 @@ import { mcuPackages, addOnItems } from "@/lib/mcu-data";
 
 type PatientToEdit = Omit<PatientFormValues, "selectedPackage" | "addOns"> & {
   id: number;
-  mcuPackage: string[];
+  mcuPackage: any;
+  nik: string;
 };
 
 type PatientFormProps = {
@@ -94,18 +95,31 @@ export const PatientRegistrationForm = (props: PatientFormProps) => {
           />
           <FormField
             control={form.control}
-            name="fullName"
+            name="nik"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nama Lengkap</FormLabel>
+                <FormLabel>NIK</FormLabel>
                 <FormControl>
-                  <Input placeholder="cth: Budi Santoso" {...field} />
+                  <Input placeholder="Masukkan NIK Karyawan" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
         </div>
+        <FormField
+          control={form.control}
+          name="fullName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nama Lengkap</FormLabel>
+              <FormControl>
+                <Input placeholder="cth: Budi Santoso" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="email"

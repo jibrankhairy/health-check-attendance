@@ -39,6 +39,7 @@ model Role {
 
 model Patient {
   id          Int         @id @default(autoincrement())
+  nik         String      @unique
   patientId   String      @unique
   fullName    String
   email       String?

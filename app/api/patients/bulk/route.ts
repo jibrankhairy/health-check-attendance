@@ -55,6 +55,7 @@ export async function POST(request: Request) {
     }
 
     let createdCount = 0;
+    let skippedCount = 0;
     const createdPatients = [];
 
     for (const patientData of patients) {
@@ -64,6 +65,15 @@ export async function POST(request: Request) {
       const dob = new Date(patientData.dob);
       if (isNaN(dob.getTime())) continue;
 
+      const existingPatient = await prisma.patient.findUnique({
+        where: { nik: String(patientData.nik) },
+      });
+
+      if (existingPatient) {
+        skippedCount++;
+        continue;
+      }
+
       const result = await prisma.$transaction(async (tx) => {
         const age = patientData.age || calculateAge(dob);
         const newPatientId = await generateUniquePatientId();
@@ -71,6 +81,7 @@ export async function POST(request: Request) {
         const newPatient = await tx.patient.create({
           data: {
             patientId: newPatientId,
+            nik: String(patientData.nik),
             fullName: patientData.fullName,
             email: patientData.email || null,
             dob: dob,
@@ -140,18 +151,17 @@ export async function POST(request: Request) {
       }
     }
 
-    if (createdCount === 0) {
-      return NextResponse.json(
-        {
-          message: `Tidak ada pasien baru yang ditambahkan. Mungkin data sudah ada.`,
-        },
-        { status: 200 }
-      );
+    let message = `Berhasil mengimpor ${createdCount} data pasien baru.`;
+    if (skippedCount > 0) {
+      message += ` ${skippedCount} data dilewati karena NIK sudah ada.`;
+    }
+    if (createdCount === 0 && skippedCount === 0) {
+      message = "Tidak ada data pasien baru untuk ditambahkan.";
     }
 
     return NextResponse.json(
-      { message: `Berhasil mengimpor ${createdCount} data pasien baru.` },
-      { status: 201 }
+      { message },
+      { status: createdCount > 0 ? 201 : 200 }
     );
   } catch (error) {
     console.error("Bulk insert failed:", error);

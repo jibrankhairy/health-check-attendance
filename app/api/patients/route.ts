@@ -8,6 +8,7 @@ const prisma = new PrismaClient();
 
 const createPatientSchema = z.object({
   patientId: z.string(),
+  nik: z.string().min(1, "NIK tidak boleh kosong."),
   fullName: z.string().min(3, "Nama lengkap minimal 3 karakter"),
   email: z
     .string()
@@ -50,6 +51,7 @@ export async function POST(request: Request) {
     }
 
     const {
+      nik,
       patientId,
       fullName,
       email,
@@ -64,10 +66,22 @@ export async function POST(request: Request) {
       companyId,
     } = validation.data;
 
+    const existingPatient = await prisma.patient.findUnique({
+      where: { nik: nik },
+    });
+
+    if (existingPatient) {
+      return NextResponse.json(
+        { message: `Pasien dengan NIK ${nik} sudah terdaftar.` },
+        { status: 409 }
+      );
+    }
+
     const result = await prisma.$transaction(async (tx) => {
       const newPatient = await tx.patient.create({
         data: {
           patientId,
+          nik,
           fullName,
           email: email || null,
           dob: new Date(dob),

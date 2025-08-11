@@ -5,6 +5,7 @@ import { z } from "zod";
 const prisma = new PrismaClient();
 
 const updatePatientSchema = z.object({
+  nik: z.string().min(1, "NIK tidak boleh kosong."),
   fullName: z.string().min(3, "Nama lengkap minimal 3 karakter"),
   email: z
     .string()
@@ -77,32 +78,31 @@ export async function PUT(
       );
     }
 
-    const {
-      fullName,
-      email,
-      dob,
-      age,
-      gender,
-      position,
-      division,
-      status,
-      location,
-      mcuPackage,
-    } = validation.data;
+    const { nik, ...restOfData } = validation.data;
+
+    const existingPatient = await prisma.patient.findFirst({
+      where: {
+        nik: nik,
+        NOT: {
+          id: id,
+        },
+      },
+    });
+
+    if (existingPatient) {
+      return NextResponse.json(
+        { message: `NIK ${nik} sudah digunakan oleh pasien lain.` },
+        { status: 409 }
+      );
+    }
 
     const updatedPatient = await prisma.patient.update({
       where: { id },
       data: {
-        fullName,
-        email: email || null,
-        dob: new Date(dob),
-        age,
-        gender,
-        position,
-        division,
-        status,
-        location,
-        mcuPackage,
+        nik,
+        ...restOfData,
+        dob: new Date(restOfData.dob),
+        email: restOfData.email || null,
       },
     });
 

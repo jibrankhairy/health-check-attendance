@@ -9,6 +9,7 @@ import { mcuPackages } from "@/lib/mcu-data";
 
 const formSchema = z.object({
   patientId: z.string().min(1, "ID Pasien tidak boleh kosong."),
+  nik: z.string().min(1, "NIK tidak boleh kosong."),
   fullName: z.string().min(3, { message: "Nama lengkap minimal 3 karakter." }),
   email: z
     .string()
@@ -52,6 +53,7 @@ export const usePatientForm = ({
     resolver: zodResolver(formSchema),
     defaultValues: {
       patientId: `MCU-${Math.floor(1000 + Math.random() * 9000)}`,
+      nik: "",
       fullName: "",
       email: "",
       dob: "",
@@ -69,9 +71,9 @@ export const usePatientForm = ({
   useEffect(() => {
     if (patientToEdit) {
       const mainPackage = mcuPackages.find((p) =>
-        patientToEdit.mcuPackage.includes(p.id)
+        (patientToEdit.mcuPackage as string[]).includes(p.id)
       );
-      const addOns = patientToEdit.mcuPackage.filter(
+      const addOns = (patientToEdit.mcuPackage as string[]).filter(
         (item) => item !== mainPackage?.id
       );
 
@@ -143,7 +145,8 @@ export const usePatientForm = ({
       error: (errorData) => {
         const errors = errorData?.error;
         if (errors) {
-          return `Gagal: ${Object.values(errors).flat().join(", ")}`;
+          const errorMessages = Object.values(errors).flat().join(", ");
+          return `Gagal: ${errorMessages}`;
         }
         return (
           errorData.message || "Gagal memproses data. Cek kembali input Anda."
