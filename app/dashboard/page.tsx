@@ -52,7 +52,7 @@ const DashboardPage = () => {
     } else if (user.role === "ADMINISTRASI") {
       return <CompanyTable onSelectCompany={handleSelectCompany} />;
     } else {
-      return <div className="p-8">Memuat data perusahaan Anda...</div>;
+      return <div className="p-4 md:p-8">Memuat data perusahaan Anda...</div>;
     }
   };
 
@@ -62,10 +62,12 @@ const DashboardPage = () => {
       <Header
         companyName={selectedCompany?.name}
         onBack={
-          user.role === "ADMINISTRASI" ? handleBackToCompanies : undefined
+          user.role === "ADMINISTRASI" && selectedCompany
+            ? handleBackToCompanies
+            : undefined
         }
       />
-      <main className="flex-1">{renderContent()}</main>
+      <main className="flex-1 overflow-y-auto">{renderContent()}</main>
     </>
   );
 };

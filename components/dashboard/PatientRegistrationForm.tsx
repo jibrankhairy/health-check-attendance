@@ -51,7 +51,7 @@ const PackageCard = ({
   <div
     onClick={onClick}
     className={cn(
-      "border-2 rounded-lg p-4 text-center cursor-pointer transition-all duration-200 ease-in-out transform hover:-translate-y-1",
+      "border-2 rounded-lg p-3 text-center cursor-pointer transition-all duration-200 ease-in-out transform hover:-translate-y-1",
       isSelected
         ? "border-blue-600 bg-blue-50 ring-2 ring-blue-300"
         : "border-gray-200 bg-white hover:border-blue-400"
@@ -59,7 +59,7 @@ const PackageCard = ({
   >
     <h3
       className={cn(
-        "font-semibold",
+        "font-semibold text-sm",
         isSelected ? "text-blue-800" : "text-gray-700"
       )}
     >
@@ -77,8 +77,9 @@ export const PatientRegistrationForm = (props: PatientFormProps) => {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-4 max-h-[80vh] overflow-y-auto pr-4"
+        className="space-y-4 max-h-[80vh] overflow-y-auto p-1 pr-2 md:pr-4"
       >
+        {/* Data Diri */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -171,6 +172,7 @@ export const PatientRegistrationForm = (props: PatientFormProps) => {
           />
         </div>
 
+        {/* Data Pekerjaan */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -255,6 +257,7 @@ export const PatientRegistrationForm = (props: PatientFormProps) => {
 
         <Separator />
 
+        {/* Paket MCU */}
         <FormField
           control={form.control}
           name="selectedPackage"
@@ -262,7 +265,7 @@ export const PatientRegistrationForm = (props: PatientFormProps) => {
             <FormItem className="space-y-3">
               <FormLabel className="text-base">Pilih Paket MCU</FormLabel>
               <FormControl>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 pt-1">
                   {mcuPackages.map((pkg) => (
                     <PackageCard
                       key={pkg.id}
@@ -302,7 +305,7 @@ export const PatientRegistrationForm = (props: PatientFormProps) => {
                   Pilih item jika ada pemeriksaan tambahan di luar paket.
                 </FormDescription>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {addOnItems.map((item) => (
                   <FormField
                     key={item.id}
@@ -327,7 +330,7 @@ export const PatientRegistrationForm = (props: PatientFormProps) => {
                             }}
                           />
                         </FormControl>
-                        <FormLabel className="font-normal">
+                        <FormLabel className="font-normal text-sm">
                           {item.label}
                         </FormLabel>
                       </FormItem>
@@ -340,17 +343,18 @@ export const PatientRegistrationForm = (props: PatientFormProps) => {
           )}
         />
 
-        <DialogFooter className="pt-4 sticky bottom-0 bg-white pb-2 -mb-2">
+        <DialogFooter className="pt-6 sticky bottom-0 bg-white pb-2 -mb-2 flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
           <Button
             type="button"
             variant="outline"
+            className="w-full sm:w-auto"
             onClick={() => props.setOpen(false)}
           >
             Batal
           </Button>
           <Button
             type="submit"
-            className="bg-[#01449D] hover:bg-[#01449D]/90 text-white"
+            className="bg-[#01449D] hover:bg-[#01449D]/90 text-white w-full sm:w-auto"
             disabled={form.formState.isSubmitting}
           >
             {patientToEdit ? "Simpan Perubahan" : "Simpan & Buat QR Code"}

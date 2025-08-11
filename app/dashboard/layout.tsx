@@ -13,11 +13,13 @@ export default function DashboardLayout({
 }) {
   return (
     <AuthProvider>
-      <AuthGuard allowedRoles={["ADMINISTRASI"]}>
+      <AuthGuard allowedRoles={["ADMINISTRASI", "HRD", "PETUGAS"]}>
         <SidebarProvider>
           <div className="flex min-h-screen w-full bg-gray-50 font-sans">
-            <Sidebar />
-            <main className="flex-1 flex flex-col">{children}</main>
+            <div className="hidden md:flex">
+              <Sidebar />
+            </div>
+            <div className="flex flex-1 flex-col">{children}</div>
           </div>
         </SidebarProvider>
       </AuthGuard>

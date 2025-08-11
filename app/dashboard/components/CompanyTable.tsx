@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Building, Search } from "lucide-react";
+import { Building, Search, Users, Calendar, Hash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 type CompanyData = {
   id: string;
@@ -69,37 +70,36 @@ export const CompanyTable = ({ onSelectCompany }: CompanyTableProps) => {
   const totalPages = Math.ceil(filteredCompanies.length / rowsPerPage);
 
   if (loading) {
-    return <div className="p-8">Memuat data perusahaan...</div>;
+    return <div className="p-4 md:p-8">Memuat data perusahaan...</div>;
   }
 
   return (
-    <div className="flex-1 p-8">
+    <div className="flex-1 p-4 md:p-8">
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-2">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Search for companies..."
-              className="pl-9"
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setCurrentPage(1);
-              }}
-            />
-          </div>
+        <div className="relative w-full md:w-auto">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Cari perusahaan..."
+            className="pl-9 w-full md:w-64"
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
+          />
         </div>
       </div>
 
-      <div className="rounded-lg border bg-white">
+      {/* Tampilan Tabel untuk Desktop */}
+      <div className="hidden md:block rounded-lg border bg-white">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead className="w-[50px] text-center">No.</TableHead>
-              <TableHead>Company name</TableHead>
-              <TableHead>Company ID</TableHead>
-              <TableHead>Number of Patients</TableHead>
-              <TableHead>Date Created</TableHead>
+              <TableHead>Nama Perusahaan</TableHead>
+              <TableHead>ID Perusahaan</TableHead>
+              <TableHead>Jumlah Pasien</TableHead>
+              <TableHead>Tanggal Dibuat</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -137,15 +137,59 @@ export const CompanyTable = ({ onSelectCompany }: CompanyTableProps) => {
         </Table>
       </div>
 
-      <div className="flex items-center justify-between mt-4">
-        <div className="text-sm text-gray-600">
-          Showing {Math.min(indexOfFirstRow + 1, filteredCompanies.length)} to{" "}
-          {Math.min(indexOfLastRow, filteredCompanies.length)} of{" "}
-          {filteredCompanies.length} companies
+      {/* Tampilan Card untuk Mobile */}
+      <div className="md:hidden space-y-4">
+        {currentRows.length > 0 ? (
+          currentRows.map((company) => (
+            <Card
+              key={company.id}
+              className="cursor-pointer hover:bg-gray-50 active:scale-95 transition-transform"
+              onClick={() => onSelectCompany(company.id, company.name)}
+            >
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center">
+                  <Building className="mr-2 h-5 w-5 text-blue-600" />
+                  {company.name}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm text-gray-600 space-y-1 pt-2">
+                <div className="flex items-center">
+                  <Hash className="mr-2 h-4 w-4" />
+                  <span>ID: {company.id}</span>
+                </div>
+                <div className="flex items-center">
+                  <Users className="mr-2 h-4 w-4" />
+                  <span>{company._count.patients} Pasien</span>
+                </div>
+                <div className="flex items-center">
+                  <Calendar className="mr-2 h-4 w-4" />
+                  <span>
+                    Dibuat:{" "}
+                    {new Date(company.createdAt).toLocaleDateString("id-ID")}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <div className="text-center py-12 text-gray-500">
+            {searchQuery
+              ? "Perusahaan tidak ditemukan."
+              : "Belum ada data perusahaan."}
+          </div>
+        )}
+      </div>
+
+      {/* Paginasi */}
+      <div className="flex flex-col md:flex-row items-center justify-between mt-4 gap-4">
+        <div className="text-sm text-gray-600 order-last md:order-first">
+          Menampilkan {Math.min(indexOfFirstRow + 1, filteredCompanies.length)}{" "}
+          - {Math.min(indexOfLastRow, filteredCompanies.length)} dari{" "}
+          {filteredCompanies.length} perusahaan
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center justify-center flex-wrap gap-2 md:gap-4">
           <div className="flex items-center gap-2">
-            <p className="text-sm">Lines per page:</p>
+            <p className="text-sm hidden sm:block">Baris:</p>
             <Select
               value={`${rowsPerPage}`}
               onValueChange={(value: string) => {
@@ -166,7 +210,7 @@ export const CompanyTable = ({ onSelectCompany }: CompanyTableProps) => {
             </Select>
           </div>
           <div className="text-sm font-medium">
-            Page {currentPage} of {totalPages}
+            Hal {currentPage} dari {totalPages}
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -175,7 +219,7 @@ export const CompanyTable = ({ onSelectCompany }: CompanyTableProps) => {
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
             >
-              Previous
+              Prev
             </Button>
             <Button
               variant="outline"
@@ -183,7 +227,7 @@ export const CompanyTable = ({ onSelectCompany }: CompanyTableProps) => {
               onClick={() =>
                 setCurrentPage((prev) => Math.min(prev + 1, totalPages))
               }
-              disabled={currentPage === totalPages}
+              disabled={currentPage === totalPages || totalPages === 0}
             >
               Next
             </Button>
