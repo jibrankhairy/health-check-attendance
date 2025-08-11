@@ -10,6 +10,7 @@ import {
   Loader2,
   Upload,
   QrCode,
+  Mail,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { PatientRegistrationForm } from "./PatientRegistrationForm";
 import {
   Select,
@@ -51,7 +62,6 @@ import { ConfirmationDialog } from "@/components/ConfirmationDialog";
 import { usePatientTable } from "@/hooks/usePatientTable";
 import { downloadQrCode } from "@/lib/patient-utils";
 
-// Tipe data sudah sinkron dengan schema.prisma
 export type PatientData = {
   id: number;
   patientId: string;
@@ -111,6 +121,12 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
     currentRows,
     totalPages,
     areAllOnPageSelected,
+    isImportConfirmOpen,
+    setIsImportConfirmOpen,
+    parsedPatients,
+    handleConfirmImport,
+    isSendingEmail,
+    handleSendQrEmail,
   } = usePatientTable(companyId);
 
   return (
@@ -160,7 +176,7 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
               ) : (
                 <Upload className="mr-2 h-4 w-4" />
               )}
-              {isImporting ? "Mengimpor..." : "Import Excel"}
+              {isImporting ? "Memproses..." : "Import Excel"}
             </Button>
             <Dialog
               open={isDialogOpen}
@@ -209,11 +225,10 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                 <TableHead className="w-[50px] text-center">No.</TableHead>
                 <TableHead>ID Pasien</TableHead>
                 <TableHead>Nama Lengkap</TableHead>
-                {/* --- PERUBAHAN DI SINI --- */}
                 <TableHead>Divisi</TableHead>
                 <TableHead>Tgl. Registrasi</TableHead>
                 <TableHead className="text-center">QR Code</TableHead>
-                <TableHead className="w-[180px] text-center">Aksi</TableHead>
+                <TableHead className="w-[200px] text-center">Aksi</TableHead>
                 <TableHead className="w-auto text-center">
                   <div className="flex items-center justify-center gap-2">
                     <Checkbox
@@ -259,7 +274,6 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                     <TableCell className="font-medium">
                       {patient.fullName}
                     </TableCell>
-                    {/* --- PERUBAHAN DI SINI --- */}
                     <TableCell>{patient.division}</TableCell>
                     <TableCell>
                       {format(new Date(patient.createdAt), "dd MMM yyyy")}
@@ -306,6 +320,29 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                             </TooltipTrigger>
                             <TooltipContent>
                               <p>Edit Pasien</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="hover:text-sky-500"
+                                disabled={
+                                  !patient.email ||
+                                  isSendingEmail === patient.id
+                                }
+                                onClick={() => handleSendQrEmail(patient)}
+                              >
+                                {isSendingEmail === patient.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Mail className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Kirim Ulang QR ke Email</p>
                             </TooltipContent>
                           </Tooltip>
                           <Tooltip>
@@ -430,6 +467,37 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
           </div>
         </div>
       </div>
+
+      <AlertDialog
+        open={isImportConfirmOpen}
+        onOpenChange={setIsImportConfirmOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Konfirmasi Impor Data</AlertDialogTitle>
+            <AlertDialogDescription>
+              Ditemukan <strong>{parsedPatients.length} data pasien</strong> di
+              dalam file Excel.
+              <br />
+              Pilih bagaimana Anda ingin menyimpan data ini:
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => (parsedPatients.length = 0)}>
+              Batal
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={() => handleConfirmImport(false)}>
+              Simpan Saja
+            </AlertDialogAction>
+            <AlertDialogAction
+              onClick={() => handleConfirmImport(true)}
+              className="bg-[#01449D] hover:bg-[#01449D]/90"
+            >
+              Simpan & Kirim Email
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <McuProgressModal
         mcuResultId={viewingMcuResultId}

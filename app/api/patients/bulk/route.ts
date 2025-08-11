@@ -45,7 +45,7 @@ async function generateUniquePatientId(): Promise<string> {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { patients, companyId } = body;
+    const { patients, companyId, sendEmail } = body;
 
     if (!Array.isArray(patients) || !companyId) {
       return NextResponse.json(
@@ -106,40 +106,36 @@ export async function POST(request: Request) {
       createdCount++;
     }
 
-    for (const patient of createdPatients) {
-      if (patient.email) {
-        try {
-          const qrCodeDataUrl = await QRCode.toDataURL(patient.qrCode);
-          const base64Data = qrCodeDataUrl.replace(
-            /^data:image\/png;base64,/,
-            ""
-          );
+    if (sendEmail) {
+      for (const patient of createdPatients) {
+        if (patient.email) {
+          try {
+            const qrCodeDataUrl = await QRCode.toDataURL(patient.qrCode);
+            const base64Data = qrCodeDataUrl.replace(
+              /^data:image\/png;base64,/,
+              ""
+            );
 
-          await transporter.sendMail({
-            from: process.env.EMAIL_FROM,
-            to: patient.email,
-            subject: `QR Code Pendaftaran MCU untuk ${patient.fullName}`,
-            html: `<p><h1>Pendaftaran MCU Berhasil</h1>
-            <p>Halo <strong>${patient.fullName}</strong>,</p>
-            <p>Pendaftaran Anda untuk Medical Check Up telah berhasil dengan nomor pasien <strong>${patient.patientId}</strong>.</p>
-            <p>Silakan tunjukkan QR Code di bawah ini kepada petugas saat tiba di lokasi.</p>
-            <p>Terima kasih.</p>
-            <br>
-            <img src="cid:qrcode"/>`,
-            attachments: [
-              {
-                filename: "qrcode.png",
-                content: base64Data,
-                encoding: "base64",
-                cid: "qrcode",
-              },
-            ],
-          });
-        } catch (emailError) {
-          console.error(
-            `Gagal mengirim email ke ${patient.email}:`,
-            emailError
-          );
+            await transporter.sendMail({
+              from: process.env.EMAIL_FROM,
+              to: patient.email,
+              subject: `QR Code Pendaftaran MCU untuk ${patient.fullName}`,
+              html: `<p><h1>Pendaftaran MCU Berhasil</h1><p>Halo <strong>${patient.fullName}</strong>,</p><p>Pendaftaran Anda untuk Medical Check Up telah berhasil dengan nomor pasien <strong>${patient.patientId}</strong>.</p><p>Silakan tunjukkan QR Code di bawah ini kepada petugas saat tiba di lokasi.</p><p>Terima kasih.</p><br><img src="cid:qrcode"/>`,
+              attachments: [
+                {
+                  filename: "qrcode.png",
+                  content: base64Data,
+                  encoding: "base64",
+                  cid: "qrcode",
+                },
+              ],
+            });
+          } catch (emailError) {
+            console.error(
+              `Gagal mengirim email ke ${patient.email}:`,
+              emailError
+            );
+          }
         }
       }
     }

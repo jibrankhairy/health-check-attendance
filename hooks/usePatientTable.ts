@@ -1,9 +1,6 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import {
-  downloadMultipleQrCodes,
-  processImportedExcelFile,
-} from "@/lib/patient-utils";
+import { downloadMultipleQrCodes, parseExcelFile } from "@/lib/patient-utils";
 import { type PatientData } from "@/components/dashboard/PatientTable";
 
 export const usePatientTable = (companyId: string) => {
@@ -16,14 +13,12 @@ export const usePatientTable = (companyId: string) => {
   const [deletingPatient, setDeletingPatient] = useState<PatientData | null>(
     null
   );
-
   const [viewingMcuResultId, setViewingMcuResultId] = useState<string | null>(
     null
   );
   const [viewingPatientPackage, setViewingPatientPackage] = useState<
     string[] | null
   >(null);
-
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -31,7 +26,11 @@ export const usePatientTable = (companyId: string) => {
     new Set()
   );
   const [isDownloadingAllQrs, setIsDownloadingAllQrs] = useState(false);
+
   const [isImporting, setIsImporting] = useState(false);
+  const [isImportConfirmOpen, setIsImportConfirmOpen] = useState(false);
+  const [parsedPatients, setParsedPatients] = useState<any[]>([]);
+  const [isSendingEmail, setIsSendingEmail] = useState<number | null>(null);
 
   const fetchPatients = useCallback(async () => {
     if (!companyId) return;
@@ -103,12 +102,83 @@ export const usePatientTable = (companyId: string) => {
     if (!file) return;
 
     setIsImporting(true);
-    await processImportedExcelFile(file, companyId, fetchPatients);
-    setIsImporting(false);
-
-    if (event.target) {
-      event.target.value = "";
+    try {
+      const parsedData = await parseExcelFile(file);
+      if (parsedData.length === 0) {
+        toast.info("Tidak ada data valid yang ditemukan di file Excel.");
+        return;
+      }
+      setParsedPatients(parsedData);
+      setIsImportConfirmOpen(true);
+    } catch (error) {
+      toast.error(
+        `Gagal memproses file: ${
+          error instanceof Error ? error.message : "Terjadi kesalahan"
+        }`
+      );
+    } finally {
+      setIsImporting(false);
+      if (event.target) event.target.value = "";
     }
+  };
+
+  const handleConfirmImport = async (sendEmail: boolean) => {
+    setIsImportConfirmOpen(false);
+    if (parsedPatients.length === 0) return;
+
+    const toastId = toast.loading("Mengimpor data pasien...");
+    try {
+      const response = await fetch("/api/patients/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          patients: parsedPatients,
+          companyId,
+          sendEmail,
+        }),
+      });
+      const resultData = await response.json();
+      if (!response.ok)
+        throw new Error(resultData.message || "Gagal mengimpor data.");
+
+      toast.success(resultData.message, { id: toastId });
+      fetchPatients();
+    } catch (error) {
+      toast.error(
+        `Error: ${
+          error instanceof Error ? error.message : "Terjadi kesalahan"
+        }`,
+        { id: toastId }
+      );
+    } finally {
+      setParsedPatients([]);
+    }
+  };
+
+  const handleSendQrEmail = async (patient: PatientData) => {
+    if (!patient.email) {
+      toast.error("Pasien ini tidak memiliki alamat email.");
+      return;
+    }
+    setIsSendingEmail(patient.id);
+    const promise = fetch("/api/patients/send-qr", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ patientId: patient.id }),
+    }).then(async (res) => {
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Gagal mengirim email.");
+      }
+      return res.json();
+    });
+
+    toast.promise(promise, {
+      loading: `Mengirim QR Code ke ${patient.fullName}...`,
+      success: (data) => data.message,
+      error: (err) => err.message,
+    });
+    promise.finally(() => setIsSendingEmail(null));
   };
 
   const handleDownloadAllSelectedQrs = async () => {
@@ -203,5 +273,12 @@ export const usePatientTable = (companyId: string) => {
     currentRows,
     totalPages,
     areAllOnPageSelected,
+    isImportConfirmOpen,
+    setIsImportConfirmOpen,
+    parsedPatients,
+    setParsedPatients,
+    handleConfirmImport,
+    isSendingEmail,
+    handleSendQrEmail,
   };
 };

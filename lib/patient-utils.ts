@@ -3,120 +3,103 @@ import { toast } from "sonner";
 import { type PatientData } from "@/components/dashboard/PatientTable";
 import { mcuPackages } from "@/lib/mcu-data";
 
-export const processImportedExcelFile = async (
-  file: File,
-  companyId: string,
-  onComplete: () => void
-) => {
-  const reader = new FileReader();
-  reader.readAsArrayBuffer(file);
+/**
+ * Fungsi ini sekarang hanya bertugas membaca file Excel dan mengubahnya menjadi data JSON.
+ * Tidak lagi mengirim data ke API.
+ * @param file File Excel yang diunggah.
+ * @returns Promise yang berisi array data pasien yang sudah diparsing.
+ */
+export const parseExcelFile = (file: File): Promise<any[]> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsArrayBuffer(file);
 
-  reader.onload = async (e) => {
-    try {
-      const data = e.target?.result;
-      const workbook = XLSX.read(data, { type: "array" });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-
-      const json = XLSX.utils.sheet_to_json(worksheet, {
-        raw: false,
-        dateNF: "yyyy-mm-dd",
-      });
-
-      if (!json || json.length === 0) {
-        throw new Error("File Excel kosong atau format tidak sesuai.");
-      }
-
-      const newPatients = json.map((row: any, index: number) => {
-        const nik = row["NIK"];
-        const name = row["Name"];
-        const dob = row["Date of birth"];
-
-        if (!nik || !name || !dob) {
-          throw new Error(
-            `Data NIK, Name, atau Date of Birth kosong di baris Excel ${
-              index + 2
-            }.`
-          );
-        }
-
-        const mcuPackage = [];
-        const mainPackageFromExcel = row["Package"];
-
-        if (
-          mainPackageFromExcel &&
-          String(mainPackageFromExcel).trim() !== ""
-        ) {
-          const matchedPackage = mcuPackages.find((p) =>
-            p.label
-              .toLowerCase()
-              .includes(String(mainPackageFromExcel).trim().toLowerCase())
-          );
-
-          if (matchedPackage) {
-            mcuPackage.push(matchedPackage.id);
-          }
-        }
-
-        const addOnColumns = [
-          "EKG",
-          "Treadmill",
-          "Audiometry",
-          "Spirometry",
-          "Panel Hepatitis",
-          "Biomonitoring",
-        ];
-        addOnColumns.forEach((addOnName) => {
-          const excelAddOnName =
-            addOnName === "Panel Hepatitis" ? "Panel Hepatitits" : addOnName;
-          if (
-            row[excelAddOnName] &&
-            String(row[excelAddOnName]).trim() !== ""
-          ) {
-            mcuPackage.push(addOnName);
-          }
+    reader.onload = (e) => {
+      try {
+        const data = e.target?.result;
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const json = XLSX.utils.sheet_to_json(worksheet, {
+          raw: false,
+          dateNF: "yyyy-mm-dd",
         });
 
-        return {
-          nik: String(nik),
-          fullName: String(name),
-          email: row["Email"] || null,
-          dob: dob,
-          age: parseInt(row["Age"], 10),
-          position: String(row["Position"]),
-          division: String(row["Division"]),
-          status: String(row["Status"]),
-          location: String(row["Location"]),
-          gender: String(row["Gender"]),
-          mcuPackage: mcuPackage,
-        };
-      });
+        if (!json || json.length === 0) {
+          resolve([]);
+          return;
+        }
 
-      if (newPatients.length === 0) {
-        toast.info("Tidak ada data pasien yang valid untuk diimpor.");
-        return;
+        const newPatients = json.map((row: any, index: number) => {
+          const nik = row["NIK"];
+          const name = row["Name"];
+          const dob = row["Date of birth"];
+
+          if (!nik || !name || !dob) {
+            throw new Error(
+              `Data NIK, Name, atau Date of Birth kosong di baris Excel ${
+                index + 2
+              }.`
+            );
+          }
+
+          const mcuPackage: string[] = [];
+          const mainPackageFromExcel = row["Package"];
+          if (
+            mainPackageFromExcel &&
+            String(mainPackageFromExcel).trim() !== ""
+          ) {
+            const matchedPackage = mcuPackages.find((p) =>
+              p.label
+                .toLowerCase()
+                .includes(String(mainPackageFromExcel).trim().toLowerCase())
+            );
+            if (matchedPackage) {
+              mcuPackage.push(matchedPackage.id);
+            }
+          }
+
+          const addOnColumns = [
+            "EKG",
+            "Treadmill",
+            "Audiometry",
+            "Spirometry",
+            "Panel Hepatitis",
+            "Biomonitoring",
+          ];
+          addOnColumns.forEach((addOnName) => {
+            const excelAddOnName =
+              addOnName === "Panel Hepatitis" ? "Panel Hepatitits" : addOnName;
+            if (
+              row[excelAddOnName] &&
+              String(row[excelAddOnName]).trim() !== ""
+            ) {
+              mcuPackage.push(addOnName);
+            }
+          });
+
+          return {
+            nik: String(nik),
+            fullName: String(name),
+            email: row["Email"] || null,
+            dob: dob,
+            age: parseInt(row["Age"], 10),
+            position: String(row["Position"]),
+            division: String(row["Division"]),
+            status: String(row["Status"]),
+            location: String(row["Location"]),
+            gender: String(row["Gender"]),
+            mcuPackage: mcuPackage,
+          };
+        });
+        resolve(newPatients);
+      } catch (error) {
+        reject(error);
       }
+    };
 
-      const response = await fetch("/api/patients/bulk", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ patients: newPatients, companyId }),
-      });
-
-      const resultData = await response.json();
-      if (!response.ok) {
-        throw new Error(resultData.message || "Gagal mengimpor data pasien.");
-      }
-
-      toast.success(resultData.message);
-      onComplete();
-    } catch (error) {
-      console.error("Error importing patients:", error);
-      toast.error(
-        `Error: ${error instanceof Error ? error.message : "Terjadi kesalahan"}`
-      );
-    }
-  };
+    reader.onerror = (error) => reject(error);
+  });
 };
 
 export const downloadQrCode = async (qrCode: string, patientName: string) => {
