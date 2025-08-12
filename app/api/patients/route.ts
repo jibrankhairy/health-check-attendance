@@ -1,3 +1,4 @@
+// app/api/patients/route.ts
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
@@ -80,19 +81,28 @@ export async function POST(request: Request) {
         },
       });
 
+      // --- [PERBAIKAN UTAMA DI SINI] ---
+      // 3. Buat konten yang informatif untuk QR Code
+      const qrContent = `Nama Pasien: ${fullName}\nID Pasien: ${patientId}\nID Pemeriksaan: ${newMcuResult.id}`;
+      
+      // 4. Buat gambar QR Code sebagai Data URL dari konten di atas
+      const qrCodeDataUrl = await QRCode.toDataURL(qrContent);
+
+      // 5. Update pasien dengan Data URL QR Code yang baru
       const updatedPatient = await tx.patient.update({
         where: { id: newPatient.id },
         data: {
-          qrCode: newMcuResult.id,
+          qrCode: qrCodeDataUrl,
         },
       });
+      // ------------------------------------
 
       return { patient: updatedPatient, mcuResult: newMcuResult };
     });
 
     if (email) {
       try {
-        const qrCodeDataUrl = await QRCode.toDataURL(result.patient.qrCode);
+        const qrCodeDataUrl = result.patient.qrCode; 
         const base64Data = qrCodeDataUrl.replace(
           /^data:image\/png;base64,/,
           ""

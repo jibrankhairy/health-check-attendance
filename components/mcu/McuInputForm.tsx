@@ -1,0 +1,402 @@
+// components/mcu/McuInputForm.tsx
+"use client";
+
+import React, { useState, useEffect, useRef } from "react";
+import { useForm, FormProvider } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+// [DIUBAH] Tambahkan ikon Download
+import { Loader2, Upload, Download } from "lucide-react"; 
+import * as XLSX from "xlsx";
+
+import { HematologiForm } from "./forms/HematologiForm";
+import { KimiaDarahForm } from "./forms/KimiaDarahForm";
+import { UrinalisaForm } from "./forms/UrinalisaForm";
+import { AudiometriSpirometriForm } from "./forms/AudiometriSpirometriForm";
+import { UsgAbdomenForm } from "./forms/UsgAbdomenForm";
+import { UsgMammaeForm } from "./forms/UsgMammaeForm";
+import { EkgForm } from "./forms/EkgForm";
+import { RontgenForm } from "./forms/RontgenForm";
+import { ConclusionForm } from "./forms/ConclusionForm";
+
+const formSchema = z.object({
+  // --- Hematologi ---
+  hemoglobin: z.string().optional().nullable(),
+  leukosit: z.string().optional().nullable(),
+  trombosit: z.string().optional().nullable(),
+  hematokrit: z.string().optional().nullable(),
+  eritrosit: z.string().optional().nullable(),
+  led: z.string().optional().nullable(),
+  mcv: z.string().optional().nullable(),
+  mch: z.string().optional().nullable(),
+  mchc: z.string().optional().nullable(),
+  rdw: z.string().optional().nullable(),
+  mpv: z.string().optional().nullable(),
+  pdw: z.string().optional().nullable(),
+  hitungJenisEosinofil: z.string().optional().nullable(),
+  hitungJenisBasofil: z.string().optional().nullable(),
+  hitungJenisNeutrofilStab: z.string().optional().nullable(),
+  hitungJenisNeutrofilSegmen: z.string().optional().nullable(),
+  hitungJenisLimfosit: z.string().optional().nullable(),
+  hitungJenisMonosit: z.string().optional().nullable(),
+
+  // --- Kimia Darah ---
+  gulaDarahPuasa: z.string().optional().nullable(),
+  gulaDarah2JamPP: z.string().optional().nullable(),
+  hbsag: z.string().optional().nullable(),
+  sgot: z.string().optional().nullable(),
+  sgpt: z.string().optional().nullable(),
+  ureum: z.string().optional().nullable(),
+  kreatinin: z.string().optional().nullable(),
+  asamUrat: z.string().optional().nullable(),
+  kolesterolTotal: z.string().optional().nullable(),
+  trigliserida: z.string().optional().nullable(),
+  hdl: z.string().optional().nullable(),
+  ldl: z.string().optional().nullable(),
+  bilirubinTotal: z.string().optional().nullable(),
+  bilirubinDirect: z.string().optional().nullable(),
+  alkaliPhosphatase: z.string().optional().nullable(),
+
+  // --- Urinalisa ---
+  urinWarna: z.string().optional().nullable(),
+  urinKejernihan: z.string().optional().nullable(),
+  urinBau: z.string().optional().nullable(),
+  urinBeratJenis: z.string().optional().nullable(),
+  urinPh: z.string().optional().nullable(),
+  urinProtein: z.string().optional().nullable(),
+  urinBilirubin: z.string().optional().nullable(),
+  urinGlukosa: z.string().optional().nullable(),
+  urinUrobilinogen: z.string().optional().nullable(),
+  urinKeton: z.string().optional().nullable(),
+  urinNitrit: z.string().optional().nullable(),
+  urinLeukositEsterase: z.string().optional().nullable(),
+  urinBlood: z.string().optional().nullable(),
+  urinSedimenEritrosit: z.string().optional().nullable(),
+  urinSedimenLeukosit: z.string().optional().nullable(),
+  urinSedimenEpitel: z.string().optional().nullable(),
+  urinCaOxalat: z.string().optional().nullable(),
+  urinUridAcid: z.string().optional().nullable(),
+  urinGranulaCast: z.string().optional().nullable(),
+
+  // --- Audiometri ---
+  audioAcKanan250: z.coerce.number().optional().nullable(),
+  audioAcKanan500: z.coerce.number().optional().nullable(),
+  audioAcKanan1000: z.coerce.number().optional().nullable(),
+  audioAcKanan2000: z.coerce.number().optional().nullable(),
+  audioAcKanan3000: z.coerce.number().optional().nullable(),
+  audioAcKanan4000: z.coerce.number().optional().nullable(),
+  audioAcKanan6000: z.coerce.number().optional().nullable(),
+  audioAcKanan8000: z.coerce.number().optional().nullable(),
+  audioAcKiri250: z.coerce.number().optional().nullable(),
+  audioAcKiri500: z.coerce.number().optional().nullable(),
+  audioAcKiri1000: z.coerce.number().optional().nullable(),
+  audioAcKiri2000: z.coerce.number().optional().nullable(),
+  audioAcKiri3000: z.coerce.number().optional().nullable(),
+  audioAcKiri4000: z.coerce.number().optional().nullable(),
+  audioAcKiri6000: z.coerce.number().optional().nullable(),
+  audioAcKiri8000: z.coerce.number().optional().nullable(),
+  audioBcKanan250: z.coerce.number().optional().nullable(),
+  audioBcKanan500: z.coerce.number().optional().nullable(),
+  audioBcKanan1000: z.coerce.number().optional().nullable(),
+  audioBcKanan2000: z.coerce.number().optional().nullable(),
+  audioBcKanan3000: z.coerce.number().optional().nullable(),
+  audioBcKanan4000: z.coerce.number().optional().nullable(),
+  audioBcKanan6000: z.coerce.number().optional().nullable(),
+  audioBcKanan8000: z.coerce.number().optional().nullable(),
+  audioBcKiri250: z.coerce.number().optional().nullable(),
+  audioBcKiri500: z.coerce.number().optional().nullable(),
+  audioBcKiri1000: z.coerce.number().optional().nullable(),
+  audioBcKiri2000: z.coerce.number().optional().nullable(),
+  audioBcKiri3000: z.coerce.number().optional().nullable(),
+  audioBcKiri4000: z.coerce.number().optional().nullable(),
+  audioBcKiri6000: z.coerce.number().optional().nullable(),
+  audioBcKiri8000: z.coerce.number().optional().nullable(),
+  kesimpulanAudiometri: z.string().optional().nullable(),
+
+  // --- Spirometri ---
+  spirometriFvc: z.string().optional().nullable(),
+  spirometriFev1: z.string().optional().nullable(),
+  spirometriFev1Fvc: z.string().optional().nullable(),
+  kesimpulanSpirometri: z.string().optional().nullable(),
+
+  // --- USG Abdomen ---
+  usgAbdomenImage1: z.string().optional().nullable(),
+  usgAbdomenImage2: z.string().optional().nullable(),
+  usgAbdomenImage3: z.string().optional().nullable(),
+  usgAbdomenImage4: z.string().optional().nullable(),
+  usgAbdomenImage5: z.string().optional().nullable(),
+  usgAbdomenImage6: z.string().optional().nullable(),
+  usgAbdomenHepar: z.string().optional().nullable(),
+  usgAbdomenGallBladder: z.string().optional().nullable(),
+  usgAbdomenLien: z.string().optional().nullable(),
+  usgAbdomenPancreas: z.string().optional().nullable(),
+  usgAbdomenGinjalDekstra: z.string().optional().nullable(),
+  usgAbdomenGinjalSinistra: z.string().optional().nullable(),
+  usgAbdomenKesimpulan: z.string().optional().nullable(),
+
+  // --- USG Mammae ---
+  usgMammaeImage1: z.string().optional().nullable(),
+  usgMammaeImage2: z.string().optional().nullable(),
+  usgMammaeImage3: z.string().optional().nullable(),
+  usgMammaeImage4: z.string().optional().nullable(),
+  usgMammaeImage5: z.string().optional().nullable(),
+  usgMammaeImage6: z.string().optional().nullable(),
+  usgMammaeLaporan: z.string().optional().nullable(),
+  usgMammaeKesimpulan: z.string().optional().nullable(),
+
+  // --- EKG ---
+  ekgImage: z.string().optional().nullable(),
+  ekgRhythm: z.string().optional().nullable(),
+  ekgQrsRate: z.string().optional().nullable(),
+  ekgAxis: z.string().optional().nullable(),
+  ekgPWave: z.string().optional().nullable(),
+  ekgPrInterval: z.string().optional().nullable(),
+  ekgQrsDuration: z.string().optional().nullable(),
+  ekgQWave: z.string().optional().nullable(),
+  ekgTWave: z.string().optional().nullable(),
+  ekgStChanges: z.string().optional().nullable(),
+  ekgOthers: z.string().optional().nullable(),
+  ekgConclusion: z.string().optional().nullable(),
+  ekgAdvice: z.string().optional().nullable(),
+
+  // --- Rontgen ---
+  rontgenImage: z.string().optional().nullable(),
+  kesanRontgen: z.string().optional().nullable(),
+
+  // --- Kesimpulan Akhir ---
+  kesimpulan: z.string().optional().nullable(),
+  saran: z.array(z.string()).optional(),
+
+  // --- Tanda Tangan Validator ---
+  hematologiValidatorName: z.string().optional().nullable(),
+  hematologiValidatorQr: z.string().optional().nullable(),
+  kimiaDarahValidatorName: z.string().optional().nullable(),
+  kimiaDarahValidatorQr: z.string().optional().nullable(),
+  urinalisaValidatorName: z.string().optional().nullable(),
+  urinalisaValidatorQr: z.string().optional().nullable(),
+  audiometriValidatorName: z.string().optional().nullable(),
+  audiometriValidatorQr: z.string().optional().nullable(),
+  spirometriValidatorName: z.string().optional().nullable(),
+  spirometriValidatorQr: z.string().optional().nullable(),
+  usgAbdomenValidatorName: z.string().optional().nullable(),
+  usgAbdomenValidatorQr: z.string().optional().nullable(),
+  usgMammaeValidatorName: z.string().optional().nullable(),
+  usgMammaeValidatorQr: z.string().optional().nullable(),
+  ekgValidatorName: z.string().optional().nullable(),
+  ekgValidatorQr: z.string().optional().nullable(),
+  rontgenValidatorName: z.string().optional().nullable(),
+  rontgenValidatorQr: z.string().optional().nullable(),
+  conclusionValidatorName: z.string().optional().nullable(),
+  conclusionValidatorQr: z.string().optional().nullable(),
+});
+
+export const McuInputForm = ({ initialData }) => {
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const methods = useForm({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+          ...initialData,
+          saran: initialData.saran || [],
+        },
+    });
+
+    const { formState: { errors } } = methods;
+
+    useEffect(() => {
+        if (Object.keys(errors).length > 0) {
+            console.error("VALIDATION ERRORS:", errors);
+        }
+    }, [errors]);
+
+    const onSubmit = async (data) => {
+        setIsSubmitting(true);
+        try {
+            const response = await fetch(`/api/mcu/results/${initialData.id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || "Gagal menyimpan data.");
+            }
+            const updatedData = await response.json();
+            toast.success("Hasil MCU berhasil disimpan!");
+            
+            if (updatedData.saran && typeof updatedData.saran === 'string') {
+                updatedData.saran = JSON.parse(updatedData.saran);
+            }
+            
+            methods.reset({
+                ...updatedData,
+                saran: updatedData.saran || [],
+            });
+
+        } catch (error) {
+            console.error("Submit error:", error);
+            toast.error(error.message || "Terjadi kesalahan.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = new Uint8Array(e.target.result as ArrayBuffer);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+                
+                const jsonData = XLSX.utils.sheet_to_json(worksheet, { raw: false });
+
+                if (jsonData.length === 0) {
+                    toast.error("File Excel kosong atau format tidak sesuai.");
+                    return;
+                }
+
+                const importedData = jsonData[0];
+                
+                const processedData = {};
+                for (const key in importedData) {
+                    if (Object.prototype.hasOwnProperty.call(importedData, key)) {
+                        processedData[key] = importedData[key] != null ? String(importedData[key]) : null;
+                    }
+                }
+
+                if (processedData.saran && typeof processedData.saran === 'string') {
+                    processedData.saran = processedData.saran.split(';').map(s => s.trim());
+                }
+
+                methods.reset({ ...initialData, ...processedData });
+                toast.success("Data dari Excel berhasil di-import!");
+
+            } catch (error) {
+                console.error("Error parsing Excel file:", error);
+                toast.error("Gagal memproses file Excel. Pastikan formatnya benar.");
+            } finally {
+                if (fileInputRef.current) {
+                    fileInputRef.current.value = "";
+                }
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    };
+
+    // [FUNGSI BARU] Untuk handle download template
+    const handleDownloadTemplate = async () => {
+        try {
+            const response = await fetch('/api/mcu/template');
+            if (!response.ok) {
+                throw new Error("Gagal mengunduh template.");
+            }
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "template-hasil-mcu.xlsx"; // Nama file saat di-download
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+            toast.success("Template berhasil diunduh!");
+        } catch (error) {
+            console.error("Download error:", error);
+            toast.error(error.message || "Terjadi kesalahan saat mengunduh template.");
+        }
+    };
+    
+    const packageItemsLower = (initialData?.patient?.mcuPackage || []).map(p => p.toLowerCase());
+    const hasItem = (item) => packageItemsLower.includes(item.toLowerCase());
+    
+    const showHematologi = hasItem("MCU Regular") || hasItem("MCU Eksekutif") || hasItem("MCU Akhir");
+    const showKimiaDarah = hasItem("MCU Regular") || hasItem("MCU Eksekutif") || hasItem("MCU Akhir");
+    const showUrinalisa = hasItem("MCU Regular") || hasItem("MCU Eksekutif") || hasItem("MCU Akhir");
+    const showAudioSpiro = hasItem("MCU Eksekutif") || hasItem("Audiometri") || hasItem("Spirometri");
+    const showUsgAbdomen = hasItem("MCU Eksekutif") || hasItem("USG Whole Abdomen");
+    const showUsgMammae = hasItem("MCU Eksekutif") || hasItem("USG Mammae");
+    const showEkg = hasItem("MCU Eksekutif") || hasItem("EKG") || hasItem("Treadmill");
+    const showRontgen = hasItem("MCU Regular") || hasItem("MCU Eksekutif") || hasItem("MCU Akhir") || hasItem("Radiologi thoraks");
+    
+    const itemsToCheck = new Set(initialData.patient.mcuPackage);
+    if (hasItem("MCU Eksekutif")) {
+        itemsToCheck.add("Audiometri");
+        itemsToCheck.add("Spirometri");
+    }
+
+    return (
+        <FormProvider {...methods}>
+            <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileImport}
+                accept=".xlsx, .xls, .csv"
+                style={{ display: 'none' }}
+            />
+
+            <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-8">
+                
+                {/* [BAGIAN BARU] Grup tombol untuk download dan import */}
+                <div className="flex justify-between items-center">
+                    <h1 className="text-2xl font-bold">Input Hasil MCU</h1>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={handleDownloadTemplate}
+                        >
+                            <Download className="mr-2 h-4 w-4" />
+                            Download Template
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => fileInputRef.current?.click()}
+                        >
+                            <Upload className="mr-2 h-4 w-4" />
+                            Import from Excel
+                        </Button>
+                    </div>
+                </div>
+                
+                {showHematologi && <HematologiForm />}
+                {showKimiaDarah && <KimiaDarahForm />}
+                {showUrinalisa && <UrinalisaForm />}
+                {showAudioSpiro && <AudiometriSpirometriForm itemsToCheck={itemsToCheck} />}
+                {showUsgAbdomen && <UsgAbdomenForm />}
+                {showUsgMammae && <UsgMammaeForm />}
+                {showEkg && <EkgForm />}
+                {showRontgen && <RontgenForm />}
+                <ConclusionForm />
+
+                {Object.keys(errors).length > 0 && (
+                    <div className="p-4 my-4 border-l-4 border-red-600 bg-red-50 rounded-md">
+                        <h3 className="font-bold text-red-800">Error Validasi</h3>
+                        <p className="text-sm text-red-700 mt-1">
+                            Form tidak bisa disimpan karena ada data yang tidak valid.
+                        </p>
+                    </div>
+                )}
+
+                <div className="flex justify-end pt-4">
+                    <Button type="submit" size="lg" disabled={isSubmitting}>
+                        {isSubmitting ? (
+                            <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Menyimpan...</>
+                        ) : (
+                            "Simpan Semua Hasil"
+                        )}
+                    </Button>
+                </div>
+            </form>
+        </FormProvider>
+    );
+};
