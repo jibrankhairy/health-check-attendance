@@ -32,7 +32,7 @@ async function main() {
     update: {},
     create: {
       email: "admin@klinikym.com",
-      fullName: "Admin Klinik Utama",
+      fullName: "Super Admin Klinik",
       password: hashedPasswordAdmin,
       roleId: adminKlinikRole.id,
     },

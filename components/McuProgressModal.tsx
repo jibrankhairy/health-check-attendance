@@ -61,53 +61,62 @@ const examinationMap: {
     petugasDbKey: "pemeriksaanFisikPetugas",
   },
   "Pemeriksaan kebugaran": {
-    dbKey: "framinghamScoreStatus",
-    petugasDbKey: "framinghamScorePetugas",
+    dbKey: "pemeriksaanFisikStatus",
+    petugasDbKey: "pemeriksaanFisikPetugas",
   },
   "Pemeriksaan psikologis (FAS dan SDS)": {
     dbKey: "tesPsikologiStatus",
     petugasDbKey: "tesPsikologiPetugas",
   },
   "Hematologi (darah lengkap, golongan darah & rhesus)": {
-    dbKey: "hematologiStatus",
-    petugasDbKey: "hematologiPetugas",
+    dbKey: "pemeriksaanLabStatus",
+    petugasDbKey: "pemeriksaanLabPetugas",
   },
   "Profil lemak (kolesterol total, HDL, LDL, trigliserida)": {
-    dbKey: "kimiaDarahStatus",
-    petugasDbKey: "kimiaDarahPetugas",
+    dbKey: "pemeriksaanLabStatus",
+    petugasDbKey: "pemeriksaanLabPetugas",
   },
   "Panel diabetes (gula darah puasa, gula darah 2 jam PP)": {
-    dbKey: "kimiaDarahStatus",
-    petugasDbKey: "kimiaDarahPetugas",
+    dbKey: "pemeriksaanLabStatus",
+    petugasDbKey: "pemeriksaanLabPetugas",
   },
   "Fungsi hati (SGOT, SGPT)": {
-    dbKey: "kimiaDarahStatus",
-    petugasDbKey: "kimiaDarahPetugas",
+    dbKey: "pemeriksaanLabStatus",
+    petugasDbKey: "pemeriksaanLabPetugas",
   },
   "Fungsi ginjal (ureum, creatinin, asam urat)": {
-    dbKey: "kimiaDarahStatus",
-    petugasDbKey: "kimiaDarahPetugas",
+    dbKey: "pemeriksaanLabStatus",
+    petugasDbKey: "pemeriksaanLabPetugas",
   },
-  HIV: { dbKey: "kimiaDarahStatus", petugasDbKey: "kimiaDarahPetugas" },
+  HIV: { dbKey: "pemeriksaanLabStatus", petugasDbKey: "pemeriksaanLabPetugas" },
   "Urinalisa lengkap": {
-    dbKey: "urinalisaStatus",
-    petugasDbKey: "urinalisaPetugas",
+    dbKey: "pemeriksaanLabStatus",
+    petugasDbKey: "pemeriksaanLabPetugas",
   },
   "Radiologi thoraks": {
-    dbKey: "rontgenThoraxStatus",
-    petugasDbKey: "rontgenThoraxPetugas",
+    dbKey: "pemeriksaanRadiologiStatus",
+    petugasDbKey: "pemeriksaanRadiologiPetugas",
   },
-  Audiometri: { dbKey: "audiometriStatus", petugasDbKey: "audiometriPetugas" },
-  Spirometri: { dbKey: "spirometriStatus", petugasDbKey: "spirometriPetugas" },
-  EKG: { dbKey: "ekgStatus", petugasDbKey: "ekgPetugas" },
-  Treadmill: { dbKey: "treadmillStatus", petugasDbKey: "treadmillPetugas" },
+  Audiometri: {
+    dbKey: "pemeriksaanAudiometryStatus",
+    petugasDbKey: "pemeriksaanAudiometryPetugas",
+  },
+  Spirometri: {
+    dbKey: "pemeriksaanSpirometryStatus",
+    petugasDbKey: "pemeriksaanSpirometryPetugas",
+  },
+  EKG: { dbKey: "pemeriksaanEkgStatus", petugasDbKey: "pemeriksaanEkgPetugas" },
+  Treadmill: {
+    dbKey: "pemeriksaanTreadmillStatus",
+    petugasDbKey: "pemeriksaanTreadmillPetugas",
+  },
   "Panel Hepatitis": {
-    dbKey: "kimiaDarahStatus",
-    petugasDbKey: "kimiaDarahPetugas",
+    dbKey: "pemeriksaanLabStatus",
+    petugasDbKey: "pemeriksaanLabPetugas",
   },
   "USG Whole Abdomen": {
-    dbKey: "usgAbdomenStatus",
-    petugasDbKey: "usgAbdomenPetugas",
+    dbKey: "pemeriksaanRadiologiStatus",
+    petugasDbKey: "pemeriksaanRadiologiPetugas",
   },
 };
 

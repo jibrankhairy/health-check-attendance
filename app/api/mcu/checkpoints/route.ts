@@ -2,19 +2,13 @@ import { NextResponse } from "next/server";
 
 const CHECKPOINTS = [
   "Pemeriksaan Fisik",
-  "Darah Lengkap",
-  "Kimia Darah",
-  "Treadmill",
-  "Tes Psikologi",
-  "Hematologi",
-  "Rontgen Thorax",
-  "Audiometri",
-  "Framingham Score",
-  "Urinalisa",
-  "EKG (Elektrokardiogram)",
-  "Spirometri",
-  "USG Mammae",
-  "USG Abdomen",
+  "Pemeriksaan Lab",
+  "Pemeriksaan Radiologi",
+  "Pemeriksaan Spirometry",
+  "Pemeriksaan Audiometry",
+  "Pemeriksaan EKG",
+  "Pemeriksaan Treadmill",
+  "Pemeriksaan Urin",
 ];
 
 export async function GET() {

@@ -1,121 +1,122 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 
+export const runtime = "nodejs";
+
 const prisma = new PrismaClient();
 
-function getColumnNames(
-  checkPoint: string
-): { statusColumn: string; petugasColumn: string } | null {
-  const mapping: {
-    [key: string]: { statusColumn: string; petugasColumn: string };
-  } = {
-    pemeriksaan_fisik: {
-      statusColumn: "pemeriksaanFisikStatus",
-      petugasColumn: "pemeriksaanFisikPetugas",
-    },
-    darah_lengkap: {
-      statusColumn: "darahLengkapStatus",
-      petugasColumn: "darahLengkapPetugas",
-    },
-    kimia_darah: {
-      statusColumn: "kimiaDarahStatus",
-      petugasColumn: "kimiaDarahPetugas",
-    },
-    treadmill: {
-      statusColumn: "treadmillStatus",
-      petugasColumn: "treadmillPetugas",
-    },
-    tes_psikologi: {
-      statusColumn: "tesPsikologiStatus",
-      petugasColumn: "tesPsikologiPetugas",
-    },
-    hematologi: {
-      statusColumn: "hematologiStatus",
-      petugasColumn: "hematologiPetugas",
-    },
-    rontgen_thorax: {
-      statusColumn: "rontgenThoraxStatus",
-      petugasColumn: "rontgenThoraxPetugas",
-    },
-    audiometri: {
-      statusColumn: "audiometriStatus",
-      petugasColumn: "audiometriPetugas",
-    },
-    framingham_score: {
-      statusColumn: "framinghamScoreStatus",
-      petugasColumn: "framinghamScorePetugas",
-    },
-    urinalisa: {
-      statusColumn: "urinalisaStatus",
-      petugasColumn: "urinalisaPetugas",
-    },
-    ekg_elektrokardiogram: {
-      statusColumn: "ekgStatus",
-      petugasColumn: "ekgPetugas",
-    },
-    spirometri: {
-      statusColumn: "spirometriStatus",
-      petugasColumn: "spirometriPetugas",
-    },
-    usg_mammae: {
-      statusColumn: "usgMammaeStatus",
-      petugasColumn: "usgMammaePetugas",
-    },
-    usg_abdomen: {
-      statusColumn: "usgAbdomenStatus",
-      petugasColumn: "usgAbdomenPetugas",
-    },
-  };
-  return mapping[checkPoint] || null;
+type MapVal = {
+  statusColumn: string;
+  petugasColumn: string;
+  formColumn?: string;
+};
+
+const COLUMN_MAP: Record<string, MapVal> = {
+  pemeriksaan_fisik: {
+    statusColumn: "pemeriksaanFisikStatus",
+    petugasColumn: "pemeriksaanFisikPetugas",
+    formColumn: "pemeriksaanFisikForm",
+  },
+  pemeriksaan_lab: {
+    statusColumn: "pemeriksaanLabStatus",
+    petugasColumn: "pemeriksaanLabPetugas",
+  },
+  pemeriksaan_radiologi: {
+    statusColumn: "pemeriksaanRadiologiStatus",
+    petugasColumn: "pemeriksaanRadiologiPetugas",
+  },
+  pemeriksaan_spirometry: {
+    statusColumn: "pemeriksaanSpirometryStatus",
+    petugasColumn: "pemeriksaanSpirometryPetugas",
+  },
+  pemeriksaan_audiometry: {
+    statusColumn: "pemeriksaanAudiometryStatus",
+    petugasColumn: "pemeriksaanAudiometryPetugas",
+  },
+  pemeriksaan_ekg: {
+    statusColumn: "pemeriksaanEkgStatus",
+    petugasColumn: "pemeriksaanEkgPetugas",
+  },
+  pemeriksaan_treadmill: {
+    statusColumn: "pemeriksaanTreadmillStatus",
+    petugasColumn: "pemeriksaanTreadmillPetugas",
+  },
+  pemeriksaan_urin: {
+    statusColumn: "pemeriksaanUrinStatus",
+    petugasColumn: "pemeriksaanUrinPetugas",
+  },
+};
+
+function humanizeSlug(s: string) {
+  return s
+    .split("_")
+    .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w))
+    .join(" ");
 }
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { mcuResultId, checkPoint, petugasName } = body;
+    const body = await request.json().catch(() => ({}));
+    const { mcuResultId, checkPoint, petugasName, pemeriksaanFisikForm } =
+      body ?? {};
 
     if (!mcuResultId || !checkPoint || !petugasName) {
       return NextResponse.json(
-        { message: "Data tidak lengkap (ID, Pos, Nama Petugas wajib diisi)." },
+        {
+          message:
+            "Data tidak lengkap (mcuResultId, checkPoint, petugasName wajib diisi).",
+        },
         { status: 400 }
       );
     }
 
-    const columnNames = getColumnNames(checkPoint);
-
-    if (!columnNames) {
+    const slug = String(checkPoint).trim().toLowerCase();
+    const columns = COLUMN_MAP[slug];
+    if (!columns) {
       return NextResponse.json(
-        { message: "Pos Pemeriksaan tidak valid." },
+        { message: "Checkpoint tidak valid." },
         { status: 400 }
       );
     }
 
-    const mcuRecord = await prisma.mcuResult.findUnique({
-      where: { id: mcuResultId },
+    const rec = await prisma.mcuResult.findUnique({
+      where: { id: String(mcuResultId) },
+      select: { id: true },
     });
-
-    if (!mcuRecord) {
+    if (!rec) {
       return NextResponse.json(
         { message: "Data Pasien MCU tidak ditemukan." },
         { status: 404 }
       );
     }
 
-    const updateData: { [key: string]: any } = {};
-    updateData[columnNames.statusColumn] = "COMPLETED";
-    updateData[columnNames.petugasColumn] = petugasName;
+    if (columns.formColumn) {
+      if (!pemeriksaanFisikForm || typeof pemeriksaanFisikForm !== "object") {
+        return NextResponse.json(
+          { message: "Form Pemeriksaan Fisik wajib diisi." },
+          { status: 400 }
+        );
+      }
+    }
 
-    const updatedMcuResult = await prisma.mcuResult.update({
-      where: { id: mcuResultId },
+    const updateData: Record<string, any> = {
+      [columns.statusColumn]: "COMPLETED",
+      [columns.petugasColumn]: String(petugasName),
+    };
+    if (columns.formColumn) {
+      updateData[columns.formColumn] = pemeriksaanFisikForm;
+    }
+
+    const updated = await prisma.mcuResult.update({
+      where: { id: String(mcuResultId) },
       data: updateData,
     });
 
     return NextResponse.json({
-      message: `Check-in oleh ${petugasName} untuk ${checkPoint.replace(
-        /_/g,
-        " "
+      message: `Check-in oleh ${petugasName} untuk ${humanizeSlug(
+        slug
       )} berhasil!`,
-      data: updatedMcuResult,
+      data: updated,
     });
   } catch (error) {
     console.error("MCU Check-in Error:", error);

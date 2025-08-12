@@ -72,6 +72,7 @@ model McuResult {
   dassTestAnswers       Json?
   fasTestAnswers        Json?
   formSubmittedAt       DateTime?
+  pemeriksaanFisikForm  Json?
 
   // --- Pemeriksaan Fisik ---
   beratBadan          Float?
@@ -220,4 +221,19 @@ model McuResult {
   usgMammaePetugas         String?
   usgAbdomenStatus         String  @default("PENDING")
   usgAbdomenPetugas        String?
+
+  pemeriksaanLabStatus          String  @default("PENDING")
+  pemeriksaanLabPetugas         String?
+  pemeriksaanRadiologiStatus    String  @default("PENDING")
+  pemeriksaanRadiologiPetugas   String?
+  pemeriksaanSpirometryStatus   String  @default("PENDING")
+  pemeriksaanSpirometryPetugas  String?
+  pemeriksaanAudiometryStatus   String  @default("PENDING")
+  pemeriksaanAudiometryPetugas  String?
+  pemeriksaanEkgStatus          String  @default("PENDING")
+  pemeriksaanEkgPetugas         String?
+  pemeriksaanTreadmillStatus    String  @default("PENDING")
+  pemeriksaanTreadmillPetugas   String?
+  pemeriksaanUrinStatus         String  @default("PENDING")
+  pemeriksaanUrinPetugas        String?
 }
