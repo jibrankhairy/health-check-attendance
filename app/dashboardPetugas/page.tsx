@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { toast, Toaster } from "sonner";
 import { useAuth } from "@/components/context/AuthContext";
+import { mcuPackages } from "@/lib/mcu-data";
 import { DashboardCard } from "./components/DashboardCard";
 import { ScannerModal } from "./components/ScannerModal";
 import { Header } from "./components/Header";
@@ -15,6 +16,45 @@ type Checkpoint = {
   id: number;
   name: string;
   slug: string;
+};
+
+type PreviewData = {
+  mcuResultId: string;
+  patient: {
+    id?: string;
+    mcuId?: string;
+    fullName: string;
+    dob: string;
+    mcuPackage: any;
+  };
+  progress: {
+    checkpoint: {
+      slug: string;
+    };
+  }[];
+};
+
+const slugToExaminationMap: { [key: string]: string[] } = {
+  pemeriksaan_fisik: [
+    "Pemeriksaan fisik dan anamnesis oleh dokter MCU",
+    "Pemeriksaan kebugaran",
+  ],
+  tes_psikologi: ["Pemeriksaan psikologis (FAS dan SDS)"],
+  pemeriksaan_lab: [
+    "Hematologi (darah lengkap, golongan darah & rhesus)",
+    "Profil lemak (kolesterol total, HDL, LDL, trigliserida)",
+    "Panel diabetes (gula darah puasa, gula darah 2 jam PP)",
+    "Fungsi hati (SGOT, SGPT)",
+    "Fungsi ginjal (ureum, creatinin, asam urat)",
+    "HIV",
+    "Panel Hepatitis",
+  ],
+  pemeriksaan_urin: ["Urinalisa lengkap"],
+  pemeriksaan_radiologi: ["Radiologi thoraks", "USG Whole Abdomen"],
+  pemeriksaan_audiometry: ["Audiometri"],
+  pemeriksaan_spirometry: ["Spirometri"],
+  pemeriksaan_ekg: ["EKG"],
+  pemeriksaan_treadmill: ["Treadmill"],
 };
 
 const PetugasDashboardPage = () => {
@@ -30,10 +70,7 @@ const PetugasDashboardPage = () => {
     null
   );
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [previewData, setPreviewData] = useState<{
-    mcuResultId: string;
-    patient: { id?: string; mcuId?: string; fullName: string; dob: string };
-  } | null>(null);
+  const [previewData, setPreviewData] = useState<PreviewData | null>(null);
 
   useEffect(() => {
     async function fetchCheckPoints() {
@@ -48,6 +85,66 @@ const PetugasDashboardPage = () => {
     }
     fetchCheckPoints();
   }, []);
+
+  const handleScanResult = async (mcuResultId: string) => {
+    if (!user || !selectedCheckPointSlug || isSubmitting) return;
+
+    setShowScanner(false);
+    toast.info("QR terdeteksi, memverifikasi data pasien...");
+
+    try {
+      const res = await fetch(
+        `/api/mcu/preview/${encodeURIComponent(mcuResultId)}`
+      );
+      const data: PreviewData = await res.json();
+
+      if (!res.ok) {
+        throw new Error((data as any).message || "QR tidak valid");
+      }
+
+      const isAlreadyCompleted = data.progress.some(
+        (p) => p.checkpoint.slug === selectedCheckPointSlug
+      );
+
+      if (isAlreadyCompleted) {
+        toast.warning("Pemeriksaan Sudah Selesai", {
+          description: `Pasien ${data.patient.fullName} telah menyelesaikan pemeriksaan di pos ini.`,
+        });
+        return;
+      }
+
+      const patientPackageIds: string[] = data.patient.mcuPackage || [];
+      const allowedExaminations = new Set<string>();
+
+      patientPackageIds.forEach((packageId) => {
+        const pkg = mcuPackages.find((p) => p.id === packageId);
+        if (pkg) {
+          pkg.details.forEach((detail) => allowedExaminations.add(detail));
+        } else {
+          allowedExaminations.add(packageId);
+        }
+      });
+
+      const currentExaminations =
+        slugToExaminationMap[selectedCheckPointSlug] || [];
+      const isAllowed = currentExaminations.some((exam) =>
+        allowedExaminations.has(exam)
+      );
+
+      if (!isAllowed) {
+        toast.error("Pemeriksaan Tidak Sesuai", {
+          description: `Pemeriksaan di pos ini tidak termasuk dalam paket MCU pasien ${data.patient.fullName}.`,
+          duration: 5000,
+        });
+        return;
+      }
+
+      setPreviewData(data);
+      setIsPreviewOpen(true);
+    } catch (err: any) {
+      toast.error(err?.message || "Gagal memverifikasi data.");
+    }
+  };
 
   async function doCheckIn(mcuResultId: string, cpSlug: string) {
     if (!user) return;
@@ -72,26 +169,6 @@ const PetugasDashboardPage = () => {
       setIsSubmitting(false);
     }
   }
-
-  const handleScanResult = async (mcuResultId: string) => {
-    if (!user || !selectedCheckPointSlug || isSubmitting) return;
-    setShowScanner(false);
-    try {
-      const res = await fetch(
-        `/api/mcu/preview/${encodeURIComponent(mcuResultId)}`
-      );
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok)
-        throw new Error(
-          data?.message || "QR tidak valid / data tidak ditemukan"
-        );
-      setPreviewData(data);
-      setIsPreviewOpen(true);
-    } catch (err: any) {
-      toast.error(err?.message || "QR tidak valid / data tidak ditemukan");
-      setShowScanner(true);
-    }
-  };
 
   const handlePreviewCancel = () => {
     setIsPreviewOpen(false);

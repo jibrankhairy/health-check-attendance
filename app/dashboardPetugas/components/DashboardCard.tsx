@@ -23,19 +23,17 @@ type User = {
   fullName: string;
 };
 
-// Definisikan tipe data untuk objek Checkpoint
 type Checkpoint = {
   id: number;
   name: string;
   slug: string;
 };
 
-// Update tipe props agar sesuai dengan data baru
 type DashboardCardProps = {
   user: User;
-  checkPoints: Checkpoint[]; // Menerima array objek
-  selectedCheckPoint: string | null; // Menerima slug yang dipilih
-  onCheckPointChange: (value: string) => void; // Akan mengirimkan slug
+  checkPoints: Checkpoint[];
+  selectedCheckPoint: string | null;
+  onCheckPointChange: (value: string) => void;
   onScanClick: () => void;
 };
 
@@ -94,14 +92,13 @@ export const DashboardCard = ({
               <SelectValue placeholder="-- Pilih Pos Pemeriksaan --" />
             </SelectTrigger>
             <SelectContent position="popper" side="bottom">
-              {/* Ubah cara mapping data di sini */}
               {checkPoints.map((point) => (
                 <SelectItem
-                  key={point.id} // Gunakan ID unik sebagai key
-                  value={point.slug} // Value yang dikirim adalah SLUG
+                  key={point.id}
+                  value={point.slug}
                   className="text-base py-2"
                 >
-                  {point.name} {/* Teks yang ditampilkan adalah NAMA */}
+                  {point.name}
                 </SelectItem>
               ))}
             </SelectContent>
