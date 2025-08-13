@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Search, Loader2, FileText, FilePenLine } from "lucide-react";
+import { Search, Loader2, FileText, FilePenLine, Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,7 +27,7 @@ import Link from "next/link";
 type ReportData = {
   id: string;
   updatedAt: string;
-  status: string; // <-- Field status ditambahkan di sini
+  status: string;
   patient: {
     id: number;
     patientId: string;
@@ -81,7 +81,6 @@ export const ReportTable = () => {
   const currentRows = filteredReports.slice(indexOfFirstRow, indexOfLastRow);
   const totalPages = Math.ceil(filteredReports.length / rowsPerPage);
 
-  // --- PERBAIKAN: Buat fungsi untuk merender isi tabel ---
   const renderTableContent = () => {
     if (loading) {
       return (
@@ -122,21 +121,31 @@ export const ReportTable = () => {
             )}
           </TableCell>
           <TableCell className="text-center">
-            {report.status === "COMPLETED" ? (
-              <Link href={`/dashboard/reports/view/${report.id}`} passHref>
-                <Button variant="outline" size="sm">
-                  <FileText className="mr-2 h-4 w-4" />
-                  Lihat Laporan
-                </Button>
-              </Link>
-            ) : (
-              <Link href={`/dashboard/reports/${report.id}`} passHref>
-                <Button variant="default" size="sm">
-                  <FilePenLine className="mr-2 h-4 w-4" />
-                  Input Hasil
-                </Button>
-              </Link>
-            )}
+            <div className="flex items-center justify-center gap-2">
+              {report.status === "COMPLETED" ? (
+                <>
+                  <Link href={`/dashboard/reports/view/${report.id}`} passHref>
+                    <Button variant="outline" size="sm">
+                      <FileText className="mr-2 h-4 w-4" />
+                      Lihat
+                    </Button>
+                  </Link>
+                  <Link href={`/dashboard/reports/${report.id}`} passHref>
+                    <Button variant="secondary" size="sm">
+                      <Pencil className="mr-2 h-4 w-4" />
+                      Edit
+                    </Button>
+                  </Link>
+                </>
+              ) : (
+                <Link href={`/dashboard/reports/${report.id}`} passHref>
+                  <Button variant="default" size="sm">
+                    <FilePenLine className="mr-2 h-4 w-4" />
+                    Input Hasil
+                  </Button>
+                </Link>
+              )}
+            </div>
           </TableCell>
         </TableRow>
       ));
@@ -183,12 +192,10 @@ export const ReportTable = () => {
               <TableHead className="text-center">Aksi</TableHead>
             </TableRow>
           </TableHeader>
-          {/* --- PERBAIKAN: Panggil fungsi di sini --- */}
           <TableBody>{renderTableContent()}</TableBody>
         </Table>
       </div>
 
-      {/* Pagination (tidak ada perubahan) */}
       <div className="flex flex-col sm:flex-row items-center justify-between mt-4 gap-4">
         <div className="text-sm text-gray-600">
           Menampilkan {filteredReports.length > 0 ? indexOfFirstRow + 1 : 0}{" "}

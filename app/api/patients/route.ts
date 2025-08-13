@@ -1,3 +1,4 @@
+// app/api/patients/route.ts
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
@@ -103,10 +104,14 @@ export async function POST(request: Request) {
         },
       });
 
+      const qrContent = `Nama Pasien: ${fullName}\nID Pasien: ${patientId}\nID Pemeriksaan: ${newMcuResult.id}`;
+
+      const qrCodeDataUrl = await QRCode.toDataURL(qrContent);
+
       const updatedPatient = await tx.patient.update({
         where: { id: newPatient.id },
         data: {
-          qrCode: newMcuResult.id,
+          qrCode: qrCodeDataUrl,
         },
       });
 
@@ -115,7 +120,7 @@ export async function POST(request: Request) {
 
     if (email) {
       try {
-        const qrCodeDataUrl = await QRCode.toDataURL(result.patient.qrCode);
+        const qrCodeDataUrl = result.patient.qrCode;
         const base64Data = qrCodeDataUrl.replace(
           /^data:image\/png;base64,/,
           ""
