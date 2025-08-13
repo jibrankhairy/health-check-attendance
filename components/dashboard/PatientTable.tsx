@@ -88,7 +88,17 @@ export type PatientData = {
   mcuPackage: any;
   qrCode: string;
   createdAt: string;
-  mcuResults: { id: string; fileUrl?: string }[];
+  lastProgress?: string | null;
+  progress?: number;
+
+  mcuResults: {
+    id: string;
+    fileUrl?: string;
+    progress: {
+      id: string;
+      status: "PENDING" | "COMPLETED" | "SKIPPED";
+    }[];
+  }[];
 };
 
 type PatientTableProps = {

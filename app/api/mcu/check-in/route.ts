@@ -1,122 +1,76 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 
-export const runtime = "nodejs";
-
 const prisma = new PrismaClient();
-
-type MapVal = {
-  statusColumn: string;
-  petugasColumn: string;
-  formColumn?: string;
-};
-
-const COLUMN_MAP: Record<string, MapVal> = {
-  pemeriksaan_fisik: {
-    statusColumn: "pemeriksaanFisikStatus",
-    petugasColumn: "pemeriksaanFisikPetugas",
-    formColumn: "pemeriksaanFisikForm",
-  },
-  pemeriksaan_lab: {
-    statusColumn: "pemeriksaanLabStatus",
-    petugasColumn: "pemeriksaanLabPetugas",
-  },
-  pemeriksaan_radiologi: {
-    statusColumn: "pemeriksaanRadiologiStatus",
-    petugasColumn: "pemeriksaanRadiologiPetugas",
-  },
-  pemeriksaan_spirometry: {
-    statusColumn: "pemeriksaanSpirometryStatus",
-    petugasColumn: "pemeriksaanSpirometryPetugas",
-  },
-  pemeriksaan_audiometry: {
-    statusColumn: "pemeriksaanAudiometryStatus",
-    petugasColumn: "pemeriksaanAudiometryPetugas",
-  },
-  pemeriksaan_ekg: {
-    statusColumn: "pemeriksaanEkgStatus",
-    petugasColumn: "pemeriksaanEkgPetugas",
-  },
-  pemeriksaan_treadmill: {
-    statusColumn: "pemeriksaanTreadmillStatus",
-    petugasColumn: "pemeriksaanTreadmillPetugas",
-  },
-  pemeriksaan_urin: {
-    statusColumn: "pemeriksaanUrinStatus",
-    petugasColumn: "pemeriksaanUrinPetugas",
-  },
-};
-
-function humanizeSlug(s: string) {
-  return s
-    .split("_")
-    .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w))
-    .join(" ");
-}
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json().catch(() => ({}));
-    const { mcuResultId, checkPoint, petugasName, pemeriksaanFisikForm } =
-      body ?? {};
+    const body = await request.json();
+    const { mcuResultId, checkpointSlug, petugasName, notes } = body;
 
-    if (!mcuResultId || !checkPoint || !petugasName) {
+    if (!mcuResultId || !checkpointSlug || !petugasName) {
       return NextResponse.json(
-        {
-          message:
-            "Data tidak lengkap (mcuResultId, checkPoint, petugasName wajib diisi).",
-        },
+        { message: "Data tidak lengkap." },
         { status: 400 }
       );
     }
 
-    const slug = String(checkPoint).trim().toLowerCase();
-    const columns = COLUMN_MAP[slug];
-    if (!columns) {
+    const [mcuResult, checkpoint] = await Promise.all([
+      prisma.mcuResult.findUnique({
+        where: { id: mcuResultId },
+        select: { patientId: true },
+      }),
+      prisma.checkpoint.findUnique({
+        where: { slug: checkpointSlug },
+      }),
+    ]);
+
+    if (!mcuResult) {
+      return NextResponse.json(
+        { message: "MCU Result ID tidak ditemukan." },
+        { status: 404 }
+      );
+    }
+    if (!checkpoint) {
       return NextResponse.json(
         { message: "Checkpoint tidak valid." },
         { status: 400 }
       );
     }
 
-    const rec = await prisma.mcuResult.findUnique({
-      where: { id: String(mcuResultId) },
-      select: { id: true },
+    const progressLog = await prisma.mcuProgress.upsert({
+      where: {
+        mcuResultId_checkpointId: {
+          mcuResultId: mcuResultId,
+          checkpointId: checkpoint.id,
+        },
+      },
+      update: {
+        status: "COMPLETED",
+        petugasName: petugasName,
+        completedAt: new Date(),
+        notes: notes,
+      },
+      create: {
+        mcuResultId: mcuResultId,
+        checkpointId: checkpoint.id,
+        status: "COMPLETED",
+        petugasName: petugasName,
+        completedAt: new Date(),
+        notes: notes,
+      },
     });
-    if (!rec) {
-      return NextResponse.json(
-        { message: "Data Pasien MCU tidak ditemukan." },
-        { status: 404 }
-      );
-    }
 
-    if (columns.formColumn) {
-      if (!pemeriksaanFisikForm || typeof pemeriksaanFisikForm !== "object") {
-        return NextResponse.json(
-          { message: "Form Pemeriksaan Fisik wajib diisi." },
-          { status: 400 }
-        );
-      }
-    }
-
-    const updateData: Record<string, any> = {
-      [columns.statusColumn]: "COMPLETED",
-      [columns.petugasColumn]: String(petugasName),
-    };
-    if (columns.formColumn) {
-      updateData[columns.formColumn] = pemeriksaanFisikForm;
-    }
-
-    const updated = await prisma.mcuResult.update({
-      where: { id: String(mcuResultId) },
-      data: updateData,
+    await prisma.patient.update({
+      where: {
+        id: mcuResult.patientId,
+      },
+      data: { lastProgress: `Selesai di ${checkpoint.name}` },
     });
 
     return NextResponse.json({
-      message: `Check-in oleh ${petugasName} untuk ${humanizeSlug(
-        slug
-      )} berhasil!`,
-      data: updated,
+      message: `Check-in untuk ${checkpoint.name} oleh ${petugasName} berhasil!`,
+      data: progressLog,
     });
   } catch (error) {
     console.error("MCU Check-in Error:", error);

@@ -1,19 +1,14 @@
 import { NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
 
-const CHECKPOINTS = [
-  "Pemeriksaan Fisik",
-  "Pemeriksaan Lab",
-  "Pemeriksaan Radiologi",
-  "Pemeriksaan Spirometry",
-  "Pemeriksaan Audiometry",
-  "Pemeriksaan EKG",
-  "Pemeriksaan Treadmill",
-  "Pemeriksaan Urin",
-];
+const prisma = new PrismaClient();
 
 export async function GET() {
   try {
-    return NextResponse.json(CHECKPOINTS);
+    const checkpoints = await prisma.checkpoint.findMany({
+      orderBy: { name: "asc" },
+    });
+    return NextResponse.json(checkpoints);
   } catch (error) {
     console.error("Fetch Checkpoints Error:", error);
     return NextResponse.json(

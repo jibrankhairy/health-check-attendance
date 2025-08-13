@@ -38,7 +38,15 @@ export async function GET(
     const { id: idStr } = await params;
     const id = parseNumericId(idStr);
 
-    const patient = await prisma.patient.findUnique({ where: { id } });
+    const patient = await prisma.patient.findUnique({
+      where: { id },
+      include: {
+        mcuResults: {
+          orderBy: { createdAt: "desc" },
+        },
+      },
+    });
+
     if (!patient) {
       return NextResponse.json(
         { message: "Pasien tidak ditemukan" },
@@ -81,12 +89,7 @@ export async function PUT(
     const { nik, ...restOfData } = validation.data;
 
     const existingPatient = await prisma.patient.findFirst({
-      where: {
-        nik: nik,
-        NOT: {
-          id: id,
-        },
-      },
+      where: { nik: nik, NOT: { id: id } },
     });
 
     if (existingPatient) {
@@ -108,13 +111,6 @@ export async function PUT(
 
     return NextResponse.json(updatedPatient);
   } catch (error) {
-    if ((error as Error).message === "ID Pasien tidak valid") {
-      return NextResponse.json(
-        { message: (error as Error).message },
-        { status: 400 }
-      );
-    }
-    console.error("PUT Patient Error:", error);
     return NextResponse.json(
       { message: "Internal Server Error" },
       { status: 500 }
@@ -130,32 +126,13 @@ export async function DELETE(
     const { id: idStr } = await params;
     const id = parseNumericId(idStr);
 
-    await prisma.$transaction(async (tx) => {
-      await tx.mcuResult.deleteMany({ where: { patientId: id } });
-      await tx.patient.delete({ where: { id } });
-    });
+    await prisma.patient.delete({ where: { id } });
 
     return NextResponse.json(
       { message: "Pasien berhasil dihapus" },
       { status: 200 }
     );
   } catch (error) {
-    if ((error as Error).message === "ID Pasien tidak valid") {
-      return NextResponse.json(
-        { message: (error as Error).message },
-        { status: 400 }
-      );
-    }
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === "P2025"
-    ) {
-      return NextResponse.json(
-        { message: "Pasien tidak ditemukan untuk dihapus" },
-        { status: 404 }
-      );
-    }
-    console.error("Delete Patient Error:", error);
     return NextResponse.json(
       { message: "Internal Server Error" },
       { status: 500 }

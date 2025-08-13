@@ -1,4 +1,3 @@
-// app/api/patients/route.ts
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
@@ -51,21 +50,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const {
-      nik,
-      patientId,
-      fullName,
-      email,
-      dob,
-      age,
-      gender,
-      position,
-      division,
-      status,
-      location,
-      mcuPackage,
-      companyId,
-    } = validation.data;
+    const { nik, ...restOfData } = validation.data;
 
     const existingPatient = await prisma.patient.findUnique({
       where: { nik: nik },
@@ -81,19 +66,10 @@ export async function POST(request: Request) {
     const result = await prisma.$transaction(async (tx) => {
       const newPatient = await tx.patient.create({
         data: {
-          patientId,
           nik,
-          fullName,
-          email: email || null,
-          dob: new Date(dob),
-          age,
-          gender,
-          position,
-          division,
-          status,
-          location,
-          mcuPackage,
-          companyId,
+          ...restOfData,
+          dob: new Date(restOfData.dob),
+          email: restOfData.email || null,
           qrCode: "temp",
         },
       });
@@ -104,23 +80,19 @@ export async function POST(request: Request) {
         },
       });
 
-      const qrContent = `Nama Pasien: ${fullName}\nID Pasien: ${patientId}\nID Pemeriksaan: ${newMcuResult.id}`;
-
-      const qrCodeDataUrl = await QRCode.toDataURL(qrContent);
-
       const updatedPatient = await tx.patient.update({
         where: { id: newPatient.id },
         data: {
-          qrCode: qrCodeDataUrl,
+          qrCode: newMcuResult.id,
         },
       });
 
       return { patient: updatedPatient, mcuResult: newMcuResult };
     });
 
-    if (email) {
+    if (result.patient.email) {
       try {
-        const qrCodeDataUrl = result.patient.qrCode;
+        const qrCodeDataUrl = await QRCode.toDataURL(result.patient.qrCode);
         const base64Data = qrCodeDataUrl.replace(
           /^data:image\/png;base64,/,
           ""
@@ -128,17 +100,9 @@ export async function POST(request: Request) {
 
         await transporter.sendMail({
           from: process.env.EMAIL_FROM,
-          to: email,
-          subject: `QR Code Pendaftaran MCU untuk ${fullName}`,
-          html: `
-            <h1>Pendaftaran MCU Berhasil</h1>
-            <p>Halo <strong>${fullName}</strong>,</p>
-            <p>Pendaftaran Anda untuk Medical Check Up telah berhasil dengan nomor pasien <strong>${patientId}</strong>.</p>
-            <p>Silakan tunjukkan QR Code di bawah ini kepada petugas saat tiba di lokasi.</p>
-            <p>Terima kasih.</p>
-            <br>
-            <img src="cid:qrcode"/>
-          `,
+          to: result.patient.email,
+          subject: `QR Code Pendaftaran MCU untuk ${result.patient.fullName}`,
+          html: `<h1>Pendaftaran MCU Berhasil</h1><p>Halo <strong>${result.patient.fullName}</strong>,</p><p>Pendaftaran Anda untuk Medical Check Up telah berhasil dengan nomor pasien <strong>${result.patient.patientId}</strong>.</p><p>Silakan tunjukkan QR Code di bawah ini kepada petugas saat tiba di lokasi.</p><p>Terima kasih.</p><br><img src="cid:qrcode"/>`,
           attachments: [
             {
               filename: "qrcode.png",
@@ -156,9 +120,10 @@ export async function POST(request: Request) {
     return NextResponse.json(result.patient, { status: 201 });
   } catch (error) {
     console.error("Create Patient Error:", error);
-    const errorMessage =
-      error instanceof Error ? error.message : "Internal Server Error";
-    return NextResponse.json({ message: errorMessage }, { status: 500 });
+    return NextResponse.json(
+      { message: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }
 
@@ -180,7 +145,9 @@ export async function GET(request: Request) {
         mcuResults: {
           orderBy: { createdAt: "desc" },
           take: 1,
-          select: { id: true },
+          include: {
+            progress: true,
+          },
         },
       },
       orderBy: { createdAt: "desc" },

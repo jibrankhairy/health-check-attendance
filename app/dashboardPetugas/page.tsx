@@ -11,41 +11,36 @@ import PemeriksaanFisikFormModal, {
 } from "./components/PemeriksaanFisikForm";
 import PatientPreview from "./components/PatientPreview";
 
+type Checkpoint = {
+  id: number;
+  name: string;
+  slug: string;
+};
+
 const PetugasDashboardPage = () => {
   const { user } = useAuth();
-  const [checkPoints, setCheckPoints] = useState<string[]>([]);
-  const [selectedCheckPoint, setSelectedCheckPoint] = useState<string | null>(
-    null
-  );
+  const [checkPoints, setCheckPoints] = useState<Checkpoint[]>([]);
+  const [selectedCheckPointSlug, setSelectedCheckPointSlug] = useState<
+    string | null
+  >(null);
   const [showScanner, setShowScanner] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const [showFisikForm, setShowFisikForm] = useState(false);
   const [pendingMcuResultId, setPendingMcuResultId] = useState<string | null>(
     null
   );
-
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewData, setPreviewData] = useState<{
     mcuResultId: string;
     patient: { id?: string; mcuId?: string; fullName: string; dob: string };
   } | null>(null);
 
-  const toSlug = (s: string) =>
-    s
-      .normalize("NFKD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase()
-      .replace(/[^\w\s-]/g, "")
-      .trim()
-      .replace(/\s+/g, "_");
-
   useEffect(() => {
     async function fetchCheckPoints() {
       try {
         const response = await fetch("/api/mcu/checkpoints");
         if (!response.ok) throw new Error("Gagal memuat data pos.");
-        const data = await response.json();
+        const data: Checkpoint[] = await response.json();
         setCheckPoints(data);
       } catch (error: any) {
         toast.error(error.message);
@@ -62,10 +57,9 @@ const PetugasDashboardPage = () => {
       const response = await fetch("/api/mcu/check-in", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           mcuResultId,
-          checkPoint: cpSlug,
+          checkpointSlug: cpSlug,
           petugasName: user.fullName,
         }),
       });
@@ -80,23 +74,17 @@ const PetugasDashboardPage = () => {
   }
 
   const handleScanResult = async (mcuResultId: string) => {
-    if (!user || !selectedCheckPoint || isSubmitting) return;
-
+    if (!user || !selectedCheckPointSlug || isSubmitting) return;
     setShowScanner(false);
     try {
       const res = await fetch(
-        `/api/mcu/preview/${encodeURIComponent(mcuResultId)}`,
-        {
-          credentials: "include",
-          headers: { Accept: "application/json" },
-        }
+        `/api/mcu/preview/${encodeURIComponent(mcuResultId)}`
       );
       const data = await res.json().catch(() => ({}));
       if (!res.ok)
         throw new Error(
           data?.message || "QR tidak valid / data tidak ditemukan"
         );
-
       setPreviewData(data);
       setIsPreviewOpen(true);
     } catch (err: any) {
@@ -111,56 +99,41 @@ const PetugasDashboardPage = () => {
   };
 
   const handlePreviewContinue = async () => {
-    if (!previewData) return;
+    if (!previewData || !selectedCheckPointSlug) return;
     setIsPreviewOpen(false);
-
-    const cp = toSlug(selectedCheckPoint || "");
-    if (cp === "pemeriksaan_fisik") {
+    if (selectedCheckPointSlug === "pemeriksaan_fisik") {
       setPendingMcuResultId(previewData.mcuResultId);
       setShowFisikForm(true);
       toast.message(`QR terdeteksi: ${previewData.mcuResultId}`, {
         description: "Silakan isi Form Pemeriksaan Fisik.",
       });
     } else {
-      await doCheckIn(previewData.mcuResultId, cp);
+      await doCheckIn(previewData.mcuResultId, selectedCheckPointSlug);
     }
   };
 
   const handleSubmitFisikForm = async (values: PemeriksaanFisikFormValues) => {
-    if (!user || !selectedCheckPoint || !pendingMcuResultId || isSubmitting)
+    if (!user || !selectedCheckPointSlug || !pendingMcuResultId || isSubmitting)
       return;
-
-    const cp = toSlug(selectedCheckPoint);
-    if (cp !== "pemeriksaan_fisik") {
+    if (selectedCheckPointSlug !== "pemeriksaan_fisik") {
       toast.error("Pos tidak sesuai: bukan Pemeriksaan Fisik.");
       return;
     }
-
     setIsSubmitting(true);
     toast.info("Menyimpan form & melakukan check-in...");
-
-    const n = (v: unknown) => {
-      if (v === "" || v === undefined || v === null) return undefined;
-      const num = Number(v);
-      return Number.isFinite(num) ? num : undefined;
-    };
-
     try {
       const res = await fetch("/api/mcu/check-in", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           mcuResultId: pendingMcuResultId,
-          checkPoint: cp,
+          checkpointSlug: selectedCheckPointSlug,
           petugasName: user.fullName,
           pemeriksaanFisikForm: values,
         }),
       });
-
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.message || "Gagal check-in.");
-
       toast.success(data?.message || "Berhasil check-in.");
       setShowFisikForm(false);
       setPendingMcuResultId(null);
@@ -179,6 +152,9 @@ const PetugasDashboardPage = () => {
     );
   }
 
+  const selectedCheckPointName =
+    checkPoints.find((cp) => cp.slug === selectedCheckPointSlug)?.name || null;
+
   return (
     <>
       <style jsx global>{`
@@ -191,7 +167,6 @@ const PetugasDashboardPage = () => {
           border: none !important;
         }
       `}</style>
-
       <div className="relative min-h-screen w-full bg-gradient-to-br from-slate-100 to-[#01449D]">
         <Header />
         <main className="flex flex-col items-center justify-center min-h-screen p-4 font-sans">
@@ -199,26 +174,23 @@ const PetugasDashboardPage = () => {
           <DashboardCard
             user={user}
             checkPoints={checkPoints}
-            selectedCheckPoint={selectedCheckPoint}
-            onCheckPointChange={setSelectedCheckPoint}
+            selectedCheckPoint={selectedCheckPointSlug}
+            onCheckPointChange={setSelectedCheckPointSlug}
             onScanClick={() => setShowScanner(true)}
           />
         </main>
-
         <ScannerModal
           isOpen={showScanner}
           onClose={() => setShowScanner(false)}
           onScanSuccess={handleScanResult}
-          selectedCheckPoint={selectedCheckPoint}
+          selectedCheckPoint={selectedCheckPointName}
         />
-
         <PatientPreview
           open={isPreviewOpen}
           patient={previewData?.patient}
           onCancel={handlePreviewCancel}
           onContinue={handlePreviewContinue}
         />
-
         <PemeriksaanFisikFormModal
           isOpen={showFisikForm}
           onClose={() => {

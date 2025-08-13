@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { PrismaClient, McuResult } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -48,12 +48,10 @@ export async function PUT(
     return NextResponse.json(updatedResult);
   } catch (error) {
     console.error("Update MCU Result Error:", error);
-
     let errorMessage = "Gagal menyimpan hasil MCU.";
     if (error instanceof Error) {
       errorMessage = error.message;
     }
-
     return NextResponse.json(
       { message: "Gagal menyimpan hasil MCU.", error: errorMessage },
       { status: 500 }
@@ -70,7 +68,20 @@ export async function GET(
     const result = await prisma.mcuResult.findUnique({
       where: { id: resultId },
       include: {
-        patient: true,
+        patient: {
+          select: {
+            fullName: true,
+          },
+        },
+        progress: {
+          include: {
+            checkpoint: {
+              select: {
+                slug: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -81,21 +92,7 @@ export async function GET(
       );
     }
 
-    let saranAsArray: any[] = [];
-    if (result.saran && typeof result.saran === "string") {
-      try {
-        saranAsArray = JSON.parse(result.saran);
-      } catch (e) {
-        console.error("Gagal parse JSON untuk field saran:", e);
-      }
-    }
-
-    const responseData = {
-      ...result,
-      saran: saranAsArray,
-    };
-
-    return NextResponse.json(responseData);
+    return NextResponse.json(result);
   } catch (error) {
     console.error("Fetch MCU Result Detail Error:", error);
     return NextResponse.json(

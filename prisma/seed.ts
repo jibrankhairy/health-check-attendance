@@ -23,7 +23,6 @@ async function main() {
     update: {},
     create: { name: "HRD" },
   });
-
   console.log("Roles (ADMINISTRASI, PETUGAS, HRD) created/verified.");
 
   const hashedPasswordAdmin = await bcrypt.hash("adminklinik123", 10);
@@ -38,6 +37,26 @@ async function main() {
     },
   });
   console.log("Admin Klinik user created.");
+
+  const checkpointsData = [
+    { name: "Pemeriksaan Fisik", slug: "pemeriksaan_fisik" },
+    { name: "Pemeriksaan Lab", slug: "pemeriksaan_lab" },
+    { name: "Pemeriksaan Radiologi", slug: "pemeriksaan_radiologi" },
+    { name: "Pemeriksaan Spirometry", slug: "pemeriksaan_spirometry" },
+    { name: "Pemeriksaan Audiometry", slug: "pemeriksaan_audiometry" },
+    { name: "Pemeriksaan EKG", slug: "pemeriksaan_ekg" },
+    { name: "Pemeriksaan Treadmill", slug: "pemeriksaan_treadmill" },
+    { name: "Pemeriksaan Urin", slug: "pemeriksaan_urin" },
+  ];
+
+  for (const cp of checkpointsData) {
+    await prisma.checkpoint.upsert({
+      where: { slug: cp.slug },
+      update: {},
+      create: cp,
+    });
+  }
+  console.log("Checkpoints created/verified.");
 
   console.log("Seeding finished.");
 }

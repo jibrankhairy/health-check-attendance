@@ -62,7 +62,42 @@ model Patient {
   company     Company     @relation(fields: [companyId], references: [id])
   companyId   String
   mcuResults  McuResult[]
+
+  lastProgress String?    @default("MENUNGGU")
 }
+
+enum ProgressStatus {
+  PENDING
+  COMPLETED
+  SKIPPED
+}
+
+model Checkpoint {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique 
+  slug      String   @unique 
+  createdAt DateTime @default(now())
+
+  progresses McuProgress[]
+}
+
+model McuProgress {
+  id           String         @id @default(cuid())
+  status       ProgressStatus @default(PENDING)
+  petugasName  String?
+  completedAt  DateTime?
+  notes        String?        @db.Text
+
+  mcuResult    McuResult @relation(fields: [mcuResultId], references: [id], onDelete: Cascade)
+  mcuResultId  String
+
+  checkpoint   Checkpoint @relation(fields: [checkpointId], references: [id])
+  checkpointId Int
+
+  @@unique([mcuResultId, checkpointId]) 
+}
+
+
 
 model McuResult {
   id                   String    @id @default(cuid())
@@ -70,8 +105,10 @@ model McuResult {
   updatedAt            DateTime  @updatedAt
   status               String    @default("IN_PROGRESS")
 
-  patient              Patient   @relation(fields: [patientId], references: [id])
+  patient              Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
   patientId            Int
+
+  progress McuProgress[]
 
   healthHistoryAnswers  Json?
   dassTestAnswers       Json?
@@ -267,70 +304,4 @@ model McuResult {
   kesimpulan           String?   @db.Text
   saran                String?   @db.Text
 
-  // --- Field status per pos (tetap ada) ---
-  pemeriksaanFisikStatus   String  @default("PENDING")
-  pemeriksaanFisikPetugas  String?
-  darahLengkapStatus       String  @default("PENDING")
-  darahLengkapPetugas      String?
-  kimiaDarahStatus         String  @default("PENDING")
-  kimiaDarahPetugas        String?
-  treadmillStatus          String  @default("PENDING")
-  treadmillPetugas         String?
-  tesPsikologiStatus       String  @default("PENDING")
-  tesPsikologiPetugas      String?
-  hematologiStatus         String  @default("PENDING")
-  hematologiPetugas        String?
-  rontgenThoraxStatus      String  @default("PENDING")
-  rontgenThoraxPetugas     String?
-  audiometriStatus         String  @default("PENDING")
-  audiometriPetugas        String?
-  framinghamScoreStatus    String  @default("PENDING")
-  framinghamScorePetugas   String?
-  urinalisaStatus          String  @default("PENDING")
-  urinalisaPetugas         String?
-  ekgStatus                String  @default("PENDING")
-  ekgPetugas               String?
-  spirometriStatus         String  @default("PENDING")
-  spirometriPetugas        String?
-  usgMammaeStatus          String  @default("PENDING")
-  usgMammaePetugas         String?
-  usgAbdomenStatus         String  @default("PENDING")
-  usgAbdomenPetugas        String?
-
-  pemeriksaanLabStatus          String  @default("PENDING")
-  pemeriksaanLabPetugas         String?
-  pemeriksaanRadiologiStatus    String  @default("PENDING")
-  pemeriksaanRadiologiPetugas   String?
-  pemeriksaanSpirometryStatus   String  @default("PENDING")
-  pemeriksaanSpirometryPetugas  String?
-  pemeriksaanAudiometryStatus   String  @default("PENDING")
-  pemeriksaanAudiometryPetugas  String?
-  pemeriksaanEkgStatus          String  @default("PENDING")
-  pemeriksaanEkgPetugas         String?
-  pemeriksaanTreadmillStatus    String  @default("PENDING")
-  pemeriksaanTreadmillPetugas   String?
-  pemeriksaanUrinStatus         String  @default("PENDING")
-  pemeriksaanUrinPetugas        String?
-}
-  // --- Tanda Tangan Validator untuk setiap seksi ---
-  hematologiValidatorName     String?
-  hematologiValidatorQr       String? @db.Text
-  kimiaDarahValidatorName     String?
-  kimiaDarahValidatorQr       String? @db.Text
-  urinalisaValidatorName      String?
-  urinalisaValidatorQr        String? @db.Text
-  audiometriValidatorName     String?
-  audiometriValidatorQr       String? @db.Text
-  spirometriValidatorName     String?
-  spirometriValidatorQr       String? @db.Text
-  usgAbdomenValidatorName     String?
-  usgAbdomenValidatorQr       String? @db.Text
-  usgMammaeValidatorName      String?
-  usgMammaeValidatorQr        String? @db.Text
-  ekgValidatorName            String?
-  ekgValidatorQr              String? @db.Text
-  rontgenValidatorName        String?
-  rontgenValidatorQr          String? @db.Text
-  conclusionValidatorName     String?
-  conclusionValidatorQr       String? @db.Text
 }

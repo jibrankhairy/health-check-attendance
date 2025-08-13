@@ -37,6 +37,7 @@ CREATE TABLE `Role` (
 -- CreateTable
 CREATE TABLE `Patient` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `nik` VARCHAR(191) NOT NULL,
     `patientId` VARCHAR(191) NOT NULL,
     `fullName` VARCHAR(191) NOT NULL,
     `email` VARCHAR(191) NULL,
@@ -47,7 +48,6 @@ CREATE TABLE `Patient` (
     `division` VARCHAR(191) NOT NULL,
     `status` VARCHAR(191) NOT NULL,
     `location` VARCHAR(191) NOT NULL,
-    `department` VARCHAR(191) NOT NULL,
     `address` TEXT NULL,
     `phoneNumber` VARCHAR(191) NULL,
     `qrCode` VARCHAR(191) NOT NULL,
@@ -55,9 +55,37 @@ CREATE TABLE `Patient` (
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
     `companyId` VARCHAR(191) NOT NULL,
+    `lastProgress` VARCHAR(191) NULL DEFAULT 'MENUNGGU',
 
+    UNIQUE INDEX `Patient_nik_key`(`nik`),
     UNIQUE INDEX `Patient_patientId_key`(`patientId`),
     UNIQUE INDEX `Patient_qrCode_key`(`qrCode`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Checkpoint` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(191) NOT NULL,
+    `slug` VARCHAR(191) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    UNIQUE INDEX `Checkpoint_name_key`(`name`),
+    UNIQUE INDEX `Checkpoint_slug_key`(`slug`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `McuProgress` (
+    `id` VARCHAR(191) NOT NULL,
+    `status` ENUM('PENDING', 'COMPLETED', 'SKIPPED') NOT NULL DEFAULT 'PENDING',
+    `petugasName` VARCHAR(191) NULL,
+    `completedAt` DATETIME(3) NULL,
+    `notes` TEXT NULL,
+    `mcuResultId` VARCHAR(191) NOT NULL,
+    `checkpointId` INTEGER NOT NULL,
+
+    UNIQUE INDEX `McuProgress_mcuResultId_checkpointId_key`(`mcuResultId`, `checkpointId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -72,6 +100,7 @@ CREATE TABLE `McuResult` (
     `dassTestAnswers` JSON NULL,
     `fasTestAnswers` JSON NULL,
     `formSubmittedAt` DATETIME(3) NULL,
+    `pemeriksaanFisikForm` JSON NULL,
     `beratBadan` DOUBLE NULL,
     `tinggiBadan` DOUBLE NULL,
     `bmi` TEXT NULL,
@@ -168,8 +197,38 @@ CREATE TABLE `McuResult` (
     `ekgOthers` TEXT NULL,
     `ekgConclusion` TEXT NULL,
     `ekgAdvice` TEXT NULL,
-    `audiometriTelingaKanan` TEXT NULL,
-    `audiometriTelingaKiri` TEXT NULL,
+    `audioAcKanan250` INTEGER NULL,
+    `audioAcKanan500` INTEGER NULL,
+    `audioAcKanan1000` INTEGER NULL,
+    `audioAcKanan2000` INTEGER NULL,
+    `audioAcKanan3000` INTEGER NULL,
+    `audioAcKanan4000` INTEGER NULL,
+    `audioAcKanan6000` INTEGER NULL,
+    `audioAcKanan8000` INTEGER NULL,
+    `audioAcKiri250` INTEGER NULL,
+    `audioAcKiri500` INTEGER NULL,
+    `audioAcKiri1000` INTEGER NULL,
+    `audioAcKiri2000` INTEGER NULL,
+    `audioAcKiri3000` INTEGER NULL,
+    `audioAcKiri4000` INTEGER NULL,
+    `audioAcKiri6000` INTEGER NULL,
+    `audioAcKiri8000` INTEGER NULL,
+    `audioBcKanan250` INTEGER NULL,
+    `audioBcKanan500` INTEGER NULL,
+    `audioBcKanan1000` INTEGER NULL,
+    `audioBcKanan2000` INTEGER NULL,
+    `audioBcKanan3000` INTEGER NULL,
+    `audioBcKanan4000` INTEGER NULL,
+    `audioBcKanan6000` INTEGER NULL,
+    `audioBcKanan8000` INTEGER NULL,
+    `audioBcKiri250` INTEGER NULL,
+    `audioBcKiri500` INTEGER NULL,
+    `audioBcKiri1000` INTEGER NULL,
+    `audioBcKiri2000` INTEGER NULL,
+    `audioBcKiri3000` INTEGER NULL,
+    `audioBcKiri4000` INTEGER NULL,
+    `audioBcKiri6000` INTEGER NULL,
+    `audioBcKiri8000` INTEGER NULL,
     `kesimpulanAudiometri` TEXT NULL,
     `spirometriFvc` TEXT NULL,
     `spirometriFev1` TEXT NULL,
@@ -214,4 +273,10 @@ ALTER TABLE `User` ADD CONSTRAINT `User_companyId_fkey` FOREIGN KEY (`companyId`
 ALTER TABLE `Patient` ADD CONSTRAINT `Patient_companyId_fkey` FOREIGN KEY (`companyId`) REFERENCES `Company`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `McuResult` ADD CONSTRAINT `McuResult_patientId_fkey` FOREIGN KEY (`patientId`) REFERENCES `Patient`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `McuProgress` ADD CONSTRAINT `McuProgress_mcuResultId_fkey` FOREIGN KEY (`mcuResultId`) REFERENCES `McuResult`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `McuProgress` ADD CONSTRAINT `McuProgress_checkpointId_fkey` FOREIGN KEY (`checkpointId`) REFERENCES `Checkpoint`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `McuResult` ADD CONSTRAINT `McuResult_patientId_fkey` FOREIGN KEY (`patientId`) REFERENCES `Patient`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

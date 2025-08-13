@@ -17,107 +17,39 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Hourglass } from "lucide-react";
+import { CheckCircle, Hourglass, Loader2 } from "lucide-react";
 import { mcuPackages } from "@/lib/mcu-data";
+
+type ProgressData = {
+  petugasName: string | null;
+  checkpoint: {
+    slug: string;
+  };
+};
 
 type McuResultData = {
   patient: { fullName: string };
-  pemeriksaanFisikStatus?: string;
-  pemeriksaanFisikPetugas?: string;
-  darahLengkapStatus?: string;
-  darahLengkapPetugas?: string;
-  kimiaDarahStatus?: string;
-  kimiaDarahPetugas?: string;
-  treadmillStatus?: string;
-  treadmillPetugas?: string;
-  tesPsikologiStatus?: string;
-  tesPsikologiPetugas?: string;
-  hematologiStatus?: string;
-  hematologiPetugas?: string;
-  rontgenThoraxStatus?: string;
-  rontgenThoraxPetugas?: string;
-  audiometriStatus?: string;
-  audiometriPetugas?: string;
-  framinghamScoreStatus?: string;
-  framinghamScorePetugas?: string;
-  urinalisaStatus?: string;
-  urinalisaPetugas?: string;
-  ekgStatus?: string;
-  ekgPetugas?: string;
-  spirometriStatus?: string;
-  spirometriPetugas?: string;
-  usgMammaeStatus?: string;
-  usgMammaePetugas?: string;
-  usgAbdomenStatus?: string;
-  usgAbdomenPetugas?: string;
-  [key: string]: any;
+  progress: ProgressData[];
 };
 
-const examinationMap: {
-  [key: string]: { dbKey: string; petugasDbKey: string };
-} = {
-  "Pemeriksaan fisik dan anamnesis oleh dokter MCU": {
-    dbKey: "pemeriksaanFisikStatus",
-    petugasDbKey: "pemeriksaanFisikPetugas",
-  },
-  "Pemeriksaan kebugaran": {
-    dbKey: "pemeriksaanFisikStatus",
-    petugasDbKey: "pemeriksaanFisikPetugas",
-  },
-  "Pemeriksaan psikologis (FAS dan SDS)": {
-    dbKey: "tesPsikologiStatus",
-    petugasDbKey: "tesPsikologiPetugas",
-  },
-  "Hematologi (darah lengkap, golongan darah & rhesus)": {
-    dbKey: "pemeriksaanLabStatus",
-    petugasDbKey: "pemeriksaanLabPetugas",
-  },
-  "Profil lemak (kolesterol total, HDL, LDL, trigliserida)": {
-    dbKey: "pemeriksaanLabStatus",
-    petugasDbKey: "pemeriksaanLabPetugas",
-  },
-  "Panel diabetes (gula darah puasa, gula darah 2 jam PP)": {
-    dbKey: "pemeriksaanLabStatus",
-    petugasDbKey: "pemeriksaanLabPetugas",
-  },
-  "Fungsi hati (SGOT, SGPT)": {
-    dbKey: "pemeriksaanLabStatus",
-    petugasDbKey: "pemeriksaanLabPetugas",
-  },
-  "Fungsi ginjal (ureum, creatinin, asam urat)": {
-    dbKey: "pemeriksaanLabStatus",
-    petugasDbKey: "pemeriksaanLabPetugas",
-  },
-  HIV: { dbKey: "pemeriksaanLabStatus", petugasDbKey: "pemeriksaanLabPetugas" },
-  "Urinalisa lengkap": {
-    dbKey: "pemeriksaanLabStatus",
-    petugasDbKey: "pemeriksaanLabPetugas",
-  },
-  "Radiologi thoraks": {
-    dbKey: "pemeriksaanRadiologiStatus",
-    petugasDbKey: "pemeriksaanRadiologiPetugas",
-  },
-  Audiometri: {
-    dbKey: "pemeriksaanAudiometryStatus",
-    petugasDbKey: "pemeriksaanAudiometryPetugas",
-  },
-  Spirometri: {
-    dbKey: "pemeriksaanSpirometryStatus",
-    petugasDbKey: "pemeriksaanSpirometryPetugas",
-  },
-  EKG: { dbKey: "pemeriksaanEkgStatus", petugasDbKey: "pemeriksaanEkgPetugas" },
-  Treadmill: {
-    dbKey: "pemeriksaanTreadmillStatus",
-    petugasDbKey: "pemeriksaanTreadmillPetugas",
-  },
-  "Panel Hepatitis": {
-    dbKey: "pemeriksaanLabStatus",
-    petugasDbKey: "pemeriksaanLabPetugas",
-  },
-  "USG Whole Abdomen": {
-    dbKey: "pemeriksaanRadiologiStatus",
-    petugasDbKey: "pemeriksaanRadiologiPetugas",
-  },
+const examinationToSlugMap: { [key: string]: string } = {
+  "Pemeriksaan fisik dan anamnesis oleh dokter MCU": "pemeriksaan_fisik",
+  "Pemeriksaan kebugaran": "pemeriksaan_fisik",
+  "Pemeriksaan psikologis (FAS dan SDS)": "tes_psikologi",
+  "Hematologi (darah lengkap, golongan darah & rhesus)": "pemeriksaan_lab",
+  "Profil lemak (kolesterol total, HDL, LDL, trigliserida)": "pemeriksaan_lab",
+  "Panel diabetes (gula darah puasa, gula darah 2 jam PP)": "pemeriksaan_lab",
+  "Fungsi hati (SGOT, SGPT)": "pemeriksaan_lab",
+  "Fungsi ginjal (ureum, creatinin, asam urat)": "pemeriksaan_lab",
+  HIV: "pemeriksaan_lab",
+  "Urinalisa lengkap": "pemeriksaan_urin",
+  "Radiologi thoraks": "pemeriksaan_radiologi",
+  Audiometri: "pemeriksaan_audiometry",
+  Spirometri: "pemeriksaan_spirometry",
+  EKG: "pemeriksaan_ekg",
+  Treadmill: "pemeriksaan_treadmill",
+  "Panel Hepatitis": "pemeriksaan_lab",
+  "USG Whole Abdomen": "pemeriksaan_radiologi",
 };
 
 interface McuProgressModalProps {
@@ -141,9 +73,11 @@ export function McuProgressModal({
       setLoading(true);
       setData(null);
       fetch(`/api/mcu/results/${mcuResultId}`)
-        .then((res) => res.json())
+        .then((res) => {
+          if (!res.ok) throw new Error("Gagal mengambil data progres.");
+          return res.json();
+        })
         .then((result) => {
-          if (result.message) throw new Error(result.message);
           setData(result);
         })
         .catch((err) => console.error("Failed to fetch MCU details:", err))
@@ -192,7 +126,9 @@ export function McuProgressModal({
         </DialogHeader>
         <div className="py-4 max-h-[70vh] overflow-y-auto">
           {loading ? (
-            <p>Memuat data progres...</p>
+            <div className="flex items-center justify-center h-40">
+              <Loader2 className="animate-spin mr-2" /> Memuat data progres...
+            </div>
           ) : data ? (
             <div className="rounded-md border">
               <Table>
@@ -205,13 +141,16 @@ export function McuProgressModal({
                 </TableHeader>
                 <TableBody>
                   {displayedItems.map((itemName) => {
-                    const itemMapping = examinationMap[itemName];
-                    const status = itemMapping
-                      ? data[itemMapping.dbKey]
+                    const relevantSlug = examinationToSlugMap[itemName];
+
+                    const progressEntry = relevantSlug
+                      ? data.progress.find(
+                          (p) => p.checkpoint.slug === relevantSlug
+                        )
                       : undefined;
-                    const petugas = itemMapping
-                      ? data[itemMapping.petugasDbKey]
-                      : undefined;
+
+                    const isCompleted = !!progressEntry;
+                    const petugas = progressEntry?.petugasName || "-";
 
                     return (
                       <TableRow key={itemName}>
@@ -219,10 +158,10 @@ export function McuProgressModal({
                           {itemName}
                         </TableCell>
                         <TableCell className="text-gray-600">
-                          {petugas || "-"}
+                          {petugas}
                         </TableCell>
                         <TableCell className="text-right">
-                          {status === "COMPLETED" ? (
+                          {isCompleted ? (
                             <span className="flex items-center justify-end gap-2 text-green-600 font-semibold">
                               <CheckCircle size={16} /> Selesai
                             </span>

@@ -39,7 +39,39 @@ export const usePatientTable = (companyId: string) => {
       const response = await fetch(`/api/patients?companyId=${companyId}`);
       if (!response.ok) throw new Error(`Error: ${response.statusText}`);
       const data = await response.json();
-      setPatients(data);
+
+      const patientsWithProgress = data.map((patient: PatientData) => {
+        if (!patient.mcuResults || patient.mcuResults.length === 0) {
+          return {
+            ...patient,
+            progress: 0,
+            lastProgress: patient.lastProgress || "MENUNGGU",
+          };
+        }
+
+        const latestMcu = patient.mcuResults[0];
+
+        const totalCheckpoints = Array.isArray(patient.mcuPackage)
+          ? patient.mcuPackage.length
+          : 0;
+
+        const completedCheckpoints =
+          latestMcu.progress?.filter((p) => p.status === "COMPLETED").length ||
+          0;
+
+        const progressPercentage =
+          totalCheckpoints > 0
+            ? (completedCheckpoints / totalCheckpoints) * 100
+            : 0;
+
+        return {
+          ...patient,
+          progress: progressPercentage,
+          lastProgress: patient.lastProgress,
+        };
+      });
+
+      setPatients(patientsWithProgress);
     } catch (error) {
       console.error("Failed to fetch patients:", error);
       toast.error("Gagal memuat data pasien.");
