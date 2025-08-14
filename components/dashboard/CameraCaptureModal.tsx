@@ -31,7 +31,6 @@ export const CameraCaptureModal = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Fungsi untuk memulai kamera
   const startCamera = useCallback(async () => {
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       try {
@@ -49,7 +48,6 @@ export const CameraCaptureModal = ({
     }
   }, [onClose]);
 
-  // Fungsi untuk mematikan kamera
   const stopCamera = useCallback(() => {
     if (videoRef.current && videoRef.current.srcObject) {
       const stream = videoRef.current.srcObject as MediaStream;
@@ -58,19 +56,16 @@ export const CameraCaptureModal = ({
     }
   }, []);
 
-  // Efek untuk mengontrol kamera saat modal dibuka/tutup
   useEffect(() => {
     if (isOpen) {
-      setCapturedImage(null); // Reset foto setiap kali modal dibuka
+      setCapturedImage(null);
       startCamera();
     } else {
       stopCamera();
     }
-    // Cleanup function untuk mematikan kamera jika komponen di-unmount
     return () => stopCamera();
   }, [isOpen, startCamera, stopCamera]);
 
-  // Fungsi untuk mengambil foto
   const handleTakePhoto = () => {
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
@@ -83,17 +78,14 @@ export const CameraCaptureModal = ({
     }
   };
 
-  // Fungsi untuk mengulang pengambilan foto
   const handleRetake = () => {
     setCapturedImage(null);
   };
 
-  // Fungsi untuk menyimpan dan mengupload foto
   const handleSavePhoto = async () => {
     if (!capturedImage || !patient) return;
     setIsUploading(true);
 
-    // Konversi data URL ke Blob untuk diupload
     const response = await fetch(capturedImage);
     const blob = await response.blob();
 
