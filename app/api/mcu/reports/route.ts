@@ -1,44 +1,83 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 
+export const dynamic = "force-dynamic";
+
 const prisma = new PrismaClient();
 
 export async function GET(request: Request) {
   try {
-    // Di aplikasi nyata, sebaiknya ada filter berdasarkan companyId
-    // const { searchParams } = new URL(request.url);
-    // const companyId = searchParams.get("companyId");
-    // if (!companyId) throw new Error("Company ID is required");
+    const { searchParams } = new URL(request.url);
 
-    const reports = await prisma.mcuResult.findMany({
-      // where: { patient: { companyId } }, // Filter berdasarkan company
-      select: {
-        id: true,
-        updatedAt: true,
-        status: true,
-        patient: {
-          select: {
-            id: true,
-            patientId: true,
-            fullName: true,
-            company: {
-              select: {
-                name: true,
+    const companyId = searchParams.get("companyId") || undefined;
+    const search = searchParams.get("search") || undefined;
+    const page = Number(searchParams.get("page") || 1);
+    const pageSize = Number(searchParams.get("pageSize") || 10);
+
+    if (!companyId) {
+      return NextResponse.json({
+        data: [],
+        meta: { page: 1, pageSize, total: 0, totalPages: 1 },
+      });
+    }
+
+    const where = {
+      patient: { companyId },
+      ...(search
+        ? {
+            OR: [
+              {
+                patient: {
+                  fullName: { contains: search, mode: "insensitive" },
+                },
               },
+              {
+                patient: {
+                  patientId: { contains: search, mode: "insensitive" },
+                },
+              },
+              { status: { contains: search, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+    };
+
+    const [total, reports] = await Promise.all([
+      prisma.mcuResult.count({ where }),
+      prisma.mcuResult.findMany({
+        where,
+        select: {
+          id: true,
+          updatedAt: true,
+          status: true,
+          patient: {
+            select: {
+              id: true,
+              patientId: true,
+              fullName: true,
+              company: { select: { id: true, name: true } },
             },
           },
         },
-      },
-      orderBy: {
-        updatedAt: "desc", // Urutkan dari yang terbaru
+        orderBy: { updatedAt: "desc" },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+    ]);
+
+    return NextResponse.json({
+      data: reports,
+      meta: {
+        page,
+        pageSize,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / pageSize)),
       },
     });
-
-    return NextResponse.json(reports);
   } catch (error) {
-    console.error("Fetch All MCU Reports Error:", error);
-    const errorMessage =
+    console.error("Fetch MCU Reports Error:", error);
+    const msg =
       error instanceof Error ? error.message : "Internal Server Error";
-    return NextResponse.json({ message: errorMessage }, { status: 500 });
+    return NextResponse.json({ message: msg }, { status: 500 });
   }
 }

@@ -2,7 +2,7 @@
 "use client";
 
 import React from "react";
-import { Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer"; // Ditambahkan: Image
 import { ReportHeader, PatientInfo, ReportFooter } from "./ReportLayout";
 import { styles as globalStyles } from './reportStyles';
 
@@ -51,8 +51,8 @@ const getSeverity = (scale, score) => {
 };
 
 export const DassDocument = ({ data }) => {
-    // --- PERBAIKAN DI SINI: Ambil jawaban dari object 'raw' ---
-    const scores = calculateDassScores(data?.dassTestAnswers?.raw);
+    // Ambil jawaban dari object 'dassTestAnswers'. Di form, data disimpan langsung, bukan di dalam 'raw'.
+    const scores = calculateDassScores(data?.dassTestAnswers);
     
     const results = {
         depression: { score: scores.depression, severity: getSeverity('depression', scores.depression) },
@@ -92,14 +92,19 @@ export const DassDocument = ({ data }) => {
                     </View>
                 </View>
 
-                <View style={localStyles.interpretationSection}>
-                    <Text style={localStyles.sectionTitle}>Interpretasi</Text>
-                    <Text style={localStyles.interpretationText}>
-                        Skor dihitung berdasarkan jawaban pasien selama seminggu terakhir. Hasil ini
-                        bukanlah diagnosis klinis, namun dapat menjadi indikator awal kondisi psikologis
-                        yang mungkin memerlukan perhatian lebih lanjut dari profesional kesehatan mental.
-                    </Text>
-                </View>
+                {/* === DITAMBAHKAN: Blok Tanda Tangan Validator === */}
+                {(data?.dassFasValidatorName || data?.dassFasValidatorQr) && (
+                  <View style={{ marginTop: 40, alignItems: "flex-end", paddingRight: 40 }}>
+                    {data?.dassFasValidatorQr && (
+                      <Image src={data.dassFasValidatorQr} style={{ width: 80, height: 80, marginBottom: 8 }} />
+                    )}
+                    {data?.dassFasValidatorName && (
+                      <Text style={{ fontSize: 8, fontFamily: "Helvetica-Bold" }}>{data.dassFasValidatorName}</Text>
+                    )}
+                    <Text style={{ fontSize: 5 }}>Psikolog / Validator</Text>
+                  </View>
+                )}
+
             </View>
 
             <ReportFooter />
@@ -114,7 +119,4 @@ const localStyles = StyleSheet.create({
     tableRow: { flexDirection: "row", borderTopWidth: 1, borderTopColor: '#333' },
     tableColHeader: { padding: 6, fontFamily: 'Helvetica-Bold', backgroundColor: '#f0f0f0', textAlign: 'center', borderRightWidth: 1, borderRightColor: '#333', fontSize: 10 },
     tableCol: { padding: 6, textAlign: 'center', borderRightWidth: 1, borderRightColor: '#333', fontSize: 10 },
-    interpretationSection: { marginTop: 25 },
-    sectionTitle: { fontFamily: 'Helvetica-Bold', fontSize: 11, marginBottom: 5 },
-    interpretationText: { fontSize: 9, lineHeight: 1.5, textAlign: 'justify' },
 });
