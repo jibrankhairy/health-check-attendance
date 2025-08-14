@@ -18,10 +18,12 @@ import { UsgAbdomenForm } from "./forms/UsgAbdomenForm";
 import { UsgMammaeForm } from "./forms/UsgMammaeForm";
 import { EkgForm } from "./forms/EkgForm";
 import { RontgenForm } from "./forms/RontgenForm";
+import { PsikologiForm } from "./forms/PsikologiForm"; // <-- IMPORT BARU
 import { ConclusionForm } from "./forms/ConclusionForm";
 
+// Skema validasi Zod untuk semua field yang bisa diinput
 const formSchema = z.object({
-  // ... (semua field schema Anda tetap di sini, tidak perlu diubah)
+  // ... (semua field schema dari Hematologi, Kimia Darah, dll. tetap di sini)
   hemoglobin: z.string().optional().nullable(),
   leukosit: z.string().optional().nullable(),
   trombosit: z.string().optional().nullable(),
@@ -106,7 +108,10 @@ const formSchema = z.object({
   audioBcKiri4000: z.coerce.number().optional().nullable(),
   audioBcKiri6000: z.coerce.number().optional().nullable(),
   audioBcKiri8000: z.coerce.number().optional().nullable(),
-  kesimpulanAudiometri: z.string().optional().nullable(),
+  audiometriKesimpulanTelingaKanan: z.string().optional().nullable(),
+  audiometriKesimpulanTelingaKiri: z.string().optional().nullable(),
+  audiometriKesimpulanUmum: z.string().optional().nullable(),
+  audiometriSaran: z.string().optional().nullable(),
   spirometriFvc: z.string().optional().nullable(),
   spirometriFev1: z.string().optional().nullable(),
   spirometriFev1Fvc: z.string().optional().nullable(),
@@ -169,6 +174,9 @@ const formSchema = z.object({
   rontgenValidatorQr: z.string().optional().nullable(),
   conclusionValidatorName: z.string().optional().nullable(),
   conclusionValidatorQr: z.string().optional().nullable(),
+  // === FIELD BARU UNTUK VALIDATOR PSIKOLOGI ===
+  dassFasValidatorName: z.string().optional().nullable(),
+  dassFasValidatorQr: z.string().optional().nullable(),
 });
 
 export type McuFormData = z.infer<typeof formSchema>;
@@ -185,26 +193,17 @@ interface McuInputFormProps {
 export const McuInputForm = ({ initialData }: McuInputFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // --- [FIX] PISAHKAN PROPS FORM DARI PROPS LAIN ---
-  // Kita destructure `initialData` untuk memisahkan data yang bukan bagian dari form (`id`, `patient`)
-  // dari data yang akan menjadi nilai default form (`formValues`).
-  // Ini adalah langkah kunci untuk menyelesaikan error.
   const { id, patient, ...formValues } = initialData;
 
   const methods = useForm<McuFormData>({
     resolver: zodResolver(formSchema),
-    // Gunakan `formValues` yang sudah bersih, yang hanya berisi field yang ada di schema.
-    // Ini memastikan tidak ada properti ekstra yang membuat TypeScript bingung.
     defaultValues: {
       ...formValues,
       saran: Array.isArray(initialData.saran) ? initialData.saran : [],
     },
   });
 
-  const {
-    formState: { errors },
-  } = methods;
+  const { formState: { errors } } = methods;
 
   useEffect(() => {
     if (Object.keys(errors).length > 0) {
@@ -339,24 +338,17 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
   const hasItem = (item: string) =>
     packageItemsLower.includes(item.toLowerCase());
 
-  const showHematologi =
-    hasItem("mcu regular") || hasItem("mcu eksekutif") || hasItem("mcu akhir");
-  const showKimiaDarah =
-    hasItem("mcu regular") || hasItem("mcu eksekutif") || hasItem("mcu akhir");
-  const showUrinalisa =
-    hasItem("mcu regular") || hasItem("mcu eksekutif") || hasItem("mcu akhir");
-  const showAudioSpiro =
-    hasItem("mcu eksekutif") || hasItem("audiometri") || hasItem("spirometri");
-  const showUsgAbdomen =
-    hasItem("mcu eksekutif") || hasItem("usg whole abdomen");
+  // Logika untuk menampilkan form berdasarkan paket MCU
+  const showHematologi = hasItem("mcu regular") || hasItem("mcu eksekutif") || hasItem("mcu akhir");
+  const showKimiaDarah = hasItem("mcu regular") || hasItem("mcu eksekutif") || hasItem("mcu akhir");
+  const showUrinalisa = hasItem("mcu regular") || hasItem("mcu eksekutif") || hasItem("mcu akhir");
+  const showAudioSpiro = hasItem("mcu eksekutif") || hasItem("audiometri") || hasItem("spirometri");
+  const showUsgAbdomen = hasItem("mcu eksekutif") || hasItem("usg whole abdomen");
   const showUsgMammae = hasItem("mcu eksekutif") || hasItem("usg mammae");
-  const showEkg =
-    hasItem("mcu eksekutif") || hasItem("ekg") || hasItem("treadmill");
-  const showRontgen =
-    hasItem("mcu regular") ||
-    hasItem("mcu eksekutif") ||
-    hasItem("mcu akhir") ||
-    hasItem("radiologi thoraks");
+  const showEkg = hasItem("mcu eksekutif") || hasItem("ekg") || hasItem("treadmill");
+  const showRontgen = hasItem("mcu regular") || hasItem("mcu eksekutif") || hasItem("mcu akhir") || hasItem("radiologi thoraks");
+  // === LOGIKA BARU UNTUK MENAMPILKAN FORM PSIKOLOGI ===
+  const showPsikologi = hasItem("pemeriksaan psikologis (fas dan sds)");
 
   const itemsToCheck = new Set(initialData.patient.mcuPackage || []);
   if (hasItem("mcu eksekutif")) {
@@ -406,6 +398,10 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
         {showUsgMammae && <UsgMammaeForm />}
         {showEkg && <EkgForm />}
         {showRontgen && <RontgenForm />}
+        
+        {/* === PEMANGGILAN FORM BARU DI SINI === */}
+        {showPsikologi && <PsikologiForm />}
+        
         <ConclusionForm />
 
         {Object.keys(errors).length > 0 && (

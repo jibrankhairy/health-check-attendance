@@ -2,7 +2,7 @@
 "use client";
 
 import React from "react";
-import { Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer"; // Ditambahkan: Image
 import { ReportHeader, PatientInfo, ReportFooter } from "./ReportLayout";
 import { styles as globalStyles } from './reportStyles';
 
@@ -64,14 +64,18 @@ export const FasDocument = ({ data }) => {
                     <Text style={localStyles.conclusionText}>{conclusion}</Text>
                 </View>
 
-                <View style={localStyles.interpretationSection}>
-                    <Text style={localStyles.sectionTitle}>Interpretasi</Text>
-                    <Text style={localStyles.interpretationText}>
-                        Fatigue Assessment Scale (FAS) mengukur tingkat kelelahan yang dirasakan pasien.
-                        Skor total berkisar antara 10 hingga 50. Skor 22 atau lebih tinggi menunjukkan
-                        adanya tingkat kelelahan yang signifikan dan mungkin memerlukan evaluasi lebih lanjut.
-                    </Text>
-                </View>
+                {/* === DITAMBAHKAN: Blok Tanda Tangan Validator === */}
+                {(data?.dassFasValidatorName || data?.dassFasValidatorQr) && (
+                  <View style={{ marginTop: 40, alignItems: "flex-end", paddingRight: 40 }}>
+                    {data?.dassFasValidatorQr && (
+                      <Image src={data.dassFasValidatorQr} style={{ width: 80, height: 80, marginBottom: 8 }} />
+                    )}
+                    {data?.dassFasValidatorName && (
+                      <Text style={{ fontSize: 8, fontFamily: "Helvetica-Bold" }}>{data.dassFasValidatorName}</Text>
+                    )}
+                    <Text style={{ fontSize: 5 }}>Psikolog / Validator</Text>
+                  </View>
+                )}
             </View>
 
             <ReportFooter />
@@ -88,6 +92,4 @@ const localStyles = StyleSheet.create({
     conclusionSection: { marginBottom: 25 },
     sectionTitle: { fontFamily: 'Helvetica-Bold', fontSize: 11, marginBottom: 5 },
     conclusionText: { fontSize: 10, lineHeight: 1.5 },
-    interpretationSection: { marginTop: 20, borderTopWidth: 1, borderTopColor: '#eee', paddingTop: 15 },
-    interpretationText: { fontSize: 9, lineHeight: 1.5, textAlign: 'justify' },
 });

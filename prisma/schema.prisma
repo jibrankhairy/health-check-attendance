@@ -226,7 +226,10 @@ model McuResult {
   audioBcKiri4000      Int?
   audioBcKiri6000      Int?
   audioBcKiri8000      Int?
-  kesimpulanAudiometri String?   @db.Text
+  audiometriKesimpulanTelingaKanan String? @db.Text
+  audiometriKesimpulanTelingaKiri  String? @db.Text
+  audiometriKesimpulanUmum         String? @db.Text
+  audiometriSaran                  String? @db.Text
 
   // --- Spirometri ---
   spirometriFvc        String?   @db.Text
@@ -311,7 +314,7 @@ model McuResult {
   pemeriksaanTreadmillPetugas   String?
   pemeriksaanUrinStatus         String  @default("PENDING")
   pemeriksaanUrinPetugas        String?
-}
+
   // --- Tanda Tangan Validator untuk setiap seksi ---
   hematologiValidatorName     String?
   hematologiValidatorQr       String? @db.Text

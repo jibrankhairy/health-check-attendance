@@ -117,9 +117,9 @@ const localStyles = StyleSheet.create({
   },
   tableColFrekuensi: { width: "10.625%" },
   conclusionSection: { marginTop: 16, fontSize: 10, lineHeight: 1.5 },
-  conclusionRow: { flexDirection: "row" },
-  conclusionLabel: { width: "15%", fontFamily: "Helvetica-Bold" },
-  conclusionValue: { width: "85%" },
+  conclusionRow: { flexDirection: "row", marginBottom: 4 },
+  conclusionLabel: { width: "120px", fontFamily: "Helvetica-Bold" },
+  conclusionValue: { flex: 1 },
 });
 
 // ---------- Komponen Chart SVG ----------
@@ -138,143 +138,26 @@ function AudiogramSvg({
     <View style={localStyles.chartBox}>
       <Text style={localStyles.chartTitle}>{title}</Text>
       <Svg width={CHART_W} height={CHART_H}>
-        {/* background */}
-        <Rect
-          x={0}
-          y={0}
-          width={CHART_W}
-          height={CHART_H}
-          fill="#ffffff"
-          stroke="#cccccc"
-          strokeWidth={1}
-        />
-
-        {/* grid horizontal + label dB */}
-        {yTicks.map((t, idx) => {
-          const y = yScale(t);
-          return (
-            <React.Fragment key={`yt-${t}`}>
-              <Line
-                x1={M.left}
-                y1={y}
-                x2={CHART_W - M.right}
-                y2={y}
-                stroke="#e6e6e6"
-                strokeWidth={1}
-              />
-              {/* label dB di kiri */}
-              <Text
-                x={M.left - 6}
-                y={y + 3}
-                fontSize={7}
-                textAnchor="end"
-                fill="#333"
-              >
-                {t}
-              </Text>
-            </React.Fragment>
-          );
-        })}
-
-        {/* grid vertikal + label frekuensi */}
-        {FREQS.map((f, i) => {
-          const x = xScale(i);
-          return (
-            <React.Fragment key={`x-${f}`}>
-              <Line
-                x1={x}
-                y1={M.top}
-                x2={x}
-                y2={CHART_H - M.bottom}
-                stroke="#f0f0f0"
-                strokeWidth={1}
-              />
-              <Text
-                x={x}
-                y={CHART_H - M.bottom + 12}
-                fontSize={7}
-                textAnchor="middle"
-                fill="#333"
-              >
-                {f}
-              </Text>
-            </React.Fragment>
-          );
-        })}
-
-        {/* axes */}
-        <Line
-          x1={M.left}
-          y1={M.top}
-          x2={M.left}
-          y2={CHART_H - M.bottom}
-          stroke="#555"
-          strokeWidth={1}
-        />
-        <Line
-          x1={M.left}
-          y1={CHART_H - M.bottom}
-          x2={CHART_W - M.right}
-          y2={CHART_H - M.bottom}
-          stroke="#555"
-          strokeWidth={1}
-        />
-
-        {/* garis AC (solid) */}
-        {buildPoints(acValues) && (
-          <Polyline
-            points={buildPoints(acValues)}
-            fill="none"
-            stroke="#000000"
-            strokeWidth={1.2}
-          />
-        )}
-        {/* titik AC */}
-        {acValues.map((v, i) =>
-          v == null ? null : (
-            <Circle
-              key={`ac-dot-${i}`}
-              cx={xScale(i)}
-              cy={yScale(v)}
-              r={2.2}
-              fill="#000000"
-            />
-          )
-        )}
-
-        {/* garis BC (putus-putus) */}
-        {buildPoints(bcValues) && (
-          <Polyline
-            points={buildPoints(bcValues)}
-            fill="none"
-            stroke="#000000"
-            strokeWidth={1.2}
-            strokeDasharray="4 3"
-          />
-        )}
-        {/* titik BC */}
-        {bcValues.map((v, i) =>
-          v == null ? null : (
-            <Circle
-              key={`bc-dot-${i}`}
-              cx={xScale(i)}
-              cy={yScale(v)}
-              r={2.2}
-              fill="#000000"
-            />
-          )
-        )}
-
-        {/* label sumbu */}
-        <Text
-          x={M.left - 18}
-          y={M.top - 6}
-          fontSize={7}
-          textAnchor="start"
-          fill="#333"
-        >
-          dB HL
-        </Text>
+        <Rect x={0} y={0} width={CHART_W} height={CHART_H} fill="#ffffff" stroke="#cccccc" strokeWidth={1} />
+        {yTicks.map((t) => (
+          <React.Fragment key={`yt-${t}`}>
+            <Line x1={M.left} y1={yScale(t)} x2={CHART_W - M.right} y2={yScale(t)} stroke="#e6e6e6" strokeWidth={1}/>
+            <Text x={M.left - 6} y={yScale(t) + 3} fontSize={7} textAnchor="end" fill="#333">{t}</Text>
+          </React.Fragment>
+        ))}
+        {FREQS.map((f, i) => (
+          <React.Fragment key={`x-${f}`}>
+            <Line x1={xScale(i)} y1={M.top} x2={xScale(i)} y2={CHART_H - M.bottom} stroke="#f0f0f0" strokeWidth={1}/>
+            <Text x={xScale(i)} y={CHART_H - M.bottom + 12} fontSize={7} textAnchor="middle" fill="#333">{f}</Text>
+          </React.Fragment>
+        ))}
+        <Line x1={M.left} y1={M.top} x2={M.left} y2={CHART_H - M.bottom} stroke="#555" strokeWidth={1}/>
+        <Line x1={M.left} y1={CHART_H - M.bottom} x2={CHART_W - M.right} y2={CHART_H - M.bottom} stroke="#555" strokeWidth={1}/>
+        {buildPoints(acValues) && (<Polyline points={buildPoints(acValues)} fill="none" stroke="#000000" strokeWidth={1.2}/>)}
+        {acValues.map((v, i) => v == null ? null : (<Circle key={`ac-dot-${i}`} cx={xScale(i)} cy={yScale(v)} r={2.2} fill="#000000"/>))}
+        {buildPoints(bcValues) && (<Polyline points={buildPoints(bcValues)} fill="none" stroke="#000000" strokeWidth={1.2} strokeDasharray="4 3"/>)}
+        {bcValues.map((v, i) => v == null ? null : (<Circle key={`bc-dot-${i}`} cx={xScale(i)} cy={yScale(v)} r={2.2} fill="#000000"/>))}
+        <Text x={M.left - 18} y={M.top - 6} fontSize={7} textAnchor="start" fill="#333">dB HL</Text>
       </Svg>
     </View>
   );
@@ -287,12 +170,13 @@ export const AudiometriDocument = ({ data }) => {
   const acKiri = FREQS.map((f) => toNum(data?.[`audioAcKiri${f}`]));
   const bcKiri = FREQS.map((f) => toNum(data?.[`audioBcKiri${f}`]));
 
-  const kesimpulanLines = data?.kesimpulanAudiometri?.split("\n") || [];
-  const kesimpulan = kesimpulanLines[0]?.split(":")[1]?.trim() || "Normal";
-  const telingaKanan = kesimpulanLines[1]?.split(":")[1]?.trim() || "Normal";
-  const telingaKiri = kesimpulanLines[2]?.split(":")[1]?.trim() || "Normal";
-  const saran = kesimpulanLines[3]?.split(":")[1]?.trim() || "Tidak ada";
-
+  // Logika parsing dari satu field kesimpulan (sesuai kode asli Anda)
+  const kesimpulanLines = (data?.kesimpulanAudiometri || "").split('\n');
+  const telingaKanan = kesimpulanLines.find(l => l.toLowerCase().startsWith("telinga kanan"))?.split(":")[1]?.trim() || "-";
+  const telingaKiri = kesimpulanLines.find(l => l.toLowerCase().startsWith("telinga kiri"))?.split(":")[1]?.trim() || "-";
+  const kesimpulan = kesimpulanLines.find(l => l.toLowerCase().startsWith("kesimpulan"))?.split(":")[1]?.trim() || "-";
+  const saran = kesimpulanLines.find(l => l.toLowerCase().startsWith("saran"))?.split(":")[1]?.trim() || "-";
+  
   return (
     <Page size="A4" style={globalStyles.page}>
       <ReportHeader />
@@ -301,68 +185,36 @@ export const AudiometriDocument = ({ data }) => {
       <View style={globalStyles.body}>
         <Text style={localStyles.header}>HASIL PEMERIKSAAN AUDIOMETRI</Text>
 
-        {/* ===== Grafik (kanan & kiri) ===== */}
         <View style={localStyles.chartsRow}>
           <AudiogramSvg title="TELINGA KANAN" acValues={acKanan} bcValues={bcKanan} />
           <AudiogramSvg title="TELINGA KIRI" acValues={acKiri} bcValues={bcKiri} />
         </View>
 
-        {/* ===== Tabel Nilai ===== */}
         <View style={localStyles.table}>
           <View style={localStyles.tableRow}>
-            <View style={[localStyles.tableColHeader]}>
-              <Text>Frekuensi</Text>
-            </View>
-            {FREQS.map((f) => (
-              <View key={`head-${f}`} style={[localStyles.tableColHeader, localStyles.tableColFrekuensi]}>
-                <Text>{f}</Text>
-              </View>
-            ))}
+            <View style={[localStyles.tableColHeader]}><Text>Frekuensi</Text></View>
+            {FREQS.map((f) => (<View key={`head-${f}`} style={[localStyles.tableColHeader, localStyles.tableColFrekuensi]}><Text>{f}</Text></View>))}
           </View>
-
           <View style={localStyles.tableRow}>
             <View style={localStyles.tableCol}><Text>AC KANAN</Text></View>
-            {FREQS.map((f) => (
-              <View key={`ac-kanan-${f}`} style={[localStyles.tableCol, localStyles.tableColFrekuensi]}>
-                <Text>{data?.[`audioAcKanan${f}`] ?? "-"}</Text>
-              </View>
-            ))}
+            {FREQS.map((f) => (<View key={`ac-kanan-${f}`} style={[localStyles.tableCol, localStyles.tableColFrekuensi]}><Text>{data?.[`audioAcKanan${f}`] ?? "-"}</Text></View>))}
           </View>
-
           <View style={localStyles.tableRow}>
             <View style={localStyles.tableCol}><Text>BC KANAN</Text></View>
-            {FREQS.map((f) => (
-              <View key={`bc-kanan-${f}`} style={[localStyles.tableCol, localStyles.tableColFrekuensi]}>
-                <Text>{data?.[`audioBcKanan${f}`] ?? "-"}</Text>
-              </View>
-            ))}
+            {FREQS.map((f) => (<View key={`bc-kanan-${f}`} style={[localStyles.tableCol, localStyles.tableColFrekuensi]}><Text>{data?.[`audioBcKanan${f}`] ?? "-"}</Text></View>))}
           </View>
-
           <View style={localStyles.tableRow}>
             <View style={localStyles.tableCol}><Text>AC KIRI</Text></View>
-            {FREQS.map((f) => (
-              <View key={`ac-kiri-${f}`} style={[localStyles.tableCol, localStyles.tableColFrekuensi]}>
-                <Text>{data?.[`audioAcKiri${f}`] ?? "-"}</Text>
-              </View>
-            ))}
+            {FREQS.map((f) => (<View key={`ac-kiri-${f}`} style={[localStyles.tableCol, localStyles.tableColFrekuensi]}><Text>{data?.[`audioAcKiri${f}`] ?? "-"}</Text></View>))}
           </View>
-
           <View style={localStyles.tableRow}>
             <View style={localStyles.tableCol}><Text>BC KIRI</Text></View>
-            {FREQS.map((f) => (
-              <View key={`bc-kiri-${f}`} style={[localStyles.tableCol, localStyles.tableColFrekuensi]}>
-                <Text>{data?.[`audioBcKiri${f}`] ?? "-"}</Text>
-              </View>
-            ))}
+            {FREQS.map((f) => (<View key={`bc-kiri-${f}`} style={[localStyles.tableCol, localStyles.tableColFrekuensi]}><Text>{data?.[`audioBcKiri${f}`] ?? "-"}</Text></View>))}
           </View>
         </View>
 
-        {/* ===== Kesimpulan ===== */}
+        {/* ===== PERUBAHAN HANYA DI URUTAN BLOK INI ===== */}
         <View style={localStyles.conclusionSection}>
-          <View style={localStyles.conclusionRow}>
-            <Text style={localStyles.conclusionLabel}>Kesimpulan</Text>
-            <Text style={localStyles.conclusionValue}>: {kesimpulan}</Text>
-          </View>
           <View style={localStyles.conclusionRow}>
             <Text style={localStyles.conclusionLabel}>Telinga Kanan</Text>
             <Text style={localStyles.conclusionValue}>: {telingaKanan}</Text>
@@ -372,22 +224,19 @@ export const AudiometriDocument = ({ data }) => {
             <Text style={localStyles.conclusionValue}>: {telingaKiri}</Text>
           </View>
           <View style={localStyles.conclusionRow}>
+            <Text style={localStyles.conclusionLabel}>Kesimpulan</Text>
+            <Text style={localStyles.conclusionValue}>: {kesimpulan}</Text>
+          </View>
+          <View style={localStyles.conclusionRow}>
             <Text style={localStyles.conclusionLabel}>Saran</Text>
             <Text style={localStyles.conclusionValue}>: {saran}</Text>
           </View>
         </View>
 
-        {/* Signature format seragam (kanan-bawah konten) */}
         {(data?.audiometriValidatorName || data?.audiometriValidatorQr) && (
           <View style={{ marginTop: 10, alignItems: "flex-end", paddingRight: 40 }}>
-            {data?.audiometriValidatorQr && (
-              <Image src={data.audiometriValidatorQr} style={{ width: 80, height: 80, marginBottom: 8 }} />
-            )}
-            {data?.audiometriValidatorName && (
-              <Text style={{ fontSize: 8, fontFamily: "Helvetica-Bold" }}>
-                {data.audiometriValidatorName}
-              </Text>
-            )}
+            {data?.audiometriValidatorQr && (<Image src={data.audiometriValidatorQr} style={{ width: 80, height: 80, marginBottom: 8 }} />)}
+            {data?.audiometriValidatorName && (<Text style={{ fontSize: 8, fontFamily: "Helvetica-Bold" }}>{data.audiometriValidatorName}</Text>)}
             <Text style={{ fontSize: 5 }}>Validator</Text>
           </View>
         )}
