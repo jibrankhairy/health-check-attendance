@@ -6,6 +6,11 @@ const prisma = new PrismaClient();
 export async function GET() {
   try {
     const checkpoints = await prisma.checkpoint.findMany({
+      where: {
+        slug: {
+          not: "tes_psikologi",
+        },
+      },
       orderBy: { name: "asc" },
     });
     return NextResponse.json(checkpoints);

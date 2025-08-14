@@ -14,18 +14,55 @@ export async function PUT(
     if (body.formAnswers) {
       const { healthHistoryAnswers, dassTestAnswers, fasTestAnswers } =
         body.formAnswers;
-      const dataToUpdate = {
-        healthHistoryAnswers: healthHistoryAnswers,
-        dassTestAnswers: dassTestAnswers,
-        fasTestAnswers: fasTestAnswers,
-        formSubmittedAt: new Date(),
-        status: "COMPLETED",
-      };
 
-      const updatedResult = await prisma.mcuResult.update({
-        where: { id: resultId },
-        data: dataToUpdate,
+      const updatedResult = await prisma.$transaction(async (tx) => {
+        const result = await tx.mcuResult.update({
+          where: { id: resultId },
+          data: {
+            healthHistoryAnswers: healthHistoryAnswers,
+            dassTestAnswers: dassTestAnswers,
+            fasTestAnswers: fasTestAnswers,
+            formSubmittedAt: new Date(),
+          },
+        });
+
+        const psychologyCheckpoint = await tx.checkpoint.findUnique({
+          where: { slug: "tes_psikologi" },
+        });
+
+        if (psychologyCheckpoint) {
+          console.log(
+            "Checkpoint 'tes_psikologi' ditemukan, membuat progres..."
+          );
+          await tx.mcuProgress.upsert({
+            where: {
+              mcuResultId_checkpointId: {
+                mcuResultId: resultId,
+                checkpointId: psychologyCheckpoint.id,
+              },
+            },
+            update: {
+              status: "COMPLETED",
+              petugasName: "Pasien (Online Form)",
+              completedAt: new Date(),
+            },
+            create: {
+              mcuResultId: resultId,
+              checkpointId: psychologyCheckpoint.id,
+              status: "COMPLETED",
+              petugasName: "Pasien (Online Form)",
+              completedAt: new Date(),
+            },
+          });
+        } else {
+          console.warn(
+            "PERINGATAN: Checkpoint dengan slug 'tes_psikologi' tidak ditemukan di database. Status progres tidak diupdate."
+          );
+        }
+
+        return result;
       });
+
       return NextResponse.json(updatedResult);
     }
 
@@ -37,7 +74,7 @@ export async function PUT(
 
     const dataToUpdate = {
       ...validData,
-      status: "COMPLETED",
+      status: validData.kesimpulan ? "COMPLETED" : "IN_PROGRESS",
     };
 
     const updatedResult = await prisma.mcuResult.update({
@@ -68,19 +105,9 @@ export async function GET(
     const result = await prisma.mcuResult.findUnique({
       where: { id: resultId },
       include: {
-        patient: {
-          select: {
-            fullName: true,
-          },
-        },
+        patient: { select: { fullName: true } },
         progress: {
-          include: {
-            checkpoint: {
-              select: {
-                slug: true,
-              },
-            },
-          },
+          include: { checkpoint: { select: { slug: true } } },
         },
       },
     });
