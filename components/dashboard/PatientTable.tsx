@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import {
   PlusCircle,
   Search,
@@ -15,6 +15,7 @@ import {
   Calendar,
   Printer,
   Download,
+  Camera,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -71,12 +72,14 @@ import { format } from "date-fns";
 import { McuProgressModal } from "@/components/McuProgressModal";
 import { ConfirmationDialog } from "@/components/ConfirmationDialog";
 import { usePatientTable } from "@/hooks/usePatientTable";
+import { CameraCaptureModal } from "./CameraCaptureModal";
 
 export type PatientData = {
   id: number;
   patientId: string;
   nik: string;
   fullName: string;
+  photoUrl?: string | null;
   email?: string;
   dob: string;
   age: number;
@@ -90,7 +93,6 @@ export type PatientData = {
   createdAt: string;
   lastProgress?: string | null;
   progress?: number;
-
   mcuResults: {
     id: string;
     fileUrl?: string;
@@ -108,6 +110,10 @@ type PatientTableProps = {
 
 export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [takingPhotoFor, setTakingPhotoFor] = useState<PatientData | null>(
+    null
+  );
 
   const {
     loading,
@@ -201,6 +207,10 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
       <DropdownMenuItem onClick={() => handleEditClick(patient.id)}>
         <Pencil className="mr-2 h-4 w-4" />
         <span>Edit</span>
+      </DropdownMenuItem>
+      <DropdownMenuItem onClick={() => setTakingPhotoFor(patient)}>
+        <Camera className="mr-2 h-4 w-4" />
+        <span>Ambil Foto</span>
       </DropdownMenuItem>
       <DropdownMenuItem
         onClick={() => handleSendQrEmail(patient)}
@@ -341,7 +351,7 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                     <TableCell colSpan={8} className="h-24 text-center">
                       <div className="flex justify-center items-center">
                         <Loader2 className="mr-2 h-6 w-6 animate-spin" /> Memuat
-                        data pasien...
+                        data...
                       </div>
                     </TableCell>
                   </TableRow>
@@ -405,6 +415,21 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                               </TooltipTrigger>
                               <TooltipContent>
                                 <p>Edit Pasien</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="hover:text-purple-500"
+                                  onClick={() => setTakingPhotoFor(patient)}
+                                >
+                                  <Camera className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Ambil Foto Pasien</p>
                               </TooltipContent>
                             </Tooltip>
                             <Tooltip>
@@ -683,6 +708,14 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
         onConfirm={handleDeleteConfirm}
         title={`Anda yakin ingin menghapus pasien ini?`}
         description={`Aksi ini tidak dapat dibatalkan. Semua data MCU untuk pasien "${deletingPatient?.fullName}" juga akan dihapus secara permanen.`}
+      />
+      <CameraCaptureModal
+        isOpen={!!takingPhotoFor}
+        onClose={() => setTakingPhotoFor(null)}
+        patient={takingPhotoFor}
+        onUploadSuccess={() => {
+          fetchPatients();
+        }}
       />
     </>
   );

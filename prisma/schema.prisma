@@ -61,6 +61,7 @@ model Patient {
   updatedAt   DateTime    @updatedAt
   company     Company     @relation(fields: [companyId], references: [id])
   companyId   String
+  photoUrl    String?  @db.Text
   mcuResults  McuResult[]
 
   lastProgress String?    @default("MENUNGGU")
@@ -104,6 +105,8 @@ model McuResult {
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
   status               String    @default("IN_PROGRESS")
+
+  fileUrl              String?   @db.Text
 
   patient              Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
   patientId            Int

@@ -141,11 +141,30 @@ export async function GET(request: Request) {
 
     const patients = await prisma.patient.findMany({
       where: { companyId },
-      include: {
+      select: {
+        id: true,
+        patientId: true,
+        nik: true,
+        fullName: true,
+        photoUrl: true,
+        email: true,
+        dob: true,
+        age: true,
+        gender: true,
+        position: true,
+        division: true,
+        status: true,
+        location: true,
+        mcuPackage: true,
+        qrCode: true,
+        createdAt: true,
+        lastProgress: true,
         mcuResults: {
           orderBy: { createdAt: "desc" },
           take: 1,
-          include: {
+          select: {
+            id: true,
+            fileUrl: true,
             progress: true,
           },
         },
