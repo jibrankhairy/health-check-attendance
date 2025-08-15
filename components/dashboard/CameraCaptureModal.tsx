@@ -89,25 +89,29 @@ export const CameraCaptureModal = ({
     const response = await fetch(capturedImage);
     const blob = await response.blob();
 
+    const formData = new FormData();
+
+    formData.append("photo", blob, "capture.jpg");
+
     try {
       const uploadResponse = await fetch(
         `/api/patients/${patient.id}/upload-photo`,
         {
           method: "POST",
-          headers: { "Content-Type": "image/jpeg" },
-          body: blob,
+          body: formData,
         }
       );
 
       if (!uploadResponse.ok) {
-        throw new Error("Gagal mengupload foto.");
+        const errorData = await uploadResponse.json();
+        throw new Error(errorData.message || "Gagal mengupload foto.");
       }
 
       toast.success("Foto pasien berhasil disimpan!");
       onUploadSuccess();
       onClose();
-    } catch (error) {
-      toast.error("Terjadi kesalahan saat menyimpan foto.");
+    } catch (error: any) {
+      toast.error(error.message || "Terjadi kesalahan saat menyimpan foto.");
       console.error(error);
     } finally {
       setIsUploading(false);
