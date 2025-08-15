@@ -331,4 +331,6 @@ model McuResult {
   rontgenValidatorQr          String? @db.Text
   conclusionValidatorName     String?
   conclusionValidatorQr       String? @db.Text
+  dassFasValidatorName        String?
+  dassFasValidatorQr          String? @db.Text
 }

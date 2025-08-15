@@ -4,9 +4,17 @@
 import React, { useState, useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import QRCode from "qrcode";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import Image from "next/image";
+
+// Import komponen Form dari shadcn/ui
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 
 type SignatureFieldProps = {
   nameFieldName: string;
@@ -19,13 +27,15 @@ export const SignatureField = ({
   qrFieldName,
   label = "Nama Pemeriksa / Validator",
 }: SignatureFieldProps) => {
-  const { register, watch, setValue, getValues } = useFormContext();
+  // Kita cuma butuh control, watch, setValue, dan getValues
+  const { control, watch, setValue, getValues } = useFormContext();
 
   const initialQrValue = getValues(qrFieldName);
   const [qrCodeUrl, setQrCodeUrl] = useState(initialQrValue || "");
 
   const validatorName = watch(nameFieldName);
 
+  // Efek ini sudah benar, tidak perlu diubah
   useEffect(() => {
     const handler = setTimeout(() => {
       if (validatorName && validatorName.trim() !== "") {
@@ -54,14 +64,26 @@ export const SignatureField = ({
   return (
     <div className="mt-6 border-t pt-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
-        <div className="space-y-2">
-          <Label htmlFor={nameFieldName}>{label}</Label>
-          <Input
-            id={nameFieldName}
-            {...register(nameFieldName)}
-            placeholder="Ketik nama lengkap..."
-          />
-        </div>
+        {/* BAGIAN INPUT NAMA YANG DIPERBAIKI */}
+        <FormField
+          control={control}
+          name={nameFieldName}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{label}</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Ketik nama lengkap..."
+                  {...field}
+                  value={field.value || ""} // Pastikan value terkontrol
+                />
+              </FormControl>
+              <FormMessage /> {/* Untuk menampilkan error jika ada */}
+            </FormItem>
+          )}
+        />
+
+        {/* BAGIAN QR CODE (TIDAK BERUBAH) */}
         <div className="flex flex-col items-center justify-center">
           {qrCodeUrl ? (
             <Image
