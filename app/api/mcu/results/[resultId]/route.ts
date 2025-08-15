@@ -3,12 +3,11 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export async function PUT(
-  request: Request,
-  { params }: { params: { resultId: string } }
-) {
+type Params = Promise<{ resultId: string }>;
+
+export async function PUT(request: Request, { params }: { params: Params }) {
   try {
-    const { resultId } = params;
+    const { resultId } = await params;
     const body = await request.json();
 
     if (body.formAnswers) {
@@ -19,9 +18,9 @@ export async function PUT(
         const result = await tx.mcuResult.update({
           where: { id: resultId },
           data: {
-            healthHistoryAnswers: healthHistoryAnswers,
-            dassTestAnswers: dassTestAnswers,
-            fasTestAnswers: fasTestAnswers,
+            healthHistoryAnswers,
+            dassTestAnswers,
+            fasTestAnswers,
             formSubmittedAt: new Date(),
           },
         });
@@ -95,19 +94,14 @@ export async function PUT(
   }
 }
 
-export async function GET(
-  request: Request,
-  { params }: { params: { resultId: string } }
-) {
+export async function GET(request: Request, { params }: { params: Params }) {
   try {
-    const { resultId } = params;
+    const { resultId } = await params;
     const result = await prisma.mcuResult.findUnique({
       where: { id: resultId },
       include: {
         patient: { select: { fullName: true } },
-        progress: {
-          include: { checkpoint: { select: { slug: true } } },
-        },
+        progress: { include: { checkpoint: { select: { slug: true } } } },
       },
     });
 
