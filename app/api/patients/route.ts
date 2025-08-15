@@ -64,40 +64,52 @@ export async function POST(request: Request) {
     }
 
     const result = await prisma.$transaction(async (tx) => {
+      // 1. Buat pasien dengan qrCode sementara
       const newPatient = await tx.patient.create({
         data: {
           nik,
           ...restOfData,
           dob: new Date(restOfData.dob),
           email: restOfData.email || null,
-          qrCode: "temp",
+          qrCode: "",
         },
       });
 
+      // 2. Buat McuResult untuk mendapatkan ID unik
       const newMcuResult = await tx.mcuResult.create({
         data: {
           patientId: newPatient.id,
         },
       });
 
+      // 3. Siapkan data untuk konten QR Code
+      const qrContent = {
+        mcuResultId: newMcuResult.id,
+        patientId: newPatient.patientId,
+        fullName: newPatient.fullName,
+        mcuPackage: newPatient.mcuPackage,
+      };
+
+      // 4. Generate QR Code dari object JSON yang sudah di-string-kan
+      const qrCodeDataUrl = await QRCode.toDataURL(JSON.stringify(qrContent));
+
+      // 5. Update pasien dengan data QR Code Base64 yang baru
       const updatedPatient = await tx.patient.update({
         where: { id: newPatient.id },
         data: {
-          qrCode: newMcuResult.id,
+          qrCode: qrCodeDataUrl,
         },
       });
 
-      return { patient: updatedPatient, mcuResult: newMcuResult };
+      return { patient: updatedPatient };
     });
 
-    if (result.patient.email) {
+    if (result.patient.email && result.patient.qrCode) {
       try {
-        const qrCodeDataUrl = await QRCode.toDataURL(result.patient.qrCode);
-        const base64Data = qrCodeDataUrl.replace(
+        const base64Data = result.patient.qrCode.replace(
           /^data:image\/png;base64,/,
           ""
         );
-
         await transporter.sendMail({
           from: process.env.EMAIL_FROM,
           to: result.patient.email,

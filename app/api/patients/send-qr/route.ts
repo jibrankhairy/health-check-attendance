@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import nodemailer from "nodemailer";
-import QRCode from "qrcode";
 
 const prisma = new PrismaClient();
 
@@ -43,9 +42,14 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+    if (!patient.qrCode) {
+      return NextResponse.json(
+        { message: "Pasien ini tidak memiliki QR Code." },
+        { status: 400 }
+      );
+    }
 
-    const qrCodeDataUrl = await QRCode.toDataURL(patient.qrCode);
-    const base64Data = qrCodeDataUrl.replace(/^data:image\/png;base64,/, "");
+    const base64Data = patient.qrCode.replace(/^data:image\/png;base64,/, "");
 
     await transporter.sendMail({
       from: process.env.EMAIL_FROM,

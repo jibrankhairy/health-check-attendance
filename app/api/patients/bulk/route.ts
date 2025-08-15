@@ -78,6 +78,7 @@ export async function POST(request: Request) {
         const age = patientData.age || calculateAge(dob);
         const newPatientId = await generateUniquePatientId();
 
+        // 1. Buat pasien dengan qrCode sementara
         const newPatient = await tx.patient.create({
           data: {
             patientId: newPatientId,
@@ -92,21 +93,34 @@ export async function POST(request: Request) {
             status: patientData.status || "N/A",
             location: patientData.location || "N/A",
             mcuPackage: patientData.mcuPackage || [],
-            qrCode: "temp",
             companyId: companyId,
+            qrCode: "",
           },
         });
 
+        // 2. Buat McuResult untuk mendapatkan ID unik
         const newMcuResult = await tx.mcuResult.create({
           data: {
             patientId: newPatient.id,
           },
         });
+        
+        // 3. Siapkan data untuk konten QR Code
+        const qrContent = {
+          mcuResultId: newMcuResult.id,
+          patientId: newPatient.patientId,
+          fullName: newPatient.fullName,
+          mcuPackage: newPatient.mcuPackage,
+        };
 
+        // 4. Generate QR Code dari object JSON
+        const qrCodeDataUrl = await QRCode.toDataURL(JSON.stringify(qrContent));
+
+        // 5. Update pasien dengan data QR Code Base64 yang baru
         const updatedPatient = await tx.patient.update({
           where: { id: newPatient.id },
           data: {
-            qrCode: newMcuResult.id,
+            qrCode: qrCodeDataUrl,
           },
         });
 
@@ -119,14 +133,12 @@ export async function POST(request: Request) {
 
     if (sendEmail) {
       for (const patient of createdPatients) {
-        if (patient.email) {
+        if (patient.email && patient.qrCode) {
           try {
-            const qrCodeDataUrl = await QRCode.toDataURL(patient.qrCode);
-            const base64Data = qrCodeDataUrl.replace(
+            const base64Data = patient.qrCode.replace(
               /^data:image\/png;base64,/,
               ""
             );
-
             await transporter.sendMail({
               from: process.env.EMAIL_FROM,
               to: patient.email,

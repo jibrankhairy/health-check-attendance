@@ -159,54 +159,47 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
       <head>
         <title>Print QR Code</title>
         <style>
-          /* Ukuran fisik label 40x30 mm */
           @page { size: 40mm 30mm; margin: 0; }
-
           html, body {
             width: 40mm;
             height: 30mm;
             margin: 0;
             padding: 0;
           }
-
           body {
             font-family: Arial, sans-serif;
-            font-size: 6pt;                 /* kecil agar 3 baris muat */
+            font-size: 6pt;
           }
-
           .label {
             box-sizing: border-box;
             width: 40mm;
             height: 30mm;
-            padding: 1.5mm 2mm;             /* top/bottom 1.5mm, kiri/kanan 2mm */
+            padding: 1.5mm 2mm;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
-            overflow: hidden;               /* cegah tumpah */
+            overflow: hidden;
           }
-
           .qr {
-            width: 18mm;                    /* tinggi konten total aman */
+            width: 18mm;
             height: 18mm;
             display: block;
-            margin: 0 auto 1mm;             /* jarak ke teks */
+            margin: 0 auto 1mm;
             image-rendering: pixelated;
             image-rendering: crisp-edges;
           }
-
           .info {
             width: 100%;
             text-align: center;
             line-height: 1.1;
           }
           .info p {
-            margin: 0 0 0.6mm 0;            /* rapat */
+            margin: 0 0 0.6mm 0;
             font-weight: 600;
           }
           .info p:last-child { margin-bottom: 0; }
           .info span { font-weight: 400; }
-
           @media print {
             body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
           }
@@ -216,9 +209,7 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
         <div class="label">
           <img
             class="qr"
-            src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(
-              patient.qrCode
-            )}"
+            src="${patient.qrCode}"
             alt="QR Code"
           />
           <div class="info">
@@ -418,13 +409,21 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                       <TableCell>
                         {format(new Date(patient.createdAt), "dd MMM yyyy")}
                       </TableCell>
+                      
+                      {/* PERBAIKAN PERTAMA: Langsung gunakan patient.qrCode sebagai src */}
                       <TableCell className="flex justify-center">
-                        <img
-                          src={`https://api.qrserver.com/v1/create-qr-code/?size=40x40&data=${patient.qrCode}`}
-                          alt={`QR Code for ${patient.fullName}`}
-                          className="rounded-sm"
-                        />
+                        {patient.qrCode ? (
+                          <img
+                            src={patient.qrCode}
+                            alt={`QR Code for ${patient.fullName}`}
+                            className="rounded-sm"
+                            style={{ width: "40px", height: "40px" }}
+                          />
+                        ) : (
+                          "N/A"
+                        )}
                       </TableCell>
+                      
                       <TableCell>
                         <TooltipProvider>
                           <div className="flex items-center justify-center gap-1">
