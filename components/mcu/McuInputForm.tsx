@@ -359,7 +359,9 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
     hasItem("mcu eksekutif") ||
     hasItem("mcu akhir") ||
     hasItem("radiologi thoraks");
-  const showPsikologi = hasItem("pemeriksaan psikologis (fas dan sds)");
+
+  // KITA HAPUS KONDISI INI
+  // const showPsikologi = hasItem("pemeriksaan psikologis (fas dan sds)");
 
   const itemsToCheck = new Set<string>(initialData.patient.mcuPackage || []);
   if (hasItem("mcu eksekutif")) {
@@ -399,6 +401,8 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
           </div>
         </div>
 
+        <PsikologiForm />
+
         {showHematologi && <HematologiForm />}
         {showKimiaDarah && <KimiaDarahForm />}
         {showUrinalisa && <UrinalisaForm />}
@@ -409,8 +413,6 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
         {showUsgMammae && <UsgMammaeForm />}
         {showEkg && <EkgForm />}
         {showRontgen && <RontgenForm />}
-
-        {showPsikologi && <PsikologiForm />}
 
         <ConclusionForm />
 

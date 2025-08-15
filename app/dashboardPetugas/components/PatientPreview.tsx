@@ -5,6 +5,7 @@ type PatientData = {
   mcuId?: string;
   fullName: string;
   dob: string;
+  mcuPackage: string[];
 };
 
 type Props = {
@@ -48,6 +49,15 @@ export default function PatientPreview({
                 </div>
               ) : null}
             </div>
+
+            {patient.mcuPackage?.length > 0 && (
+              <div>
+                <div className="text-xs text-gray-500">Paket MCU</div>
+                <div className="font-medium">
+                  {patient.mcuPackage.join(", ")}
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="mb-6 text-red-600">Data pasien tidak tersedia.</div>
@@ -64,9 +74,9 @@ export default function PatientPreview({
           <button
             type="button"
             onClick={onContinue}
-            className="px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700"
+            className="px-4 py-2 rounded-xl bg-blue-900 text-white hover:bg-blue-700"
           >
-            Lanjut
+            Konfirmasi
           </button>
         </div>
       </div>
