@@ -116,7 +116,7 @@ export const VerificationStep = ({
             {isLoading ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : null}
-            {isLoading ? "Mencari..." : "Cari Data"}
+            {isLoading ? "Verifikasi..." : "Verifikasi"}
           </Button>
         ) : (
           <Button

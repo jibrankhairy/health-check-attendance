@@ -1,15 +1,14 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { format, subDays, startOfDay } from "date-fns";
 
 const prisma = new PrismaClient();
 
-export async function GET(
-  request: Request,
-  { params }: { params: { companyId: string } }
-) {
+type RouteContext = { params: Promise<{ companyId: string }> };
+
+export async function GET(req: NextRequest, { params }: RouteContext) {
   try {
-    const { companyId } = params;
+    const { companyId } = await params;
 
     if (!companyId) {
       return NextResponse.json(
@@ -26,15 +25,7 @@ export async function GET(
         createdAt: true,
         mcuResults: {
           select: {
-            progress: {
-              select: {
-                checkpoint: {
-                  select: {
-                    name: true,
-                  },
-                },
-              },
-            },
+            progress: { select: { checkpoint: { select: { name: true } } } },
           },
         },
       },
@@ -42,26 +33,25 @@ export async function GET(
 
     const totalPatients = patientsInCompany.length;
 
-    const genderCounts = patientsInCompany.reduce((acc, patient) => {
-      const gender = patient.gender || "Lainnya";
-      acc[gender] = (acc[gender] || 0) + 1;
+    const genderCounts = patientsInCompany.reduce((acc, p) => {
+      const g = p.gender || "Lainnya";
+      acc[g] = (acc[g] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
     const genderDistribution = Object.entries(genderCounts).map(
       ([name, value]) => ({ name, value })
     );
 
-    const packageCounts: { [key: string]: number } = {
+    const packageCounts: Record<string, number> = {
       "MCU Regular": 0,
       "MCU Eksekutif": 0,
       "MCU Akhir": 0,
     };
-    patientsInCompany.forEach((patient) => {
-      if (patient.mcuPackage && Array.isArray(patient.mcuPackage)) {
-        patient.mcuPackage.forEach((pkg) => {
-          if (typeof pkg === "string" && packageCounts.hasOwnProperty(pkg)) {
+    patientsInCompany.forEach((p) => {
+      if (Array.isArray(p.mcuPackage)) {
+        p.mcuPackage.forEach((pkg) => {
+          if (typeof pkg === "string" && pkg in packageCounts)
             packageCounts[pkg]++;
-          }
         });
       }
     });
@@ -70,50 +60,39 @@ export async function GET(
       total: packageCounts[key],
     }));
 
-    const dailyRegistrations: { [key: string]: number } = {};
+    const dailyRegistrations: Record<string, number> = {};
     for (let i = 6; i >= 0; i--) {
       const date = format(subDays(new Date(), i), "yyyy-MM-dd");
       dailyRegistrations[date] = 0;
     }
     patientsInCompany.forEach((p) => {
-      const registrationDate = format(
-        startOfDay(new Date(p.createdAt)),
-        "yyyy-MM-dd"
-      );
-      if (dailyRegistrations.hasOwnProperty(registrationDate)) {
-        dailyRegistrations[registrationDate]++;
-      }
+      const d = format(startOfDay(new Date(p.createdAt)), "yyyy-MM-dd");
+      if (d in dailyRegistrations) dailyRegistrations[d]++;
     });
     const registrationByDate = Object.entries(dailyRegistrations).map(
       ([date, total]) => ({ name: format(new Date(date), "dd/MM"), total })
     );
 
-    const progressCounts: { [key: string]: number } = {};
-    patientsInCompany.forEach((patient) => {
-      patient.mcuResults.forEach((result) => {
-        result.progress.forEach((prog) => {
-          const checkPointName = prog.checkpoint.name;
-          progressCounts[checkPointName] =
-            (progressCounts[checkPointName] || 0) + 1;
+    const progressCounts: Record<string, number> = {};
+    patientsInCompany.forEach((p) => {
+      p.mcuResults?.forEach((r) => {
+        r.progress?.forEach((prog) => {
+          const checkpoint = prog.checkpoint?.name ?? "Unknown";
+          progressCounts[checkpoint] = (progressCounts[checkpoint] || 0) + 1;
         });
       });
     });
     const progressDistribution = Object.entries(progressCounts)
-      .map(([name, total]) => ({
-        name,
-        total,
-      }))
+      .map(([name, total]) => ({ name, total }))
       .sort((a, b) => b.total - a.total);
 
-    const stats = {
+    return NextResponse.json({
       totalPatients,
       genderDistribution,
       packageDistribution,
       registrationByDate,
       progressDistribution,
-    };
-
-    return NextResponse.json(stats);
+    });
   } catch (error) {
     console.error("Fetch Company Stats Error:", error);
     return NextResponse.json(
