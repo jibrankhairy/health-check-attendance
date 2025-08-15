@@ -1,13 +1,24 @@
 "use client";
 
 import React from "react";
-import { Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
 import { ReportHeader, ReportFooter } from "./ReportLayout";
 import { styles as globalStyles } from "./reportStyles";
 
 const localStyles = StyleSheet.create({
   bodyContent: {
     flexGrow: 1,
+  },
+  photoContainer: {
+    marginTop: 20,
+    alignItems: 'center',
+    marginBottom: 5,
+  },
+  photo: {
+    width: 113, // sekitar 3x4 cm
+    height: 151, // sekitar 3x4 cm
+    objectFit: 'cover',
+    border: '1px solid #EEE'
   },
   coverHeader: {
     textAlign: "center",
@@ -44,12 +55,10 @@ const localStyles = StyleSheet.create({
     marginTop: 26,
     marginBottom: 8,
   },
-
   listWrap: { marginTop: 6 },
   listRow: { flexDirection: "row", marginBottom: 6 },
   listNo: { width: "6%", fontSize: 10 },
   listText: { width: "94%", fontSize: 10 },
-
   subheading: {
     fontFamily: "Helvetica-BoldOblique",
     fontSize: 10,
@@ -66,20 +75,32 @@ type ReportData = {
     gender: string;
     company: { name: string };
     mcuPackage?: string[];
+    photoUrl?: string;
   };
-  examinationDate: string;
-  examinationTime: string;
+  // <-- PERUBAHAN: Ganti field tanggal & jam manual dengan satu field otomatis
+  examinationStartedAt?: string | Date; 
 };
 
-const formatDate = (dateString: string) => {
-  if (!dateString) return "N/A";
-  const d = new Date(dateString);
+// Fungsi helper baru untuk format tanggal dan jam
+const formatDate = (dateInput?: string | Date) => {
+  if (!dateInput) return "N/A";
+  const d = new Date(dateInput);
   if (isNaN(d.getTime())) return "Invalid Date";
   const dd = String(d.getDate()).padStart(2, "0");
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const yyyy = d.getFullYear();
   return `${dd}/${mm}/${yyyy}`;
 };
+
+const formatTime = (dateInput?: string | Date) => {
+  if (!dateInput) return "-";
+  const d = new Date(dateInput);
+  if (isNaN(d.getTime())) return "Invalid Time";
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  return `${hh}:${mm}`;
+};
+
 
 function buildAttachedList(data: ReportData) {
   const raw = data?.patient?.mcuPackage || [];
@@ -132,7 +153,6 @@ function buildAttachedList(data: ReportData) {
 
 export const CoverPageDocument = ({ data }: { data: ReportData }) => {
   const attached = buildAttachedList(data);
-
   let runningNo = 0;
 
   return (
@@ -140,6 +160,16 @@ export const CoverPageDocument = ({ data }: { data: ReportData }) => {
       <ReportHeader />
 
       <View style={localStyles.bodyContent}>
+        
+        {data.patient.photoUrl && (
+          <View style={localStyles.photoContainer}>
+            <Image
+              style={localStyles.photo}
+              src={data.patient.photoUrl}
+            />
+          </View>
+        )}
+        
         <Text style={localStyles.coverHeader}>
           IDENTITAS PESERTA PEMERIKSAAN KESEHATAN
         </Text>
@@ -169,18 +199,19 @@ export const CoverPageDocument = ({ data }: { data: ReportData }) => {
             </Text>
           </View>
 
+          {/* <-- PERUBAHAN: Gunakan data 'examinationStartedAt' --> */}
           <View style={localStyles.row}>
             <Text style={localStyles.label}>TANGGAL PEMERIKSAAN</Text>
             <Text style={localStyles.colon}>:</Text>
             <Text style={localStyles.value}>
-              {formatDate(data.examinationDate)}
+              {formatDate(data.examinationStartedAt)}
             </Text>
           </View>
 
           <View style={localStyles.row}>
             <Text style={localStyles.label}>JAM PEMERIKSAAN</Text>
             <Text style={localStyles.colon}>:</Text>
-            <Text style={localStyles.value}>{data.examinationTime || "-"}</Text>
+            <Text style={localStyles.value}>{formatTime(data.examinationStartedAt)}</Text>
           </View>
 
           <View style={localStyles.row}>

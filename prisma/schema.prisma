@@ -154,6 +154,8 @@ model McuResult {
   fisikPencernaan      String?   @db.Text
   fisikEkstremitas     String?   @db.Text
 
+  examinationStartedAt  DateTime?
+
   // --- Hematologi ---
   hemoglobin           String?   @db.Text
   leukosit             String?   @db.Text
