@@ -155,42 +155,89 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
     const printWindow = window.open("", "_blank");
     if (printWindow) {
       printWindow.document.write(`
-        <html>
-          <head>
-            <title>Print QR Code</title>
-            <style>
-              @page { margin: 0; size: 58mm auto; }
-              body {
-                font-family: 'Arial', sans-serif;
-                font-size: 10pt;
-                text-align: center;
-                margin: 5mm;
-                padding: 0;
-                width: 48mm;
-              }
-              .qr-code { width: 150px; height: 150px; margin: 10px auto; }
-              .info { text-align: left; margin-top: 10px; word-wrap: break-word; }
-              .info p { margin: 2px 0; font-weight: bold; }
-              .info span { font-weight: normal; }
-            </style>
-          </head>
-          <body>
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${patient.qrCode}" alt="QR Code" class="qr-code" />
-            <div class="info">
-              <p>Nama: <span>${patient.fullName}</span></p>
-              <p>ID: <span>${patient.patientId}</span></p>
-              <p>NIK: <span>${patient.nik}</span></p>
-            </div>
-            <script>
-              window.onload = function() {
-                window.focus();
-                window.print();
-                window.close();
-              }
-            </script>
-          </body>
-        </html>
-      `);
+    <html>
+      <head>
+        <title>Print QR Code</title>
+        <style>
+          /* Ukuran fisik label 40x30 mm */
+          @page { size: 40mm 30mm; margin: 0; }
+
+          html, body {
+            width: 40mm;
+            height: 30mm;
+            margin: 0;
+            padding: 0;
+          }
+
+          body {
+            font-family: Arial, sans-serif;
+            font-size: 6pt;                 /* kecil agar 3 baris muat */
+          }
+
+          .label {
+            box-sizing: border-box;
+            width: 40mm;
+            height: 30mm;
+            padding: 1.5mm 2mm;             /* top/bottom 1.5mm, kiri/kanan 2mm */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            overflow: hidden;               /* cegah tumpah */
+          }
+
+          .qr {
+            width: 18mm;                    /* tinggi konten total aman */
+            height: 18mm;
+            display: block;
+            margin: 0 auto 1mm;             /* jarak ke teks */
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+          }
+
+          .info {
+            width: 100%;
+            text-align: center;
+            line-height: 1.1;
+          }
+          .info p {
+            margin: 0 0 0.6mm 0;            /* rapat */
+            font-weight: 600;
+          }
+          .info p:last-child { margin-bottom: 0; }
+          .info span { font-weight: 400; }
+
+          @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="label">
+          <img
+            class="qr"
+            src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(
+              patient.qrCode
+            )}"
+            alt="QR Code"
+          />
+          <div class="info">
+            <p>Nama: <span>${patient.fullName}</span></p>
+            <p>ID: <span>${patient.patientId}</span></p>
+            <p>NIK: <span>${patient.nik}</span></p>
+          </div>
+        </div>
+
+        <script>
+          window.onload = function() {
+            window.focus();
+            window.print();
+            window.close();
+          };
+        </script>
+      </body>
+    </html>
+  `);
       printWindow.document.close();
     }
   };
