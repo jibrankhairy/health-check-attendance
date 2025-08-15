@@ -6,9 +6,22 @@ import { Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
 
 // Layout & style global
 import { ReportHeader, PatientInfo, ReportFooter } from "./ReportLayout";
+import type { Patient } from "./ReportLayout";
 import { styles as globalStyles } from "./reportStyles";
 
-// Style lokal khusus halaman ini
+/** ===================== Types ===================== */
+type Maybe<T> = T | null | undefined;
+
+type RontgenData = {
+  patient?: Maybe<Patient>;
+  rontgenImage?: string | null;
+  kesanRontgen?: string | null;
+
+  rontgenValidatorName?: string | null;
+  rontgenValidatorQr?: string | null;
+};
+
+/** ===================== Styles (local) ===================== */
 const localStyles = StyleSheet.create({
   headerText: {
     fontFamily: "Helvetica-Bold",
@@ -46,7 +59,8 @@ const localStyles = StyleSheet.create({
   },
 });
 
-export const RontgenDocument = ({ data }) => {
+/** ===================== Component ===================== */
+export const RontgenDocument: React.FC<{ data: RontgenData }> = ({ data }) => {
   return (
     <Page size="A4" style={globalStyles.page}>
       <ReportHeader />
@@ -57,21 +71,28 @@ export const RontgenDocument = ({ data }) => {
 
         {data?.rontgenImage && (
           <View style={localStyles.imageContainer}>
-            <Image style={localStyles.image} src={data.rontgenImage} />
+            <Image
+              style={localStyles.image}
+              src={data.rontgenImage as string}
+            />
           </View>
         )}
 
         <View style={localStyles.reportSection}>
           <Text style={localStyles.reportLabel}>HASIL PEMERIKSAAN DOKTER:</Text>
-          <Text style={localStyles.reportValue}>{data?.kesanRontgen || "-"}</Text>
+          <Text style={localStyles.reportValue}>
+            {data?.kesanRontgen ?? "-"}
+          </Text>
         </View>
 
         {/* Signature ala Hematologi: kanan bawah */}
         {(data?.rontgenValidatorName || data?.rontgenValidatorQr) && (
-          <View style={{ marginTop: 10, alignItems: "flex-end", paddingRight: 40 }}>
+          <View
+            style={{ marginTop: 10, alignItems: "flex-end", paddingRight: 40 }}
+          >
             {data?.rontgenValidatorQr && (
               <Image
-                src={data.rontgenValidatorQr}
+                src={data.rontgenValidatorQr as string}
                 style={{ width: 80, height: 80, marginBottom: 8 }}
               />
             )}

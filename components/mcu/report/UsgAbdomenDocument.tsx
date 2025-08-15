@@ -6,6 +6,39 @@ import { Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
 import { ReportHeader, PatientInfo, ReportFooter } from "./ReportLayout";
 import { styles as globalStyles } from "./reportStyles";
 
+/** ===== Types ===== */
+
+export interface UsgAbdomenData {
+  patient?: any; // Ganti dengan tipe spesifik milikmu jika ada
+
+  // Gambar (opsional)
+  usgAbdomenImage1?: string;
+  usgAbdomenImage2?: string;
+  usgAbdomenImage3?: string;
+  usgAbdomenImage4?: string;
+  usgAbdomenImage5?: string;
+  usgAbdomenImage6?: string;
+
+  // Hasil deskriptif
+  usgAbdomenHepar?: string;
+  usgAbdomenGallBladder?: string;
+  usgAbdomenLien?: string;
+  usgAbdomenPancreas?: string;
+  usgAbdomenGinjalDekstra?: string;
+  usgAbdomenGinjalSinistra?: string;
+  usgAbdomenKesimpulan?: string;
+
+  // Validator
+  usgAbdomenValidatorName?: string;
+  usgAbdomenValidatorQr?: string;
+}
+
+interface UsgAbdomenDocumentProps {
+  data?: UsgAbdomenData;
+}
+
+/** ===== Styles ===== */
+
 const localStyles = StyleSheet.create({
   headerText: {
     fontFamily: "Helvetica-Bold",
@@ -30,6 +63,7 @@ const localStyles = StyleSheet.create({
   image: {
     width: "100%",
     height: "100%",
+    // react-pdf mendukung objectFit; jika versi kamu belum, hapus baris ini.
     objectFit: "cover",
   },
   reportSection: {
@@ -49,15 +83,19 @@ const localStyles = StyleSheet.create({
   },
 });
 
-export const UsgAbdomenDocument = ({ data }) => {
-  const images = [
-    data.usgAbdomenImage1,
-    data.usgAbdomenImage2,
-    data.usgAbdomenImage3,
-    data.usgAbdomenImage4,
-    data.usgAbdomenImage5,
-    data.usgAbdomenImage6,
-  ].filter(Boolean);
+/** ===== Component ===== */
+
+export const UsgAbdomenDocument: React.FC<UsgAbdomenDocumentProps> = ({
+  data,
+}) => {
+  const images: string[] = [
+    data?.usgAbdomenImage1,
+    data?.usgAbdomenImage2,
+    data?.usgAbdomenImage3,
+    data?.usgAbdomenImage4,
+    data?.usgAbdomenImage5,
+    data?.usgAbdomenImage6,
+  ].filter((x): x is string => Boolean(x));
 
   return (
     <Page size="A4" style={globalStyles.page}>
@@ -65,7 +103,9 @@ export const UsgAbdomenDocument = ({ data }) => {
       <PatientInfo patient={data?.patient} />
 
       <View style={globalStyles.body}>
-        <Text style={localStyles.headerText}>HASIL PEMERIKSAAN USG ABDOMEN</Text>
+        <Text style={localStyles.headerText}>
+          HASIL PEMERIKSAAN USG ABDOMEN
+        </Text>
 
         {images.length > 0 && (
           <View style={localStyles.imageGrid}>
@@ -81,50 +121,52 @@ export const UsgAbdomenDocument = ({ data }) => {
           <View style={localStyles.reportRow}>
             <Text style={localStyles.reportLabel}>HEPAR</Text>
             <Text style={localStyles.reportValue}>
-              : {data.usgAbdomenHepar || "-"}
+              : {data?.usgAbdomenHepar ?? "-"}
             </Text>
           </View>
           <View style={localStyles.reportRow}>
             <Text style={localStyles.reportLabel}>GALL BLADDER</Text>
             <Text style={localStyles.reportValue}>
-              : {data.usgAbdomenGallBladder || "-"}
+              : {data?.usgAbdomenGallBladder ?? "-"}
             </Text>
           </View>
           <View style={localStyles.reportRow}>
             <Text style={localStyles.reportLabel}>LIEN</Text>
             <Text style={localStyles.reportValue}>
-              : {data.usgAbdomenLien || "-"}
+              : {data?.usgAbdomenLien ?? "-"}
             </Text>
           </View>
           <View style={localStyles.reportRow}>
             <Text style={localStyles.reportLabel}>PANCREAS</Text>
             <Text style={localStyles.reportValue}>
-              : {data.usgAbdomenPancreas || "-"}
+              : {data?.usgAbdomenPancreas ?? "-"}
             </Text>
           </View>
           <View style={localStyles.reportRow}>
             <Text style={localStyles.reportLabel}>GINJAL DEKSTRA</Text>
             <Text style={localStyles.reportValue}>
-              : {data.usgAbdomenGinjalDekstra || "-"}
+              : {data?.usgAbdomenGinjalDekstra ?? "-"}
             </Text>
           </View>
           <View style={localStyles.reportRow}>
             <Text style={localStyles.reportLabel}>GINJAL SINISTRA</Text>
             <Text style={localStyles.reportValue}>
-              : {data.usgAbdomenGinjalSinistra || "-"}
+              : {data?.usgAbdomenGinjalSinistra ?? "-"}
             </Text>
           </View>
           <View style={[localStyles.reportRow, { marginTop: 15 }]}>
             <Text style={localStyles.reportLabel}>KESIMPULAN</Text>
             <Text style={localStyles.reportValue}>
-              : {data.usgAbdomenKesimpulan || "-"}
+              : {data?.usgAbdomenKesimpulan ?? "-"}
             </Text>
           </View>
         </View>
 
         {/* Signature ala Hematologi */}
         {(data?.usgAbdomenValidatorName || data?.usgAbdomenValidatorQr) && (
-          <View style={{ marginTop: 10, alignItems: "flex-end", paddingRight: 40 }}>
+          <View
+            style={{ marginTop: 10, alignItems: "flex-end", paddingRight: 40 }}
+          >
             {data?.usgAbdomenValidatorQr && (
               <Image
                 src={data.usgAbdomenValidatorQr}
@@ -145,3 +187,5 @@ export const UsgAbdomenDocument = ({ data }) => {
     </Page>
   );
 };
+
+export default UsgAbdomenDocument;

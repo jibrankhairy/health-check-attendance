@@ -31,9 +31,6 @@ export async function PUT(
         });
 
         if (psychologyCheckpoint) {
-          console.log(
-            "Checkpoint 'tes_psikologi' ditemukan, membuat progres..."
-          );
           await tx.mcuProgress.upsert({
             where: {
               mcuResultId_checkpointId: {
@@ -54,12 +51,7 @@ export async function PUT(
               completedAt: new Date(),
             },
           });
-        } else {
-          console.warn(
-            "PERINGATAN: Checkpoint dengan slug 'tes_psikologi' tidak ditemukan di database. Status progres tidak diupdate."
-          );
         }
-
         return result;
       });
 
@@ -72,10 +64,17 @@ export async function PUT(
       validData.saran = JSON.stringify(validData.saran);
     }
 
-    const dataToUpdate = {
+    const isReportFinal = !!validData.kesimpulan;
+
+    const dataToUpdate: any = {
       ...validData,
-      status: validData.kesimpulan ? "COMPLETED" : "IN_PROGRESS",
+      status: isReportFinal ? "COMPLETED" : "IN_PROGRESS",
     };
+
+    if (isReportFinal) {
+      const pdfUrl = `/dashboard/reports/view/${resultId}`;
+      dataToUpdate.fileUrl = pdfUrl;
+    }
 
     const updatedResult = await prisma.mcuResult.update({
       where: { id: resultId },

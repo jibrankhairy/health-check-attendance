@@ -4,56 +4,92 @@
 import React from "react";
 import { Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
 
-// DITAMBAHKAN: Import layout dan style global
+// Layout & global styles
 import { ReportHeader, PatientInfo, ReportFooter } from "./ReportLayout";
-import { styles as globalStyles } from './reportStyles';
+import { styles as globalStyles } from "./reportStyles";
 
-// Style lokal khusus untuk halaman ini
+/** ===== Types ===== */
+
+export interface UsgMammaeData {
+  patient?: any; // Ganti dengan tipe spesifik milikmu jika ada
+
+  // Gambar (opsional)
+  usgMammaeImage1?: string;
+  usgMammaeImage2?: string;
+  usgMammaeImage3?: string;
+  usgMammaeImage4?: string;
+  usgMammaeImage5?: string;
+  usgMammaeImage6?: string;
+
+  // Teks laporan
+  usgMammaeLaporan?: string;
+  usgMammaeKesimpulan?: string;
+
+  // Validator
+  usgMammaeValidatorName?: string;
+  usgMammaeValidatorQr?: string;
+}
+
+interface UsgMammaeDocumentProps {
+  data?: UsgMammaeData;
+}
+
+/** ===== Local Styles ===== */
+
 const localStyles = StyleSheet.create({
   headerText: {
     fontFamily: "Helvetica-Bold",
     fontSize: 12,
     marginBottom: 15,
-    textAlign: 'center',
-    textDecoration: 'underline'
+    textAlign: "center",
+    textDecoration: "underline",
   },
   imageGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginBottom: 20
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    marginBottom: 20,
   },
   imageContainer: {
-    width: '48%',
+    width: "48%",
     height: 150,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#ccc'
+    borderColor: "#ccc",
   },
   image: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover'
+    width: "100%",
+    height: "100%",
+    // react-pdf biasanya mendukung objectFit; jika versi kamu belum, hapus baris ini.
+    objectFit: "cover",
   },
   reportSection: {
     marginTop: 20,
     fontSize: 10,
   },
   reportLabel: {
-    fontFamily: 'Helvetica-Bold',
-    marginBottom: 5
+    fontFamily: "Helvetica-Bold",
+    marginBottom: 5,
   },
   reportValue: {
     marginBottom: 15,
-    lineHeight: 1.4
+    lineHeight: 1.4,
   },
 });
 
-export const UsgMammaeDocument = ({ data }) => {
-  const images = [
-    data.usgMammaeImage1, data.usgMammaeImage2, data.usgMammaeImage3,
-    data.usgMammaeImage4, data.usgMammaeImage5, data.usgMammaeImage6,
-  ].filter(Boolean);
+/** ===== Component ===== */
+
+export const UsgMammaeDocument: React.FC<UsgMammaeDocumentProps> = ({
+  data,
+}) => {
+  const images: string[] = [
+    data?.usgMammaeImage1,
+    data?.usgMammaeImage2,
+    data?.usgMammaeImage3,
+    data?.usgMammaeImage4,
+    data?.usgMammaeImage5,
+    data?.usgMammaeImage6,
+  ].filter((x): x is string => Boolean(x));
 
   return (
     <Page size="A4" style={globalStyles.page}>
@@ -62,7 +98,7 @@ export const UsgMammaeDocument = ({ data }) => {
 
       <View style={globalStyles.body}>
         <Text style={localStyles.headerText}>HASIL PEMERIKSAAN USG MAMMAE</Text>
-        
+
         {images.length > 0 && (
           <View style={localStyles.imageGrid}>
             {images.map((src, index) => (
@@ -74,16 +110,24 @@ export const UsgMammaeDocument = ({ data }) => {
         )}
 
         <View style={localStyles.reportSection}>
-          <Text style={localStyles.reportLabel}>LAPORAN USG MAMMAE DEXTRA DAN SINISTRA:</Text>
-          <Text style={localStyles.reportValue}>{data.usgMammaeLaporan || '-'}</Text>
-          
+          <Text style={localStyles.reportLabel}>
+            LAPORAN USG MAMMAE DEXTRA DAN SINISTRA:
+          </Text>
+          <Text style={localStyles.reportValue}>
+            {data?.usgMammaeLaporan ?? "-"}
+          </Text>
+
           <Text style={localStyles.reportLabel}>KESIMPULAN:</Text>
-          <Text style={localStyles.reportValue}>{data.usgMammaeKesimpulan || '-'}</Text>
+          <Text style={localStyles.reportValue}>
+            {data?.usgMammaeKesimpulan ?? "-"}
+          </Text>
         </View>
 
         {/* Signature ala Hematologi dengan format yang diminta */}
         {(data?.usgMammaeValidatorName || data?.usgMammaeValidatorQr) && (
-          <View style={{ marginTop: 10, alignItems: "flex-end", paddingRight: 40 }}>
+          <View
+            style={{ marginTop: 10, alignItems: "flex-end", paddingRight: 40 }}
+          >
             {data?.usgMammaeValidatorQr && (
               <Image
                 src={data.usgMammaeValidatorQr}
@@ -104,3 +148,5 @@ export const UsgMammaeDocument = ({ data }) => {
     </Page>
   );
 };
+
+export default UsgMammaeDocument;

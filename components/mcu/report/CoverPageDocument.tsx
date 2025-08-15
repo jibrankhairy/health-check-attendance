@@ -1,4 +1,3 @@
-// components/mcu/report/CoverPageDocument.tsx
 "use client";
 
 import React from "react";
@@ -46,13 +45,11 @@ const localStyles = StyleSheet.create({
     marginBottom: 8,
   },
 
-  // List "Hasil Terlampir"
   listWrap: { marginTop: 6 },
   listRow: { flexDirection: "row", marginBottom: 6 },
   listNo: { width: "6%", fontSize: 10 },
   listText: { width: "94%", fontSize: 10 },
 
-  // Subjudul kategori (cetak miring tebal)
   subheading: {
     fontFamily: "Helvetica-BoldOblique",
     fontSize: 10,
@@ -68,7 +65,7 @@ type ReportData = {
     age: number;
     gender: string;
     company: { name: string };
-    mcuPackage?: string[]; // <— penting untuk hasil terlampir
+    mcuPackage?: string[];
   };
   examinationDate: string;
   examinationTime: string;
@@ -84,20 +81,17 @@ const formatDate = (dateString: string) => {
   return `${dd}/${mm}/${yyyy}`;
 };
 
-/** Bangun daftar "Hasil Terlampir" dari paket + add-ons */
 function buildAttachedList(data: ReportData) {
   const raw = data?.patient?.mcuPackage || [];
   const lower = raw.map((x) => (x || "").toString().toLowerCase());
   const has = (s: string) => lower.includes(s.toLowerCase());
 
-  // Lab
-  const showHematologi = has("mcu regular") || has("mcu eksekutif") || has("mcu akhir");
+  const showHematologi =
+    has("mcu regular") || has("mcu eksekutif") || has("mcu akhir");
   const showKimiaDarah = showHematologi;
   const showUrinalisa = showHematologi;
 
-  // Penunjang
-  const showRontgen =
-    showHematologi || has("radiologi thoraks");
+  const showRontgen = showHematologi || has("radiologi thoraks");
   const showEkg = has("mcu eksekutif") || has("ekg") || has("treadmill");
   const showAudiometri = has("mcu eksekutif") || has("audiometri");
   const showSpirometri = has("mcu eksekutif") || has("spirometri");
@@ -106,11 +100,12 @@ function buildAttachedList(data: ReportData) {
 
   const list: Array<{ type: "item" | "subhead"; text: string }> = [];
 
-  // 1–2 selalu ada
-  list.push({ type: "item", text: "RESUME DAN KESIMPULAN PEMERIKSAAN KESEHATAN" });
+  list.push({
+    type: "item",
+    text: "RESUME DAN KESIMPULAN PEMERIKSAAN KESEHATAN",
+  });
   list.push({ type: "item", text: "HASIL PEMERIKSAAN FISIK" });
 
-  // Lab
   const labItems: string[] = [];
   if (showHematologi) labItems.push("HEMATOLOGI DARAH RUTIN");
   if (showKimiaDarah) labItems.push("KIMIA DARAH");
@@ -120,7 +115,6 @@ function buildAttachedList(data: ReportData) {
     labItems.forEach((t) => list.push({ type: "item", text: t }));
   }
 
-  // Penunjang
   const penunjangItems: string[] = [];
   if (showRontgen) penunjangItems.push("HASIL PEMERIKSAAN RONTGEN");
   if (showEkg) penunjangItems.push("HASIL PEMERIKSAAN EKG");
@@ -150,7 +144,6 @@ export const CoverPageDocument = ({ data }: { data: ReportData }) => {
           IDENTITAS PESERTA PEMERIKSAAN KESEHATAN
         </Text>
 
-        {/* Identitas */}
         <View style={localStyles.section}>
           <View style={localStyles.row}>
             <Text style={localStyles.label}>NAMA LENGKAP</Text>
@@ -179,7 +172,9 @@ export const CoverPageDocument = ({ data }: { data: ReportData }) => {
           <View style={localStyles.row}>
             <Text style={localStyles.label}>TANGGAL PEMERIKSAAN</Text>
             <Text style={localStyles.colon}>:</Text>
-            <Text style={localStyles.value}>{formatDate(data.examinationDate)}</Text>
+            <Text style={localStyles.value}>
+              {formatDate(data.examinationDate)}
+            </Text>
           </View>
 
           <View style={localStyles.row}>
@@ -197,7 +192,6 @@ export const CoverPageDocument = ({ data }: { data: ReportData }) => {
           </View>
         </View>
 
-        {/* Hasil terlampir dinamis */}
         <Text style={localStyles.title}>HASIL TERLAMPIR :</Text>
 
         <View style={localStyles.listWrap}>
@@ -209,7 +203,6 @@ export const CoverPageDocument = ({ data }: { data: ReportData }) => {
                 </Text>
               );
             }
-            // item bernomor
             runningNo += 1;
             return (
               <View key={`it-${idx}`} style={localStyles.listRow}>

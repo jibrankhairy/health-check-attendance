@@ -4,11 +4,35 @@
 import React from "react";
 import { Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
 
-// Layout & style global
 import { ReportHeader, PatientInfo, ReportFooter } from "./ReportLayout";
+import type { Patient } from "./ReportLayout";
 import { styles as globalStyles } from "./reportStyles";
 
-// Style lokal khusus halaman EKG
+/** ===================== Types ===================== */
+type Maybe<T> = T | null | undefined;
+
+type EkgData = {
+  patient?: Maybe<Patient>;
+
+  ekgImage?: string | null;
+  ekgRhythm?: string | null;
+  ekgQrsRate?: string | number | null;
+  ekgAxis?: string | null;
+  ekgPWave?: string | null;
+  ekgPrInterval?: string | null;
+  ekgQrsDuration?: string | null;
+  ekgQWave?: string | null;
+  ekgTWave?: string | null;
+  ekgStChanges?: string | null;
+  ekgOthers?: string | null;
+  ekgConclusion?: string | null;
+  ekgAdvice?: string | null;
+
+  ekgValidatorName?: string | null;
+  ekgValidatorQr?: string | null;
+};
+
+/** ===================== Styles ===================== */
 const localStyles = StyleSheet.create({
   headerText: {
     fontFamily: "Helvetica-Bold",
@@ -50,7 +74,8 @@ const localStyles = StyleSheet.create({
   },
 });
 
-export const EkgDocument = ({ data }) => {
+/** ===================== Component ===================== */
+export const EkgDocument: React.FC<{ data: EkgData }> = ({ data }) => {
   return (
     <Page size="A4" style={globalStyles.page}>
       <ReportHeader />
@@ -61,70 +86,98 @@ export const EkgDocument = ({ data }) => {
 
         {data?.ekgImage && (
           <View style={localStyles.imageContainer}>
-            <Image style={localStyles.image} src={data.ekgImage} />
+            <Image style={localStyles.image} src={data.ekgImage as string} />
           </View>
         )}
 
         <View style={localStyles.reportSection}>
           <View style={localStyles.reportRow}>
             <Text style={localStyles.reportLabel}>Rhythm</Text>
-            <Text style={localStyles.reportValue}>: {data?.ekgRhythm || "-"}</Text>
+            <Text style={localStyles.reportValue}>
+              : {data?.ekgRhythm ?? "-"}
+            </Text>
           </View>
           <View style={localStyles.reportRow}>
             <Text style={localStyles.reportLabel}>QRS Rate</Text>
-            <Text style={localStyles.reportValue}>: {data?.ekgQrsRate || "-"}</Text>
+            <Text style={localStyles.reportValue}>
+              : {data?.ekgQrsRate ?? "-"}
+            </Text>
           </View>
           <View style={localStyles.reportRow}>
             <Text style={localStyles.reportLabel}>Axis</Text>
-            <Text style={localStyles.reportValue}>: {data?.ekgAxis || "-"}</Text>
+            <Text style={localStyles.reportValue}>
+              : {data?.ekgAxis ?? "-"}
+            </Text>
           </View>
           <View style={localStyles.reportRow}>
             <Text style={localStyles.reportLabel}>P. Wave</Text>
-            <Text style={localStyles.reportValue}>: {data?.ekgPWave || "-"}</Text>
+            <Text style={localStyles.reportValue}>
+              : {data?.ekgPWave ?? "-"}
+            </Text>
           </View>
           <View style={localStyles.reportRow}>
             <Text style={localStyles.reportLabel}>P. R Interval</Text>
-            <Text style={localStyles.reportValue}>: {data?.ekgPrInterval || "-"}</Text>
+            <Text style={localStyles.reportValue}>
+              : {data?.ekgPrInterval ?? "-"}
+            </Text>
           </View>
           <View style={localStyles.reportRow}>
             <Text style={localStyles.reportLabel}>QRS Duration</Text>
-            <Text style={localStyles.reportValue}>: {data?.ekgQrsDuration || "-"}</Text>
+            <Text style={localStyles.reportValue}>
+              : {data?.ekgQrsDuration ?? "-"}
+            </Text>
           </View>
           <View style={localStyles.reportRow}>
             <Text style={localStyles.reportLabel}>Q. Wave</Text>
-            <Text style={localStyles.reportValue}>: {data?.ekgQWave || "-"}</Text>
+            <Text style={localStyles.reportValue}>
+              : {data?.ekgQWave ?? "-"}
+            </Text>
           </View>
           <View style={localStyles.reportRow}>
             <Text style={localStyles.reportLabel}>T. Wave</Text>
-            <Text style={localStyles.reportValue}>: {data?.ekgTWave || "-"}</Text>
+            <Text style={localStyles.reportValue}>
+              : {data?.ekgTWave ?? "-"}
+            </Text>
           </View>
           <View style={localStyles.reportRow}>
             <Text style={localStyles.reportLabel}>ST-T Changes</Text>
-            <Text style={localStyles.reportValue}>: {data?.ekgStChanges || "-"}</Text>
+            <Text style={localStyles.reportValue}>
+              : {data?.ekgStChanges ?? "-"}
+            </Text>
           </View>
           <View style={localStyles.reportRow}>
             <Text style={localStyles.reportLabel}>Others</Text>
-            <Text style={localStyles.reportValue}>: {data?.ekgOthers || "-"}</Text>
+            <Text style={localStyles.reportValue}>
+              : {data?.ekgOthers ?? "-"}
+            </Text>
           </View>
           <View style={[localStyles.reportRow, { marginTop: 10 }]}>
             <Text style={localStyles.reportLabel}>Conclusion</Text>
-            <Text style={localStyles.reportValue}>: {data?.ekgConclusion || "-"}</Text>
+            <Text style={localStyles.reportValue}>
+              : {data?.ekgConclusion ?? "-"}
+            </Text>
           </View>
           <View style={localStyles.reportRow}>
             <Text style={localStyles.reportLabel}>Advice</Text>
-            <Text style={localStyles.reportValue}>: {data?.ekgAdvice || "-"}</Text>
+            <Text style={localStyles.reportValue}>
+              : {data?.ekgAdvice ?? "-"}
+            </Text>
           </View>
         </View>
 
-        {/* Signature ala Hematologi: kanan bawah, QR → Nama (bold) → "Validator" */}
         {(data?.ekgValidatorName || data?.ekgValidatorQr) && (
-          <View style={{ marginTop: 10, alignItems: "flex-end", paddingRight: 40 }}>
+          <View
+            style={{ marginTop: 10, alignItems: "flex-end", paddingRight: 40 }}
+          >
             {data?.ekgValidatorQr && (
-              <Image src={data.ekgValidatorQr} style={{ width: 80, height: 80, marginBottom: 8 }} />
+              <Image
+                src={data.ekgValidatorQr as string}
+                style={{ width: 80, height: 80, marginBottom: 8 }}
+              />
             )}
             {data?.ekgValidatorName && (
               <Text style={{ fontSize: 8, fontFamily: "Helvetica-Bold" }}>
-                {data.ekgValidatorName}
+                {data.ekgValidatorName as string}
               </Text>
             )}
             <Text style={{ fontSize: 5 }}>Validator</Text>

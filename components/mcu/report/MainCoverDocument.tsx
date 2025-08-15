@@ -1,4 +1,3 @@
-// components/mcu/report/MainCoverDocument.tsx
 "use client";
 
 import React from "react";
@@ -14,18 +13,16 @@ const styles = StyleSheet.create({
     position: "relative",
   },
 
-  /* Bingkai */
   frame: {
     position: "absolute",
     top: 12,
     bottom: 12,
     left: 12,
     right: 12,
-    borderWidth: 2, // tebelin border
-    borderColor: "#01449D", // biru logo
+    borderWidth: 2,
+    borderColor: "#01449D",
   },
 
-  /* Header */
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -49,7 +46,6 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
 
-  /* Title style kiri */
   titleRow: {
     flexDirection: "row",
     marginRight: 20,
@@ -78,15 +74,14 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 
-  /* Footer */
   footerWrap: {
     position: "absolute",
-    bottom: 28, // biar mepet bawah bingkai
+    bottom: 28,
     left: 36,
     right: 36,
   },
   footerLine: {
-    borderTopWidth: 3, // tebelin garis footer
+    borderTopWidth: 3,
     borderTopColor: "#01449D",
     marginBottom: 6,
   },
@@ -103,12 +98,18 @@ const styles = StyleSheet.create({
   },
 });
 
-export const MainCoverDocument = ({ data }) => (
+type MainCoverData = Record<string, unknown>;
+
+type MainCoverDocumentProps = {
+  data?: MainCoverData;
+};
+
+export const MainCoverDocument: React.FC<MainCoverDocumentProps> = ({
+  data: _data,
+}) => (
   <Page size="A4" style={styles.page}>
-    {/* Bingkai */}
     <View style={styles.frame} />
 
-    {/* Header */}
     <View style={styles.header}>
       <Image style={styles.mainLogo} src="/images/logo-klinik.png" />
 
@@ -125,7 +126,6 @@ export const MainCoverDocument = ({ data }) => (
       </View>
     </View>
 
-    {/* Judul rata kiri + strip tebal */}
     <View style={styles.titleRow}>
       <View style={styles.titleBar} />
       <View style={styles.titleTextContainer}>
@@ -134,7 +134,6 @@ export const MainCoverDocument = ({ data }) => (
       </View>
     </View>
 
-    {/* Footer */}
     <View style={styles.footerWrap}>
       <View style={styles.footerLine} />
       <View style={styles.footer}>

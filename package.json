@@ -41,6 +41,7 @@
     "date-fns": "^4.1.0",
     "html5-qrcode": "^2.3.8",
     "jsonwebtoken": "^9.0.2",
+    "jszip": "^3.10.1",
     "lucide-react": "latest",
     "mysql2": "^3.14.3",
     "next": "15.4.5",

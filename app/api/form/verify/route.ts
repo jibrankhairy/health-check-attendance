@@ -4,9 +4,14 @@ import { z } from "zod";
 
 const prisma = new PrismaClient();
 
-const verifySchema = z.object({
-  patientId: z.string().min(1, "ID Pasien tidak boleh kosong."),
-});
+const verifySchema = z
+  .object({
+    nik: z.string().optional(),
+    patientId: z.string().optional(),
+  })
+  .refine((data) => data.nik || data.patientId, {
+    message: "NIK atau ID Pasien harus diisi.",
+  });
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,15 +20,20 @@ export async function POST(request: NextRequest) {
 
     if (!validation.success) {
       return NextResponse.json(
-        { message: "ID Pasien tidak valid." },
+        {
+          message:
+            validation.error.flatten().formErrors[0] || "Input tidak valid.",
+        },
         { status: 400 }
       );
     }
 
-    const { patientId } = validation.data;
+    const { nik, patientId } = validation.data;
 
-    const patient = await prisma.patient.findUnique({
-      where: { patientId },
+    const patient = await prisma.patient.findFirst({
+      where: {
+        OR: [{ nik: nik }, { patientId: patientId }],
+      },
       include: {
         mcuResults: {
           orderBy: { createdAt: "desc" },
@@ -34,7 +44,10 @@ export async function POST(request: NextRequest) {
 
     if (!patient) {
       return NextResponse.json(
-        { message: "ID Pasien tidak ditemukan." },
+        {
+          message:
+            "Data pasien tidak ditemukan. Periksa kembali NIK atau ID Anda.",
+        },
         { status: 404 }
       );
     }
@@ -58,13 +71,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       fullName: patient.fullName,
       mcuResultId: latestMcuResult.id,
+      nik: patient.nik,
+      patientId: patient.patientId,
     });
   } catch (error) {
-    console.error("Verify Patient ID Error:", error);
+    console.error("Verify Patient Error:", error);
     return NextResponse.json(
       { message: "Internal Server Error" },
       { status: 500 }
     );
   }
 }
-  
