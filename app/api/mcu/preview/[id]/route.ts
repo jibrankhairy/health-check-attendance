@@ -6,9 +6,9 @@ const prisma = new PrismaClient();
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id: mcuResultId } = params;
+  const { id: mcuResultId } = await params;
   try {
     const mcuResult = await prisma.mcuResult.findUnique({
       where: { id: mcuResultId },
@@ -23,16 +23,7 @@ export async function GET(
             mcuPackage: true,
           },
         },
-
-        progress: {
-          select: {
-            checkpoint: {
-              select: {
-                slug: true,
-              },
-            },
-          },
-        },
+        progress: { select: { checkpoint: { select: { slug: true } } } },
       },
     });
 
@@ -56,9 +47,7 @@ export async function GET(
     };
 
     return NextResponse.json(responseData, {
-      headers: {
-        "Cache-Control": "no-store",
-      },
+      headers: { "Cache-Control": "no-store" },
     });
   } catch (error) {
     console.error("Preview Patient Error:", error);
