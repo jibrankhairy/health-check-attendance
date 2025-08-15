@@ -4,47 +4,86 @@ import * as XLSX from "xlsx";
 
 const prisma = new PrismaClient();
 
-
+// Daftar header yang sudah diatur ulang dan diperbarui
 const templateHeaders = [
-    'nik', 'nama_lengkap', 'hemoglobin', 'leukosit', 'trombosit', 'hematokrit', 'eritrosit',
+    // Data Pasien
+    'nik', 
+    'nama_lengkap',
+    
+    // Validator Psikologi
+    'dassFasValidatorName',
+    
+    // Hematologi
+    'hemoglobin', 'leukosit', 'trombosit', 'hematokrit', 'eritrosit',
     'led', 'mcv', 'mch', 'mchc', 'rdw', 'mpv', 'pdw', 'hitungJenisEosinofil',
     'hitungJenisBasofil', 'hitungJenisNeutrofilStab', 'hitungJenisNeutrofilSegmen',
-    'hitungJenisLimfosd_new_messageit', 'hitungJenisMonosit', 'hematologiValidatorName', 'hematologiValidatorQr',
+    'hitungJenisLimfosit', 'hitungJenisMonosit', 'hematologiValidatorName',
+
+    // Kimia Darah
     'gulaDarahPuasa', 'gulaDarah2JamPP', 'hbsag', 'sgot', 'sgpt', 'ureum', 'kreatinin',
     'asamUrat', 'kolesterolTotal', 'trigliserida', 'hdl', 'ldl', 'bilirubinTotal',
-    'bilirubinDirect', 'alkaliPhosphatase', 'kimiaDarahValidatorName', 'kimiaDarahValidatorQr',
+    'bilirubinDirect', 'alkaliPhosphatase', 'kimiaDarahValidatorName',
+
+    // Framingham Score (Posisi Baru & Field Diperbarui)
+    'framinghamGender',
+    'framinghamAge',
+    'framinghamTotalCholesterol',
+    'framinghamHdlCholesterol',
+    'framinghamSystolicBp',
+    'framinghamIsOnHypertensionTreatment',
+    'framinghamIsSmoker',
+    'framinghamRiskPercentage',
+    'framinghamRiskCategory',
+    'framinghamVascularAge', // Field baru ditambahkan
+    'framinghamValidatorName',
+
+    // Urinalisa
     'urinWarna', 'urinKejernihan', 'urinBau', 'urinBeratJenis', 'urinPh', 'urinProtein',
     'urinBilirubin', 'urinGlukosa', 'urinUrobilinogen', 'urinKeton', 'urinNitrit',
     'urinLeukositEsterase', 'urinBlood', 'urinSedimenEritrosit', 'urinSedimenLeukosit',
     'urinSedimenEpitel', 'urinCaOxalat', 'urinUridAcid', 'urinGranulaCast',
-    'urinalisaValidatorName', 'urinalisaValidatorQr', 'audioAcKanan250', 'audioAcKanan500',
-    'audioAcKanan1000', 'audioAcKanan2000', 'audioAcKanan3000', 'audioAcKanan4000',
-    'audioAcKanan6000', 'audioAcKanan8000', 'audioAcKiri250', 'audioAcKiri500',
-    'audioAcKiri1000', 'audioAcKiri2000', 'audioAcKiri3000', 'audioAcKiri4000',
-    'audioAcKiri6000', 'audioAcKiri8000', 'audioBcKanan250', 'audioBcKanan500',
-    'audioBcKanan1000', 'audioBcKanan2000', 'audioBcKanan3000', 'audioBcKanan4000',
-    'audioBcKanan6000', 'audioBcKanan8000', 'audioBcKiri250', 'audioBcKiri500',
-    'audioBcKiri1000', 'audioBcKiri2000', 'audioBcKiri3000', 'audioBcKiri4000',
-    'audioBcKiri6000', 'audioBcKiri8000', 
-    // --- Kolom lama 'kesimpulanAudiometri' dihapus ---
-    // --- Kolom baru ditambahkan di bawah ---
-    'audiometriKesimpulanTelingaKanan', 
-    'audiometriKesimpulanTelingaKiri',
-    'audiometriKesimpulanUmum',
-    'audiometriSaran',
-    'spirometriFvc',
-    'spirometriFev1', 'spirometriFev1Fvc', 'kesimpulanSpirometri', 'audiometriValidatorName',
-    'audiometriValidatorQr', 'spirometriValidatorName', 'spirometriValidatorQr',
+    'urinalisaValidatorName',
+    
+    // Audiometri
+    'audioAcKanan250', 'audioAcKanan500', 'audioAcKanan1000', 'audioAcKanan2000', 'audioAcKanan3000', 'audioAcKanan4000', 'audioAcKanan6000', 'audioAcKanan8000',
+    'audioAcKiri250', 'audioAcKiri500', 'audioAcKiri1000', 'audioAcKiri2000', 'audioAcKiri3000', 'audioAcKiri4000', 'audioAcKiri6000', 'audioAcKiri8000',
+    'audioBcKanan250', 'audioBcKanan500', 'audioBcKanan1000', 'audioBcKanan2000', 'audioBcKanan3000', 'audioBcKanan4000', 'audioBcKanan6000', 'audioBcKanan8000',
+    'audioBcKiri250', 'audioBcKiri500', 'audioBcKiri1000', 'audioBcKiri2000', 'audioBcKiri3000', 'audioBcKiri4000', 'audioBcKiri6000', 'audioBcKiri8000',
+    'audiometriKesimpulanTelingaKanan', 'audiometriKesimpulanTelingaKiri', 'audiometriKesimpulanUmum', 'audiometriSaran',
+    'audiometriValidatorName',
+    
+    // Spirometri
+    'spirometriFvc', 'spirometriFvcPred', 'spirometriFvcPost',
+    'spirometriFev1', 'spirometriFev1Pred', 'spirometriFev1Post',
+    'spirometriFev1Fvc', 'spirometriFev1FvcPred',
+    'spirometriFev6', 'spirometriFev6Pred',
+    'spirometriPef', 'spirometriPefPred', 'spirometriPefPost',
+    'spirometriFef2575', 'spirometriFef2575Pred',
+    'spirometriFef25', 'spirometriFef25Pred', 'spirometriFef25Post',
+    'spirometriFef50', 'spirometriFef50Pred', 'spirometriFef50Post',
+    'spirometriFef75', 'spirometriFef75Pred', 'spirometriFef75Post',
+    'spirometriPostBdNote',
+    'spirometriQualityAccept', 'spirometriQualityRepeat', 'spirometriEffortCount',
+    'kesimpulanSpirometri', 'spirometriValidatorName',
+
+    // USG Abdomen & Mammae
     'usgAbdomenHepar', 'usgAbdomenGallBladder', 'usgAbdomenLien', 'usgAbdomenPancreas',
     'usgAbdomenGinjalDekstra', 'usgAbdomenGinjalSinistra', 'usgAbdomenKesimpulan',
-    'usgMammaeLaporan', 'usgMammaeKesimpulan', 'usgAbdomenValidatorName',
-    'usgAbdomenValidatorQr', 'usgMammaeValidatorName', 'usgMammaeValidatorQr',
+    'usgMammaeLaporan', 'usgMammaeKesimpulan',
+    'usgAbdomenValidatorName', 'usgMammaeValidatorName',
+
+    // EKG
     'ekgRhythm', 'ekgQrsRate', 'ekgAxis', 'ekgPWave', 'ekgPrInterval',
     'ekgQrsDuration', 'ekgQWave', 'ekgTWave', 'ekgStChanges', 'ekgOthers',
-    'ekgConclusion', 'ekgAdvice', 'ekgValidatorName', 'ekgValidatorQr',
-    'kesanRontgen', 'rontgenValidatorName', 'rontgenValidatorQr', 'kesimpulan',
-    'saran', 'conclusionValidatorName', 'conclusionValidatorQr'
+    'ekgConclusion', 'ekgAdvice', 'ekgValidatorName',
+
+    // Rontgen
+    'kesanRontgen', 'rontgenValidatorName',
+    
+    // Kesimpulan Akhir
+    'kesimpulan', 'saran', 'conclusionValidatorName'
 ];
+
 
 export async function GET(request: Request) {
   try {

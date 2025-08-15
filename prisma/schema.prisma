@@ -277,6 +277,17 @@ model McuResult {
   spirometriFev1Fvc    String?   @db.Text
   kesimpulanSpirometri String?   @db.Text
 
+  framinghamGender                  String?
+  framinghamAge                     String?
+  framinghamTotalCholesterol        String?
+  framinghamHdlCholesterol          String?
+  framinghamSystolicBp              String?
+  framinghamIsOnHypertensionTreatment String?
+  framinghamIsSmoker                String?
+  framinghamRiskPercentage          String?
+  framinghamRiskCategory            String?
+  framinghamVascularAge             String?
+
   // --- USG Abdomen ---
   usgAbdomenImage1     String?   @db.Text
   usgAbdomenImage2     String?   @db.Text
@@ -302,8 +313,6 @@ model McuResult {
   usgMammaeLaporan     String?   @db.Text
   usgMammaeKesimpulan  String?   @db.Text
 
-  // --- Lainnya ---
-  framinghamScore      String?   @db.Text
   kesimpulanTesPsikologi String?   @db.Text
 
   // --- Kesimpulan Akhir ---
@@ -333,4 +342,6 @@ model McuResult {
   conclusionValidatorQr       String? @db.Text
   dassFasValidatorName        String?
   dassFasValidatorQr          String? @db.Text
+  framinghamValidatorName     String?
+  framinghamValidatorQr       String? @db.Text
 }

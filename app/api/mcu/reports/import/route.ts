@@ -1,47 +1,25 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import * as XLSX from "xlsx";
+import QRCode from "qrcode"; // <-- 1. Tambahkan import QRCode
 
 const prisma = new PrismaClient();
 export const dynamic = "force-dynamic";
 
+// Fungsi ini tidak perlu diubah
 function mapExcelToPrisma(row: any): { [key: string]: any } {
   const mappedData: { [key: string]: any } = {};
   const allKeys = Object.keys(row);
 
   const integerFields = new Set([
-    "audioAcKanan250",
-    "audioAcKanan500",
-    "audioAcKanan1000",
-    "audioAcKanan2000",
-    "audioAcKanan3000",
-    "audioAcKanan4000",
-    "audioAcKanan6000",
-    "audioAcKanan8000",
-    "audioAcKiri250",
-    "audioAcKiri500",
-    "audioAcKiri1000",
-    "audioAcKiri2000",
-    "audioAcKiri3000",
-    "audioAcKiri4000",
-    "audioAcKiri6000",
-    "audioAcKiri8000",
-    "audioBcKanan250",
-    "audioBcKanan500",
-    "audioBcKanan1000",
-    "audioBcKanan2000",
-    "audioBcKanan3000",
-    "audioBcKanan4000",
-    "audioBcKanan6000",
-    "audioBcKanan8000",
-    "audioBcKiri250",
-    "audioBcKiri500",
-    "audioBcKiri1000",
-    "audioBcKiri2000",
-    "audioBcKiri3000",
-    "audioBcKiri4000",
-    "audioBcKiri6000",
-    "audioBcKiri8000",
+    "audioAcKanan250", "audioAcKanan500", "audioAcKanan1000", "audioAcKanan2000",
+    "audioAcKanan3000", "audioAcKanan4000", "audioAcKanan6000", "audioAcKanan8000",
+    "audioAcKiri250", "audioAcKiri500", "audioAcKiri1000", "audioAcKiri2000",
+    "audioAcKiri3000", "audioAcKiri4000", "audioAcKiri6000", "audioAcKiri8000",
+    "audioBcKanan250", "audioBcKanan500", "audioBcKanan1000", "audioBcKanan2000",
+    "audioBcKanan3000", "audioBcKanan4000", "audioBcKanan6000", "audioBcKanan8000",
+    "audioBcKiri250", "audioBcKiri500", "audioBcKiri1000", "audioBcKiri2000",
+    "audioBcKiri3000", "audioBcKiri4000", "audioBcKiri6000", "audioBcKiri8000",
   ]);
 
   const floatFields = new Set(["beratBadan", "tinggiBadan"]);
@@ -109,6 +87,22 @@ export async function POST(request: Request) {
     let updatedCount = 0;
     const errors: string[] = [];
 
+    // --- 2. Buat daftar pasangan nama validator dan field QR-nya ---
+    const validatorMap: { [key: string]: string } = {
+        hematologiValidatorName: 'hematologiValidatorQr',
+        kimiaDarahValidatorName: 'kimiaDarahValidatorQr',
+        urinalisaValidatorName: 'urinalisaValidatorQr',
+        audiometriValidatorName: 'audiometriValidatorQr',
+        spirometriValidatorName: 'spirometriValidatorQr',
+        usgAbdomenValidatorName: 'usgAbdomenValidatorQr',
+        usgMammaeValidatorName: 'usgMammaeValidatorQr',
+        ekgValidatorName: 'ekgValidatorQr',
+        rontgenValidatorName: 'rontgenValidatorQr',
+        conclusionValidatorName: 'conclusionValidatorQr',
+        dassFasValidatorName: 'dassFasValidatorQr',
+        framinghamValidatorName: 'framinghamValidatorQr',
+    };
+
     for (const [index, row] of jsonData.entries()) {
       const nik = row.nik ? String(row.nik).trim() : null;
       const rowNum = index + 2;
@@ -140,6 +134,22 @@ export async function POST(request: Request) {
         }
 
         const dataToUpdate = mapExcelToPrisma(row);
+
+        // --- 3. Logika untuk generate QR code otomatis ---
+        for (const nameField in validatorMap) {
+            // Cek jika ada nama validator di data dari Excel
+            if (dataToUpdate[nameField]) {
+                const qrField = validatorMap[nameField];
+                const validatorName = dataToUpdate[nameField];
+                
+                // Buat QR code dari nama tersebut
+                const qrCodeDataUrl = await QRCode.toDataURL(validatorName);
+                
+                // Tambahkan data QR code ke objek yang akan disimpan
+                dataToUpdate[qrField] = qrCodeDataUrl;
+            }
+        }
+        // --- Logika Selesai ---
 
         await prisma.mcuResult.update({
           where: { id: mcuResult.id },

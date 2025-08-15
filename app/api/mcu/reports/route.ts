@@ -21,6 +21,7 @@ export async function GET(request: Request) {
       });
     }
 
+    // --- PERBAIKAN DI BAGIAN 'where' ---
     const where = {
       patient: { companyId },
       ...(search
@@ -28,15 +29,18 @@ export async function GET(request: Request) {
             OR: [
               {
                 patient: {
-                  fullName: { contains: search, mode: "insensitive" },
+                  // 'mode: "insensitive"' dihapus
+                  fullName: { contains: search },
                 },
               },
               {
                 patient: {
-                  patientId: { contains: search, mode: "insensitive" },
+                  // 'mode: "insensitive"' dihapus
+                  patientId: { contains: search },
                 },
               },
-              { status: { contains: search, mode: "insensitive" } },
+              // 'mode: "insensitive"' dihapus
+              { status: { contains: search } },
             ],
           }
         : {}),
