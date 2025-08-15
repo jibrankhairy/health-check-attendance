@@ -1,18 +1,17 @@
-// components/mcu/report/DassDocument.tsx
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
 import { ReportHeader, PatientInfo, ReportFooter } from "./ReportLayout";
 import type { Patient } from "./ReportLayout";
 import { styles as globalStyles } from "./reportStyles";
 
-/** ===================== Types ===================== */
 type Maybe<T> = T | null | undefined;
 
 type Scale = "d" | "a" | "s";
 type DassId = `dass${number}`;
 type DassAnswers = Partial<Record<DassId, string | number>>;
+type DassAnswersInput = DassAnswers | { raw?: DassAnswers } | null | undefined;
 
 type DassData = {
   patient?: Maybe<Patient>;
@@ -21,7 +20,6 @@ type DassData = {
   dassFasValidatorQr?: string | null;
 };
 
-/** ===================== DASS Logic ===================== */
 const dassQuestions: { id: DassId; scale: Scale }[] = [
   { id: "dass1", scale: "s" },
   { id: "dass2", scale: "a" },
@@ -46,15 +44,20 @@ const dassQuestions: { id: DassId; scale: Scale }[] = [
   { id: "dass21", scale: "d" },
 ];
 
-const calculateDassScores = (answers?: DassAnswers | null) => {
-  if (!answers) return { depression: 0, anxiety: 0, stress: 0 };
+const calculateDassScores = (answers?: DassAnswersInput) => {
+  const flat: DassAnswers | null =
+    answers && typeof answers === "object" && "raw" in (answers as any)
+      ? ((answers as any).raw as DassAnswers)
+      : (answers as any as DassAnswers) ?? null;
+
+  if (!flat) return { depression: 0, anxiety: 0, stress: 0 };
 
   const scores: Record<Scale, number> = { d: 0, a: 0, s: 0 };
 
   dassQuestions.forEach((q) => {
-    const raw = answers[q.id];
-    if (raw != null) {
-      const v = Number(raw as any);
+    const raw = flat[q.id as keyof DassAnswers];
+    if (raw != null && raw !== "") {
+      const v = Number(raw);
       if (Number.isFinite(v)) scores[q.scale] += v;
     }
   });
@@ -111,9 +114,8 @@ const getSeverity = (
   return "Sangat Parah";
 };
 
-/** ===================== Component ===================== */
 export const DassDocument: React.FC<{ data: DassData }> = ({ data }) => {
-  const scores = calculateDassScores(data?.dassTestAnswers ?? undefined);
+  const scores = calculateDassScores(data?.dassTestAnswers);
 
   const results = {
     depression: {
@@ -150,7 +152,7 @@ export const DassDocument: React.FC<{ data: DassData }> = ({ data }) => {
               Total Skor
             </Text>
             <Text style={[localStyles.tableColHeader, { width: "30%" }]}>
-              Tingkat Keparahan
+              Keterangan
             </Text>
           </View>
 
@@ -215,7 +217,6 @@ export const DassDocument: React.FC<{ data: DassData }> = ({ data }) => {
   );
 };
 
-/** ===================== Styles ===================== */
 const localStyles = StyleSheet.create({
   title: {
     fontSize: 12,
