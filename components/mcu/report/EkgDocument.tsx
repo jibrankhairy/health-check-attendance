@@ -1,4 +1,3 @@
-// components/mcu/report/EkgDocument.tsx
 "use client";
 
 import React from "react";
@@ -8,7 +7,6 @@ import { ReportHeader, PatientInfo, ReportFooter } from "./ReportLayout";
 import type { Patient } from "./ReportLayout";
 import { styles as globalStyles } from "./reportStyles";
 
-/** ===================== Types ===================== */
 type Maybe<T> = T | null | undefined;
 
 type EkgData = {
@@ -32,7 +30,6 @@ type EkgData = {
   ekgValidatorQr?: string | null;
 };
 
-/** ===================== Styles ===================== */
 const localStyles = StyleSheet.create({
   headerText: {
     fontFamily: "Helvetica-Bold",
@@ -74,7 +71,6 @@ const localStyles = StyleSheet.create({
   },
 });
 
-/** ===================== Component ===================== */
 export const EkgDocument: React.FC<{ data: EkgData }> = ({ data }) => {
   return (
     <Page size="A4" style={globalStyles.page}>

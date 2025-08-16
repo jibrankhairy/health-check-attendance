@@ -1,4 +1,3 @@
-// components/mcu/report/AudiometriDocument.tsx
 "use client";
 
 import React from "react";
@@ -19,7 +18,6 @@ import { ReportHeader, PatientInfo, ReportFooter } from "./ReportLayout";
 import type { Patient } from "./ReportLayout";
 import { styles as globalStyles } from "./reportStyles";
 
-/** ===================== Types ===================== */
 type Maybe<T> = T | null | undefined;
 
 type AudiometriData = {
@@ -29,7 +27,6 @@ type AudiometriData = {
   kesimpulanAudiometri?: string | null;
 } & Record<string, unknown>;
 
-/** ===================== Constants & Scales ===================== */
 const FREQS = ["250", "500", "1000", "2000", "3000", "4000", "6000", "8000"];
 const Y_MIN = 0;
 const Y_MAX = 80;
@@ -68,7 +65,6 @@ const drawTicksY = () => {
   return ticks;
 };
 
-/** ===================== Styles ===================== */
 const localStyles = StyleSheet.create({
   header: {
     fontSize: 12,
@@ -134,7 +130,6 @@ const localStyles = StyleSheet.create({
   conclusionValue: { flex: 1 },
 });
 
-/** ===================== Chart Component ===================== */
 function AudiogramSvg({
   title,
   acValues,
@@ -170,7 +165,6 @@ function AudiogramSvg({
               stroke="#e6e6e6"
               strokeWidth={1}
             />
-            {/* NOTE: react-pdf allows text within Svg via Text with x/y */}
             <Text
               x={M.left - 6}
               y={yScale(t) + 3}
@@ -220,7 +214,6 @@ function AudiogramSvg({
           strokeWidth={1}
         />
 
-        {/* Garis & titik AC */}
         {buildPoints(acValues) && (
           <Polyline
             points={buildPoints(acValues)}
@@ -241,7 +234,6 @@ function AudiogramSvg({
           )
         )}
 
-        {/* Garis & titik BC (putus-putus) */}
         {buildPoints(bcValues) && (
           <Polyline
             points={buildPoints(bcValues)}
@@ -276,7 +268,6 @@ function AudiogramSvg({
   );
 }
 
-/** ===================== Document Component ===================== */
 export const AudiometriDocument: React.FC<{ data: AudiometriData }> = ({
   data,
 }) => {

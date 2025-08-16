@@ -28,15 +28,15 @@ export async function GET(request: Request) {
             OR: [
               {
                 patient: {
-                  fullName: { contains: search, mode: "insensitive" },
+                  fullName: { contains: search },
                 },
               },
               {
                 patient: {
-                  patientId: { contains: search, mode: "insensitive" },
+                  patientId: { contains: search },
                 },
               },
-              { status: { contains: search, mode: "insensitive" } },
+              { status: { contains: search } },
             ],
           }
         : {}),

@@ -19,6 +19,7 @@ import { EkgForm } from "./forms/EkgForm";
 import { RontgenForm } from "./forms/RontgenForm";
 import { PsikologiForm } from "./forms/PsikologiForm";
 import { ConclusionForm } from "./forms/ConclusionForm";
+import { FraminghamForm } from "./forms/FraminghamForm";
 
 const formSchema = z.object({
   hemoglobin: z.string().optional().nullable(),
@@ -173,6 +174,18 @@ const formSchema = z.object({
   conclusionValidatorQr: z.string().optional().nullable(),
   dassFasValidatorName: z.string().optional().nullable(),
   dassFasValidatorQr: z.string().optional().nullable(),
+  framinghamGender: z.string().optional().nullable(),
+  framinghamAge: z.string().optional().nullable(),
+  framinghamTotalCholesterol: z.string().optional().nullable(),
+  framinghamHdlCholesterol: z.string().optional().nullable(),
+  framinghamSystolicBp: z.string().optional().nullable(),
+  framinghamIsOnHypertensionTreatment: z.string().optional().nullable(),
+  framinghamIsSmoker: z.string().optional().nullable(),
+  framinghamRiskPercentage: z.string().optional().nullable(),
+  framinghamRiskCategory: z.string().optional().nullable(),
+  framinghamVascularAge: z.string().optional().nullable(),
+  framinghamValidatorName: z.string().optional().nullable(),
+  framinghamValidatorQr: z.string().optional().nullable(),
 });
 
 export type McuFormData = z.infer<typeof formSchema>;
@@ -216,7 +229,7 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
   const onSubmit = async (data: McuFormData) => {
     setIsSubmitting(true);
     try {
-      const response = await fetch(`/api/mcu/results/${initialData.id}`, {
+      const response = await fetch(`/api/mcu/reports/${initialData.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -360,8 +373,7 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
     hasItem("mcu akhir") ||
     hasItem("radiologi thoraks");
 
-  // KITA HAPUS KONDISI INI
-  // const showPsikologi = hasItem("pemeriksaan psikologis (fas dan sds)");
+  const showFramingham = true;
 
   const itemsToCheck = new Set<string>(initialData.patient.mcuPackage || []);
   if (hasItem("mcu eksekutif")) {
@@ -402,6 +414,8 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
         </div>
 
         <PsikologiForm />
+
+        {showFramingham && <FraminghamForm />}
 
         {showHematologi && <HematologiForm />}
         {showKimiaDarah && <KimiaDarahForm />}

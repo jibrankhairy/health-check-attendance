@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import { Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
 import { ReportHeader, PatientInfo, ReportFooter } from "./ReportLayout";
 import type { Patient } from "./ReportLayout";
@@ -14,7 +14,7 @@ type DassAnswers = Partial<Record<DassId, string | number>>;
 type DassAnswersInput = DassAnswers | { raw?: DassAnswers } | null | undefined;
 
 type DassData = {
-  patient?: Maybe<Patient>;
+  patient?: Maybe<Patient & { age?: number }>;
   dassTestAnswers?: DassAnswers | null;
   dassFasValidatorName?: string | null;
   dassFasValidatorQr?: string | null;
@@ -116,7 +116,6 @@ const getSeverity = (
 
 export const DassDocument: React.FC<{ data: DassData }> = ({ data }) => {
   const scores = calculateDassScores(data?.dassTestAnswers);
-
   const results = {
     depression: {
       score: scores.depression,
@@ -138,63 +137,201 @@ export const DassDocument: React.FC<{ data: DassData }> = ({ data }) => {
       <PatientInfo patient={data?.patient} />
 
       <View style={globalStyles.body}>
-        <Text style={localStyles.title}>HASIL PEMERIKSAAN DASS-21</Text>
+        <Text style={localStyles.title}>Laporan Hasil Pemeriksaan</Text>
         <Text style={localStyles.subTitle}>
-          (DEPRESSION ANXIETY STRESS SCALES)
+          Depression Anxiety Stress (DASS)
         </Text>
 
-        <View style={localStyles.table}>
-          <View style={localStyles.tableRow}>
-            <Text style={[localStyles.tableColHeader, { width: "40%" }]}>
-              Skala
-            </Text>
-            <Text style={[localStyles.tableColHeader, { width: "30%" }]}>
-              Total Skor
-            </Text>
-            <Text style={[localStyles.tableColHeader, { width: "30%" }]}>
-              Keterangan
+        <View style={localStyles.section}>
+          <Text style={localStyles.sectionTitle}>Identitas Pribadi</Text>
+          <View style={localStyles.infoRow}>
+            <Text style={localStyles.infoLabel}>Nama</Text>
+            <Text style={localStyles.infoValue}>
+              : {data?.patient?.fullName ?? "-"}
             </Text>
           </View>
-
-          <View style={localStyles.tableRow}>
-            <Text style={[localStyles.tableCol, { width: "40%" }]}>
-              Depresi
-            </Text>
-            <Text style={[localStyles.tableCol, { width: "30%" }]}>
-              {results.depression.score}
-            </Text>
-            <Text style={[localStyles.tableCol, { width: "30%" }]}>
-              {results.depression.severity}
+          <View style={localStyles.infoRow}>
+            <Text style={localStyles.infoLabel}>Usia</Text>
+            <Text style={localStyles.infoValue}>
+              : {data?.patient?.age ? `${data.patient.age} Tahun` : "-"}
             </Text>
           </View>
-
-          <View style={localStyles.tableRow}>
-            <Text style={[localStyles.tableCol, { width: "40%" }]}>
-              Kecemasan
-            </Text>
-            <Text style={[localStyles.tableCol, { width: "30%" }]}>
-              {results.anxiety.score}
-            </Text>
-            <Text style={[localStyles.tableCol, { width: "30%" }]}>
-              {results.anxiety.severity}
-            </Text>
-          </View>
-
-          <View style={localStyles.tableRow}>
-            <Text style={[localStyles.tableCol, { width: "40%" }]}>Stres</Text>
-            <Text style={[localStyles.tableCol, { width: "30%" }]}>
-              {results.stress.score}
-            </Text>
-            <Text style={[localStyles.tableCol, { width: "30%" }]}>
-              {results.stress.severity}
+          <View style={localStyles.infoRow}>
+            <Text style={localStyles.infoLabel}>Jenis Kelamin</Text>
+            <Text style={localStyles.infoValue}>
+              :{" "}
+              {data?.patient?.gender === "Male"
+                ? "Laki-laki"
+                : data?.patient?.gender === "Female"
+                ? "Perempuan"
+                : "-"}
             </Text>
           </View>
         </View>
 
-        {/* Tanda Tangan / Validator */}
+        <View style={localStyles.section}>
+          <Text style={localStyles.paragraph}>
+            Berikut adalah hasil Assessment pasien untuk Depression Anxiety
+            Stress Scale (DASS):
+          </Text>
+          <View style={localStyles.table}>
+            <View style={localStyles.tableRow}>
+              <Text style={[localStyles.tableColHeader, { width: "70%" }]}>
+                Trait
+              </Text>
+              <Text style={[localStyles.tableColHeader, { width: "30%" }]}>
+                Score
+              </Text>
+            </View>
+            <View style={localStyles.tableRow}>
+              <Text
+                style={[
+                  localStyles.tableCol,
+                  { width: "70%", textAlign: "left" },
+                ]}
+              >
+                Depression
+              </Text>
+              <Text style={[localStyles.tableCol, { width: "30%" }]}>
+                {results.depression.score}
+              </Text>
+            </View>
+            <View style={localStyles.tableRow}>
+              <Text
+                style={[
+                  localStyles.tableCol,
+                  { width: "70%", textAlign: "left" },
+                ]}
+              >
+                Anxiety
+              </Text>
+              <Text style={[localStyles.tableCol, { width: "30%" }]}>
+                {results.anxiety.score}
+              </Text>
+            </View>
+            <View style={localStyles.tableRow}>
+              <Text
+                style={[
+                  localStyles.tableCol,
+                  { width: "70%", textAlign: "left" },
+                ]}
+              >
+                Stress
+              </Text>
+              <Text style={[localStyles.tableCol, { width: "30%" }]}>
+                {results.stress.score}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={localStyles.section}>
+          <Text style={localStyles.paragraph}>
+            Manual untuk interpretasi terhadap hasil Depression Anxiety Stress
+            Scale (DASS):
+          </Text>
+          <View style={localStyles.table}>
+            <View style={localStyles.tableRow}>
+              <Text style={[localStyles.tableColHeader, { width: "25%" }]}>
+                Kategori
+              </Text>
+              <Text style={[localStyles.tableColHeader, { width: "25%" }]}>
+                Depression
+              </Text>
+              <Text style={[localStyles.tableColHeader, { width: "25%" }]}>
+                Anxiety
+              </Text>
+              <Text style={[localStyles.tableColHeader, { width: "25%" }]}>
+                Stress
+              </Text>
+            </View>
+            <View style={localStyles.tableRow}>
+              <Text
+                style={[
+                  localStyles.tableCol,
+                  { width: "25%", textAlign: "left" },
+                ]}
+              >
+                Normal
+              </Text>
+              <Text style={[localStyles.tableCol, { width: "25%" }]}>0-9</Text>
+              <Text style={[localStyles.tableCol, { width: "25%" }]}>0-7</Text>
+              <Text style={[localStyles.tableCol, { width: "25%" }]}>0-14</Text>
+            </View>
+            <View style={localStyles.tableRow}>
+              <Text
+                style={[
+                  localStyles.tableCol,
+                  { width: "25%", textAlign: "left" },
+                ]}
+              >
+                Ringan
+              </Text>
+              <Text style={[localStyles.tableCol, { width: "25%" }]}>
+                10-13
+              </Text>
+              <Text style={[localStyles.tableCol, { width: "25%" }]}>8-9</Text>
+              <Text style={[localStyles.tableCol, { width: "25%" }]}>
+                15-18
+              </Text>
+            </View>
+            <View style={localStyles.tableRow}>
+              <Text
+                style={[
+                  localStyles.tableCol,
+                  { width: "25%", textAlign: "left" },
+                ]}
+              >
+                Sedang
+              </Text>
+              <Text style={[localStyles.tableCol, { width: "25%" }]}>
+                14-20
+              </Text>
+              <Text style={[localStyles.tableCol, { width: "25%" }]}>
+                10-14
+              </Text>
+              <Text style={[localStyles.tableCol, { width: "25%" }]}>
+                19-25
+              </Text>
+            </View>
+            <View style={localStyles.tableRow}>
+              <Text
+                style={[
+                  localStyles.tableCol,
+                  { width: "25%", textAlign: "left" },
+                ]}
+              >
+                Parah
+              </Text>
+              <Text style={[localStyles.tableCol, { width: "25%" }]}>
+                21-27
+              </Text>
+              <Text style={[localStyles.tableCol, { width: "25%" }]}>
+                15-19
+              </Text>
+              <Text style={[localStyles.tableCol, { width: "25%" }]}>
+                26-33
+              </Text>
+            </View>
+            <View style={localStyles.tableRow}>
+              <Text
+                style={[
+                  localStyles.tableCol,
+                  { width: "25%", textAlign: "left" },
+                ]}
+              >
+                Sangat Parah
+              </Text>
+              <Text style={[localStyles.tableCol, { width: "25%" }]}>28+</Text>
+              <Text style={[localStyles.tableCol, { width: "25%" }]}>20+</Text>
+              <Text style={[localStyles.tableCol, { width: "25%" }]}>34+</Text>
+            </View>
+          </View>
+        </View>
+
         {(data?.dassFasValidatorName || data?.dassFasValidatorQr) && (
           <View
-            style={{ marginTop: 40, alignItems: "flex-end", paddingRight: 40 }}
+            style={{ marginTop: 10, alignItems: "flex-end", paddingRight: 40 }}
           >
             {data?.dassFasValidatorQr && (
               <Image
@@ -203,11 +340,11 @@ export const DassDocument: React.FC<{ data: DassData }> = ({ data }) => {
               />
             )}
             {data?.dassFasValidatorName && (
-              <Text style={{ fontSize: 8, fontFamily: "Helvetica-Bold" }}>
+              <Text style={{ fontSize: 10, fontFamily: "Helvetica-Bold" }}>
                 {data.dassFasValidatorName as string}
               </Text>
             )}
-            <Text style={{ fontSize: 5 }}>Psikolog / Validator</Text>
+            <Text style={{ fontSize: 8 }}>Psikolog / Validator</Text>
           </View>
         )}
       </View>
@@ -221,16 +358,26 @@ const localStyles = StyleSheet.create({
   title: {
     fontSize: 12,
     fontFamily: "Helvetica-Bold",
-    marginBottom: 5,
-    textDecoration: "underline",
+    marginBottom: 2,
     textAlign: "center",
   },
   subTitle: {
-    fontSize: 10,
+    fontSize: 11,
     fontFamily: "Helvetica",
     textAlign: "center",
     marginBottom: 20,
   },
+  section: { marginBottom: 10 },
+  sectionTitle: {
+    fontSize: 11,
+    fontFamily: "Helvetica-Bold",
+    marginBottom: 8,
+    textDecoration: "underline",
+  },
+  infoRow: { flexDirection: "row", marginBottom: 2 },
+  infoLabel: { fontSize: 10, width: "20%" },
+  infoValue: { fontSize: 10, width: "80%" },
+  paragraph: { fontSize: 10, marginBottom: 8, lineHeight: 1.4 },
   table: {
     width: "100%",
     borderStyle: "solid",
@@ -239,19 +386,19 @@ const localStyles = StyleSheet.create({
   },
   tableRow: { flexDirection: "row", borderTopWidth: 1, borderTopColor: "#333" },
   tableColHeader: {
-    padding: 6,
+    padding: 5,
     fontFamily: "Helvetica-Bold",
     backgroundColor: "#f0f0f0",
     textAlign: "center",
     borderRightWidth: 1,
     borderRightColor: "#333",
-    fontSize: 10,
+    fontSize: 9,
   },
   tableCol: {
-    padding: 6,
+    padding: 5,
     textAlign: "center",
     borderRightWidth: 1,
     borderRightColor: "#333",
-    fontSize: 10,
+    fontSize: 9,
   },
 });

@@ -1,4 +1,3 @@
-// components/mcu/forms/HematologiForm.tsx
 "use client";
 
 import { useFormContext } from "react-hook-form";
@@ -25,7 +24,6 @@ export const HematologiForm = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-8">
-        {/* Row 1 */}
         <div className="space-y-2">
           <Label htmlFor="hemoglobin">Hemoglobin</Label>
           <Input
@@ -58,7 +56,6 @@ export const HematologiForm = () => {
             placeholder="cth: 38.4"
           />
         </div>
-        {/* Row 2 */}
         <div className="space-y-2">
           <Label htmlFor="eritrosit">Eritrosit</Label>
           <Input
@@ -79,7 +76,6 @@ export const HematologiForm = () => {
           <Label htmlFor="mch">MCH</Label>
           <Input id="mch" {...register("mch")} placeholder="cth: 28.3" />
         </div>
-        {/* Row 3 */}
         <div className="space-y-2">
           <Label htmlFor="mchc">MCHC</Label>
           <Input id="mchc" {...register("mchc")} placeholder="cth: 32.6" />
@@ -96,7 +92,6 @@ export const HematologiForm = () => {
           <Label htmlFor="pdw">PDW</Label>
           <Input id="pdw" {...register("pdw")} placeholder="cth: 15.7" />
         </div>
-        {/* Row 4 - Hitung Jenis */}
         <div className="space-y-2">
           <Label htmlFor="hitungJenisEosinofil">Eosinofil</Label>
           <Input
@@ -129,7 +124,6 @@ export const HematologiForm = () => {
             placeholder="cth: 44"
           />
         </div>
-        {/* Row 5 */}
         <div className="space-y-2">
           <Label htmlFor="hitungJenisLimfosit">Limfosit</Label>
           <Input

@@ -55,7 +55,7 @@ model Patient {
   location    String
   address     String?     @db.Text
   phoneNumber String?
-  qrCode      String      @unique
+  qrCode      String      @db.Text
   mcuPackage  Json
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
@@ -154,6 +154,8 @@ model McuResult {
   fisikPernafasan      String?   @db.Text
   fisikPencernaan      String?   @db.Text
   fisikEkstremitas     String?   @db.Text
+
+  examinationStartedAt  DateTime?
 
   // --- Hematologi ---
   hemoglobin           String?   @db.Text
@@ -278,6 +280,17 @@ model McuResult {
   spirometriFev1Fvc    String?   @db.Text
   kesimpulanSpirometri String?   @db.Text
 
+  framinghamGender                  String?
+  framinghamAge                     String?
+  framinghamTotalCholesterol        String?
+  framinghamHdlCholesterol          String?
+  framinghamSystolicBp              String?
+  framinghamIsOnHypertensionTreatment String?
+  framinghamIsSmoker                String?
+  framinghamRiskPercentage          String?
+  framinghamRiskCategory            String?
+  framinghamVascularAge             String?
+
   // --- USG Abdomen ---
   usgAbdomenImage1     String?   @db.Text
   usgAbdomenImage2     String?   @db.Text
@@ -303,8 +316,6 @@ model McuResult {
   usgMammaeLaporan     String?   @db.Text
   usgMammaeKesimpulan  String?   @db.Text
 
-  // --- Lainnya ---
-  framinghamScore      String?   @db.Text
   kesimpulanTesPsikologi String?   @db.Text
 
   // --- Kesimpulan Akhir ---
@@ -334,4 +345,6 @@ model McuResult {
   conclusionValidatorQr       String? @db.Text
   dassFasValidatorName        String?
   dassFasValidatorQr          String? @db.Text
+  framinghamValidatorName     String?
+  framinghamValidatorQr       String? @db.Text
 }

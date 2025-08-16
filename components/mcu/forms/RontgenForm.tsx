@@ -1,4 +1,3 @@
-// components/mcu/forms/RontgenForm.tsx
 "use client";
 
 import { useState } from "react";

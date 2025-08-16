@@ -1,11 +1,9 @@
-// components/mcu/McuReport.tsx
-
 import React from "react";
 
 export type PatientReportData = {
-  id: string; // ID unik pasien (MCU-xxxx)
+  id: string;
   fullName: string;
-  dob: string; // Format "YYYY-MM-DD"
+  dob: string;
   age: number;
   gender: string;
   address?: string;
@@ -17,7 +15,6 @@ type McuReportProps = {
   patient: PatientReportData;
 };
 
-// Fungsi helper untuk format tanggal
 const formatDateToIndonesian = (dateString: string) => {
   if (!dateString) return "N/A";
   const date = new Date(dateString);
@@ -29,7 +26,6 @@ const formatDateToIndonesian = (dateString: string) => {
 };
 
 export const McuReport = ({ patient }: McuReportProps) => {
-  // Data ini bisa diambil dari data MCU spesifik, bukan data pasien
   const examinationDate = new Date().toLocaleDateString("id-ID", {
     day: "numeric",
     month: "long",
@@ -95,7 +91,6 @@ export const McuReport = ({ patient }: McuReportProps) => {
         <h2 className="font-bold border-b-2 border-black pb-1 inline-block">
           HASIL TERLAMPIR :
         </h2>
-        {/* Daftar hasil MCU akan kita tambahkan di sini nanti */}
       </div>
     </div>
   );

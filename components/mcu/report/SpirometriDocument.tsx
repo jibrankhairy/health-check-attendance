@@ -1,4 +1,3 @@
-// components/mcu/report/SpirometriDocument.tsx
 "use client";
 
 import React from "react";
@@ -19,7 +18,6 @@ import { ReportHeader, PatientInfo, ReportFooter } from "./ReportLayout";
 import type { Patient } from "./ReportLayout";
 import { styles as globalStyles } from "./reportStyles";
 
-/** ===================== Types ===================== */
 type Maybe<T> = T | null | undefined;
 
 type SpirometriData = {
@@ -27,7 +25,7 @@ type SpirometriData = {
 
   spirometriFvc?: number | string | null;
   spirometriFev1?: number | string | null;
-  spirometriFev6?: number | string | null; // optional if available
+  spirometriFev6?: number | string | null;
   spirometriFev1Fvc?: number | string | null;
 
   spirometriPef?: number | string | null;
@@ -44,15 +42,13 @@ type SpirometriData = {
   spirometriValidatorQr?: string | null;
 };
 
-/** ===================== Constants ===================== */
 // Chart sizes
-const FV_W = 260; // Flow–Volume width
-const FV_H = 180; // Flow–Volume height
-const VT_W = 260; // Volume–Time width
-const VT_H = 180; // Volume–Time height
+const FV_W = 260;
+const FV_H = 180;
+const VT_W = 260;
+const VT_H = 180;
 const M = { top: 18, right: 22, bottom: 28, left: 32 };
 
-/** ===================== Utils ===================== */
 const clampNum = (v: unknown, fallback = 0): number => {
   const n = typeof v === "number" ? v : v != null ? Number(v) : fallback;
   return Number.isFinite(n) ? n : fallback;
@@ -70,7 +66,6 @@ const scaleLinear = (
   return (x: number) => rangeMin + ((x - domainMin) / d) * r;
 };
 
-/** ===================== Styles ===================== */
 const localStyles = StyleSheet.create({
   headerText: {
     fontFamily: "Helvetica-Bold",
@@ -106,7 +101,6 @@ const localStyles = StyleSheet.create({
   reportValue: { width: "70%" },
 });
 
-/** ===================== Flow–Volume Chart ===================== */
 function FlowVolumeChart({
   FVC,
   PEF,
@@ -120,13 +114,11 @@ function FlowVolumeChart({
   FEF50: number | null;
   FEF75: number | null;
 }) {
-  // Domain X = Volume [0..FVC], Y = Flow [0..yMax]
-  const yMax = Math.max(10, Math.ceil((PEF || 0) * 1.2)); // headroom
+  const yMax = Math.max(10, Math.ceil((PEF || 0) * 1.2));
   const x = scaleLinear(0, Math.max(FVC, 1), M.left, FV_W - M.right);
   const y = scaleLinear(0, yMax, FV_H - M.bottom, M.top);
 
-  // Control points
-  const vPEF = 0.15 * FVC; // assume peak flow at ~15% FVC (tweak if needed)
+  const vPEF = 0.15 * FVC;
   const pts: Array<[number, number]> = [
     [0, 0],
     [vPEF, PEF],
@@ -138,12 +130,10 @@ function FlowVolumeChart({
 
   const svgPts = pts.map(([vx, fy]) => `${x(vx)},${y(fy)}`).join(" ");
 
-  // y ticks every 1–2 L/s
   const yTickStep = yMax <= 8 ? 1 : 2;
   const yTicks: number[] = [];
   for (let t = 0; t <= yMax; t += yTickStep) yTicks.push(t);
 
-  // x ticks per 0.5 or 1 L
   const xTicks: number[] = [];
   const xStep = FVC <= 3 ? 0.5 : 1;
   for (let t = 0; t <= Math.ceil(FVC); t += xStep) xTicks.push(t);
@@ -162,7 +152,6 @@ function FlowVolumeChart({
           strokeWidth={1}
         />
 
-        {/* Grid Y */}
         {yTicks.map((t) => (
           <React.Fragment key={`fy-${t}`}>
             <Line
@@ -183,7 +172,6 @@ function FlowVolumeChart({
           </React.Fragment>
         ))}
 
-        {/* Grid X */}
         {xTicks.map((t) => (
           <React.Fragment key={`fx-${t}`}>
             <Line
@@ -204,7 +192,6 @@ function FlowVolumeChart({
           </React.Fragment>
         ))}
 
-        {/* Axes */}
         <Line
           x1={M.left}
           y1={M.top}
@@ -220,7 +207,6 @@ function FlowVolumeChart({
           stroke="#555"
         />
 
-        {/* Curve & dots */}
         <Polyline points={svgPts} fill="none" stroke="#000" strokeWidth={1.2} />
         {pts.map(([vx, fy], i) => (
           <Circle key={`p-${i}`} cx={x(vx)} cy={y(fy)} r={2.1} fill="#000" />
@@ -247,7 +233,6 @@ function FlowVolumeChart({
   );
 }
 
-/** ===================== Volume–Time Chart ===================== */
 function VolumeTimeChart({
   FVC,
   FEV1,
@@ -257,13 +242,10 @@ function VolumeTimeChart({
   FEV1: number | null;
   FEV6: number | null;
 }) {
-  // Time domain 0..6s
   const tMax = 6;
   const x = scaleLinear(0, tMax, M.left, VT_W - M.right);
   const y = scaleLinear(0, Math.max(FVC, 1), VT_H - M.bottom, M.top);
 
-  // Exponential curve: V(t) = FVC * (1 - e^{-k t})
-  // Choose k so V(1) = FEV1 when available; otherwise default
   let k = 1.2;
   if (FEV1 && FVC && FEV1 < FVC) {
     const ratio = 1 - FEV1 / FVC;
@@ -280,7 +262,6 @@ function VolumeTimeChart({
   }
   const pts = samples.map(([t, v]) => `${x(t)},${y(v)}`).join(" ");
 
-  // grid
   const tTicks = [0, 1, 2, 3, 4, 5, 6];
   const vTicks: number[] = [];
   const vStep = FVC <= 3 ? 0.5 : 1;
@@ -300,7 +281,6 @@ function VolumeTimeChart({
           strokeWidth={1}
         />
 
-        {/* Grid Y */}
         {vTicks.map((v) => (
           <React.Fragment key={`vy-${v}`}>
             <Line
@@ -321,7 +301,6 @@ function VolumeTimeChart({
           </React.Fragment>
         ))}
 
-        {/* Grid X */}
         {tTicks.map((t) => (
           <React.Fragment key={`vt-${t}`}>
             <Line
@@ -342,7 +321,6 @@ function VolumeTimeChart({
           </React.Fragment>
         ))}
 
-        {/* Axes */}
         <Line
           x1={M.left}
           y1={M.top}
@@ -358,10 +336,8 @@ function VolumeTimeChart({
           stroke="#555"
         />
 
-        {/* Curve */}
         <Polyline points={pts} fill="none" stroke="#000" strokeWidth={1.2} />
 
-        {/* Markers FEV1 & FEV6 */}
         {FEV1 != null && (
           <>
             <Line
@@ -418,7 +394,6 @@ function VolumeTimeChart({
   );
 }
 
-/** ===================== Document ===================== */
 export const SpirometriDocument: React.FC<{ data: SpirometriData }> = ({
   data,
 }) => {
@@ -448,7 +423,6 @@ export const SpirometriDocument: React.FC<{ data: SpirometriData }> = ({
       <View style={globalStyles.body}>
         <Text style={localStyles.headerText}>HASIL PEMERIKSAAN SPIROMETRI</Text>
 
-        {/* Charts */}
         <View style={localStyles.chartsRow}>
           <FlowVolumeChart
             FVC={FVC}
@@ -460,7 +434,6 @@ export const SpirometriDocument: React.FC<{ data: SpirometriData }> = ({
           <VolumeTimeChart FVC={FVC} FEV1={FEV1} FEV6={FEV6} />
         </View>
 
-        {/* Summary values */}
         <View style={localStyles.reportSection}>
           <View style={localStyles.reportRow}>
             <Text style={localStyles.reportLabel}>FVC (L)</Text>
@@ -499,7 +472,6 @@ export const SpirometriDocument: React.FC<{ data: SpirometriData }> = ({
           </View>
         </View>
 
-        {/* Signature */}
         {(data?.spirometriValidatorName || data?.spirometriValidatorQr) && (
           <View
             style={{ marginTop: 10, alignItems: "flex-end", paddingRight: 40 }}

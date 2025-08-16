@@ -92,8 +92,8 @@ export async function POST(request: Request) {
             status: patientData.status || "N/A",
             location: patientData.location || "N/A",
             mcuPackage: patientData.mcuPackage || [],
-            qrCode: "temp",
             companyId: companyId,
+            qrCode: "",
           },
         });
 
@@ -103,10 +103,19 @@ export async function POST(request: Request) {
           },
         });
 
+        const qrContent = {
+          mcuResultId: newMcuResult.id,
+          patientId: newPatient.patientId,
+          fullName: newPatient.fullName,
+          mcuPackage: newPatient.mcuPackage,
+        };
+
+        const qrCodeDataUrl = await QRCode.toDataURL(JSON.stringify(qrContent));
+
         const updatedPatient = await tx.patient.update({
           where: { id: newPatient.id },
           data: {
-            qrCode: newMcuResult.id,
+            qrCode: qrCodeDataUrl,
           },
         });
 
@@ -119,14 +128,12 @@ export async function POST(request: Request) {
 
     if (sendEmail) {
       for (const patient of createdPatients) {
-        if (patient.email) {
+        if (patient.email && patient.qrCode) {
           try {
-            const qrCodeDataUrl = await QRCode.toDataURL(patient.qrCode);
-            const base64Data = qrCodeDataUrl.replace(
+            const base64Data = patient.qrCode.replace(
               /^data:image\/png;base64,/,
               ""
             );
-
             await transporter.sendMail({
               from: process.env.EMAIL_FROM,
               to: patient.email,

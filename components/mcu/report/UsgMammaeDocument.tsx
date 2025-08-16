@@ -1,19 +1,14 @@
-// components/mcu/report/UsgMammaeDocument.tsx
 "use client";
 
 import React from "react";
 import { Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
 
-// Layout & global styles
 import { ReportHeader, PatientInfo, ReportFooter } from "./ReportLayout";
 import { styles as globalStyles } from "./reportStyles";
 
-/** ===== Types ===== */
-
 export interface UsgMammaeData {
-  patient?: any; // Ganti dengan tipe spesifik milikmu jika ada
+  patient?: any;
 
-  // Gambar (opsional)
   usgMammaeImage1?: string;
   usgMammaeImage2?: string;
   usgMammaeImage3?: string;
@@ -21,11 +16,9 @@ export interface UsgMammaeData {
   usgMammaeImage5?: string;
   usgMammaeImage6?: string;
 
-  // Teks laporan
   usgMammaeLaporan?: string;
   usgMammaeKesimpulan?: string;
 
-  // Validator
   usgMammaeValidatorName?: string;
   usgMammaeValidatorQr?: string;
 }
@@ -33,8 +26,6 @@ export interface UsgMammaeData {
 interface UsgMammaeDocumentProps {
   data?: UsgMammaeData;
 }
-
-/** ===== Local Styles ===== */
 
 const localStyles = StyleSheet.create({
   headerText: {
@@ -60,7 +51,6 @@ const localStyles = StyleSheet.create({
   image: {
     width: "100%",
     height: "100%",
-    // react-pdf biasanya mendukung objectFit; jika versi kamu belum, hapus baris ini.
     objectFit: "cover",
   },
   reportSection: {
@@ -76,8 +66,6 @@ const localStyles = StyleSheet.create({
     lineHeight: 1.4,
   },
 });
-
-/** ===== Component ===== */
 
 export const UsgMammaeDocument: React.FC<UsgMammaeDocumentProps> = ({
   data,
@@ -123,7 +111,6 @@ export const UsgMammaeDocument: React.FC<UsgMammaeDocumentProps> = ({
           </Text>
         </View>
 
-        {/* Signature ala Hematologi dengan format yang diminta */}
         {(data?.usgMammaeValidatorName || data?.usgMammaeValidatorQr) && (
           <View
             style={{ marginTop: 10, alignItems: "flex-end", paddingRight: 40 }}

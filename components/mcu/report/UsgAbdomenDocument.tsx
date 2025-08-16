@@ -1,4 +1,3 @@
-// components/mcu/report/UsgAbdomenDocument.tsx
 "use client";
 
 import React from "react";
@@ -6,12 +5,9 @@ import { Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
 import { ReportHeader, PatientInfo, ReportFooter } from "./ReportLayout";
 import { styles as globalStyles } from "./reportStyles";
 
-/** ===== Types ===== */
-
 export interface UsgAbdomenData {
-  patient?: any; // Ganti dengan tipe spesifik milikmu jika ada
+  patient?: any;
 
-  // Gambar (opsional)
   usgAbdomenImage1?: string;
   usgAbdomenImage2?: string;
   usgAbdomenImage3?: string;
@@ -19,7 +15,6 @@ export interface UsgAbdomenData {
   usgAbdomenImage5?: string;
   usgAbdomenImage6?: string;
 
-  // Hasil deskriptif
   usgAbdomenHepar?: string;
   usgAbdomenGallBladder?: string;
   usgAbdomenLien?: string;
@@ -28,7 +23,6 @@ export interface UsgAbdomenData {
   usgAbdomenGinjalSinistra?: string;
   usgAbdomenKesimpulan?: string;
 
-  // Validator
   usgAbdomenValidatorName?: string;
   usgAbdomenValidatorQr?: string;
 }
@@ -36,8 +30,6 @@ export interface UsgAbdomenData {
 interface UsgAbdomenDocumentProps {
   data?: UsgAbdomenData;
 }
-
-/** ===== Styles ===== */
 
 const localStyles = StyleSheet.create({
   headerText: {
@@ -63,7 +55,6 @@ const localStyles = StyleSheet.create({
   image: {
     width: "100%",
     height: "100%",
-    // react-pdf mendukung objectFit; jika versi kamu belum, hapus baris ini.
     objectFit: "cover",
   },
   reportSection: {
@@ -82,8 +73,6 @@ const localStyles = StyleSheet.create({
     width: "75%",
   },
 });
-
-/** ===== Component ===== */
 
 export const UsgAbdomenDocument: React.FC<UsgAbdomenDocumentProps> = ({
   data,
@@ -162,7 +151,6 @@ export const UsgAbdomenDocument: React.FC<UsgAbdomenDocumentProps> = ({
           </View>
         </View>
 
-        {/* Signature ala Hematologi */}
         {(data?.usgAbdomenValidatorName || data?.usgAbdomenValidatorQr) && (
           <View
             style={{ marginTop: 10, alignItems: "flex-end", paddingRight: 40 }}

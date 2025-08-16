@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import * as XLSX from "xlsx";
+import QRCode from "qrcode";
 
 const prisma = new PrismaClient();
 export const dynamic = "force-dynamic";
@@ -109,6 +110,21 @@ export async function POST(request: Request) {
     let updatedCount = 0;
     const errors: string[] = [];
 
+    const validatorMap: { [key: string]: string } = {
+      hematologiValidatorName: "hematologiValidatorQr",
+      kimiaDarahValidatorName: "kimiaDarahValidatorQr",
+      urinalisaValidatorName: "urinalisaValidatorQr",
+      audiometriValidatorName: "audiometriValidatorQr",
+      spirometriValidatorName: "spirometriValidatorQr",
+      usgAbdomenValidatorName: "usgAbdomenValidatorQr",
+      usgMammaeValidatorName: "usgMammaeValidatorQr",
+      ekgValidatorName: "ekgValidatorQr",
+      rontgenValidatorName: "rontgenValidatorQr",
+      conclusionValidatorName: "conclusionValidatorQr",
+      dassFasValidatorName: "dassFasValidatorQr",
+      framinghamValidatorName: "framinghamValidatorQr",
+    };
+
     for (const [index, row] of jsonData.entries()) {
       const nik = row.nik ? String(row.nik).trim() : null;
       const rowNum = index + 2;
@@ -140,6 +156,17 @@ export async function POST(request: Request) {
         }
 
         const dataToUpdate = mapExcelToPrisma(row);
+
+        for (const nameField in validatorMap) {
+          if (dataToUpdate[nameField]) {
+            const qrField = validatorMap[nameField];
+            const validatorName = dataToUpdate[nameField];
+
+            const qrCodeDataUrl = await QRCode.toDataURL(validatorName);
+
+            dataToUpdate[qrField] = qrCodeDataUrl;
+          }
+        }
 
         await prisma.mcuResult.update({
           where: { id: mcuResult.id },

@@ -86,11 +86,29 @@ const PetugasDashboardPage = () => {
     fetchCheckPoints();
   }, []);
 
-  const handleScanResult = async (mcuResultId: string) => {
+  const handleScanResult = async (scannedText: string) => {
     if (!user || !selectedCheckPointSlug || isSubmitting) return;
 
     setShowScanner(false);
     toast.info("QR terdeteksi, memverifikasi data pasien...");
+
+    let mcuResultId: string;
+
+    try {
+      const parsedData = JSON.parse(scannedText);
+      if (
+        typeof parsedData === "object" &&
+        parsedData !== null &&
+        parsedData.mcuResultId
+      ) {
+        mcuResultId = parsedData.mcuResultId;
+      } else {
+        throw new Error("Format QR tidak valid (tidak ditemukan mcuResultId).");
+      }
+    } catch (e) {
+      toast.error("Format QR Code tidak valid atau tidak terbaca.");
+      return;
+    }
 
     try {
       const res = await fetch(
@@ -149,7 +167,7 @@ const PetugasDashboardPage = () => {
   async function doCheckIn(mcuResultId: string, cpSlug: string) {
     if (!user) return;
     setIsSubmitting(true);
-    toast.info(`QR terdeteksi: ${mcuResultId}. Memproses...`);
+    toast.info(`Memproses check-in untuk ID: ${mcuResultId}...`);
     try {
       const response = await fetch("/api/mcu/check-in", {
         method: "POST",
@@ -181,7 +199,7 @@ const PetugasDashboardPage = () => {
     if (selectedCheckPointSlug === "pemeriksaan_fisik") {
       setPendingMcuResultId(previewData.mcuResultId);
       setShowFisikForm(true);
-      toast.message(`QR terdeteksi: ${previewData.mcuResultId}`, {
+      toast.message(`Memproses pasien...`, {
         description: "Silakan isi Form Pemeriksaan Fisik.",
       });
     } else {

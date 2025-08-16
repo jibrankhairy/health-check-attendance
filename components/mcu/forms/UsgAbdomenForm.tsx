@@ -1,4 +1,3 @@
-// components/mcu/forms/UsgAbdomenForm.tsx
 "use client";
 
 import { useState } from "react";
@@ -22,7 +21,6 @@ export const UsgAbdomenForm = () => {
   const { register, setValue, watch } = useFormContext();
   const [isUploading, setIsUploading] = useState<number | null>(null);
 
-  // Tonton nilai field gambar
   const imageFields = Array.from({ length: 6 }, (_, i) =>
     watch(`usgAbdomenImage${i + 1}`)
   );
@@ -35,7 +33,6 @@ export const UsgAbdomenForm = () => {
     formData.append("file", file);
 
     try {
-      // Panggil API upload
       const response = await fetch("/api/upload", {
         method: "POST",
         body: formData,
@@ -46,7 +43,6 @@ export const UsgAbdomenForm = () => {
         throw new Error(result.error || "Gagal mengunggah gambar.");
       }
 
-      // Simpan URL gambar ke dalam form
       setValue(`usgAbdomenImage${index + 1}`, result.url);
       toast.success(`Gambar ${index + 1} berhasil diunggah.`);
     } catch (error: any) {
@@ -123,7 +119,6 @@ export const UsgAbdomenForm = () => {
           </div>
         </div>
 
-        {/* Bagian Laporan Teks */}
         <div>
           <h3 className="font-semibold mb-4 border-b pb-2">
             Laporan USG Abdomen

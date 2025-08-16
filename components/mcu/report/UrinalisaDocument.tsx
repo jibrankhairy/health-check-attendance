@@ -1,12 +1,9 @@
-// components/mcu/report/UrinalisaDocument.tsx
 "use client";
 
 import React from "react";
 import { Page, Text, View, Image } from "@react-pdf/renderer";
 import { ReportHeader, PatientInfo, ReportFooter } from "./ReportLayout";
 import { styles } from "./reportStyles";
-
-/** ===== Types ===== */
 
 type QualitativeRef = {
   type: "qualitative";
@@ -22,7 +19,6 @@ type RangeRef = {
 
 type RefDef = QualitativeRef | RangeRef;
 
-// Semua key yang dipakai untuk mengambil nilai dari data
 type UrinalisaFieldKey =
   | "urinWarna"
   | "urinKejernihan"
@@ -63,11 +59,10 @@ type HeaderRow = {
 type Row = NonHeaderRow | HeaderRow;
 
 export interface UrinalisaData {
-  patient?: any; // Jika punya tipe spesifik, ganti `any`.
+  patient?: any;
   urinalisaValidatorName?: string;
   urinalisaValidatorQr?: string;
 
-  // hasil
   urinWarna?: string | number;
   urinKejernihan?: string | number;
   urinBau?: string | number;
@@ -92,8 +87,6 @@ export interface UrinalisaData {
 interface UrinalisaDocumentProps {
   data?: UrinalisaData;
 }
-
-/** ===== Data Map ===== */
 
 const urinalisaDataMap: Row[] = [
   { no: "1", label: "MAKROSKOPIS", isHeader: true },
@@ -261,15 +254,12 @@ const urinalisaDataMap: Row[] = [
   },
 ];
 
-/** ===== Type Guards ===== */
-
 const isHeaderRow = (row: Row): row is HeaderRow => row.isHeader === true;
 const isQualitativeRef = (ref: RefDef): ref is QualitativeRef =>
   (ref as QualitativeRef).type === "qualitative";
 
 /** ===== Helpers ===== */
 
-// Kembalikan boolean agar tidak memasukkan tipe selain Style ke array `style`
 const isResultAbnormal = (
   item: NonHeaderRow,
   resultValue: unknown
@@ -291,8 +281,6 @@ const isResultAbnormal = (
 
   return false;
 };
-
-/** ===== Component ===== */
 
 export const UrinalisaDocument: React.FC<UrinalisaDocumentProps> = ({
   data,
@@ -357,7 +345,6 @@ export const UrinalisaDocument: React.FC<UrinalisaDocumentProps> = ({
             ? [styles.tableRow, styles.tableRowLast]
             : [styles.tableRow];
 
-          // susun array Style tanpa nilai boolean/undefined
           const hasilStyles = [styles.tableCol, styles.colHasil] as any[];
           if (abnormal) hasilStyles.push(styles.resultAbnormal);
 

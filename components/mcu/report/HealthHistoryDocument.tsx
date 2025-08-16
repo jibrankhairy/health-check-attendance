@@ -1,14 +1,11 @@
-// components/mcu/report/HealthHistoryDocument.tsx
 "use client";
 
 import React from "react";
 import { Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 
-// DIUBAH: Import PatientInfo juga
 import { ReportHeader, PatientInfo, ReportFooter } from "./ReportLayout";
 import { styles as globalStyles } from "./reportStyles";
 
-/** ===================== Types ===================== */
 type NullableStr = string | null | undefined;
 
 interface HealthHistoryAnswers {
@@ -16,13 +13,13 @@ interface HealthHistoryAnswers {
   keluhanKesehatan?: NullableStr;
   keluhanDetail?: NullableStr;
 
-  riwayatPenyakit?: NullableStr; // "ada" | "tidak" | dll
+  riwayatPenyakit?: NullableStr;
   dirawatDiRS?: NullableStr;
   memilikiRiwayatPenyakit?: NullableStr;
   riwayatPenyakitDetail?: NullableStr;
   pernahDioperasi?: NullableStr;
 
-  riwayatPenyakitKeluarga?: NullableStr; // "ada" | "tidak" | dll
+  riwayatPenyakitKeluarga?: NullableStr;
   riwayatPenyakitKeluargaDetail?: NullableStr;
 
   // Kebiasaan hidup
@@ -40,7 +37,7 @@ interface HealthHistoryAnswers {
 }
 
 export interface HealthHistoryData {
-  patient?: unknown; // longgar agar kompatibel dengan komponen lain
+  patient?: unknown;
   healthHistoryAnswers?: Partial<HealthHistoryAnswers> | null;
 }
 
@@ -48,8 +45,6 @@ type HealthHistoryDocumentProps = {
   data: HealthHistoryData;
 };
 
-/** ===================== Styles ===================== */
-// Style lokal khusus untuk halaman ini
 const localStyles = StyleSheet.create({
   title: {
     fontSize: 12,
@@ -84,7 +79,6 @@ const localStyles = StyleSheet.create({
   },
 });
 
-/** ===================== Helpers ===================== */
 const formatAnswer = (value: NullableStr, detail?: NullableStr): string => {
   if (!value || value.toLowerCase() === "tidak") return ": TIDAK ADA";
   let formatted = value.replace(/_/g, " ").replace("tidakada", "TIDAK ADA");
@@ -119,7 +113,6 @@ const SubQuestionRow: React.FC<{
   </View>
 );
 
-/** ===================== Component ===================== */
 export const HealthHistoryDocument: React.FC<HealthHistoryDocumentProps> = ({
   data,
 }) => {
@@ -130,7 +123,6 @@ export const HealthHistoryDocument: React.FC<HealthHistoryDocumentProps> = ({
     <Page size="A4" style={globalStyles.page}>
       <ReportHeader />
 
-      {/* Identitas pasien */}
       <PatientInfo patient={data?.patient as any} />
 
       <View style={globalStyles.body}>

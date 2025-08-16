@@ -1,4 +1,3 @@
-// components/mcu/forms/KimiaDarahForm.tsx
 "use client";
 
 import { useFormContext } from "react-hook-form";
@@ -25,7 +24,6 @@ export const KimiaDarahForm = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-8">
-        {/* Karbohidrat & Lipid */}
         <div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="space-y-2">
@@ -71,7 +69,6 @@ export const KimiaDarahForm = () => {
           </div>
         </div>
 
-        {/* Fungsi Hati & Ginjal */}
         <div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="space-y-2">
@@ -105,7 +102,6 @@ export const KimiaDarahForm = () => {
           </div>
         </div>
 
-        {/* Hepatitis & Liver Function */}
         <div>
           <h3 className="font-semibold mb-4 border-b pb-2">
             Hepatitis & Liver Function Test

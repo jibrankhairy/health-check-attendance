@@ -44,3 +44,56 @@ export async function GET(
     );
   }
 }
+
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ reportId: string }> }
+) {
+  try {
+    const { reportId } = await params;
+    const body = await req.json();
+
+    if (!reportId) {
+      return NextResponse.json(
+        { message: "Report ID is required" },
+        { status: 400 }
+      );
+    }
+
+    const { patient, id, createdAt, ...updateData } = body;
+
+    if (updateData.saran && Array.isArray(updateData.saran)) {
+      updateData.saran = JSON.stringify(updateData.saran);
+    }
+
+    const updatedMcuResult = await prisma.mcuResult.update({
+      where: { id: reportId },
+      data: {
+        ...updateData,
+        status: "COMPLETED",
+        updatedAt: new Date(),
+      },
+    });
+
+    return NextResponse.json(updatedMcuResult);
+  } catch (error) {
+    console.error("Update MCU Report Error:", error);
+    if (
+      error instanceof Error &&
+      "code" in error &&
+      (error as any).code === "P2009"
+    ) {
+      return NextResponse.json(
+        {
+          message:
+            "Validasi data gagal. Periksa kembali tipe data yang dikirim.",
+        },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json(
+      { message: "Gagal menyimpan hasil laporan MCU." },
+      { status: 500 }
+    );
+  }
+}

@@ -70,7 +70,7 @@ export async function POST(request: Request) {
           ...restOfData,
           dob: new Date(restOfData.dob),
           email: restOfData.email || null,
-          qrCode: "temp",
+          qrCode: "",
         },
       });
 
@@ -80,24 +80,31 @@ export async function POST(request: Request) {
         },
       });
 
+      const qrContent = {
+        mcuResultId: newMcuResult.id,
+        patientId: newPatient.patientId,
+        fullName: newPatient.fullName,
+        mcuPackage: newPatient.mcuPackage,
+      };
+
+      const qrCodeDataUrl = await QRCode.toDataURL(JSON.stringify(qrContent));
+
       const updatedPatient = await tx.patient.update({
         where: { id: newPatient.id },
         data: {
-          qrCode: newMcuResult.id,
+          qrCode: qrCodeDataUrl,
         },
       });
 
-      return { patient: updatedPatient, mcuResult: newMcuResult };
+      return { patient: updatedPatient };
     });
 
-    if (result.patient.email) {
+    if (result.patient.email && result.patient.qrCode) {
       try {
-        const qrCodeDataUrl = await QRCode.toDataURL(result.patient.qrCode);
-        const base64Data = qrCodeDataUrl.replace(
+        const base64Data = result.patient.qrCode.replace(
           /^data:image\/png;base64,/,
           ""
         );
-
         await transporter.sendMail({
           from: process.env.EMAIL_FROM,
           to: result.patient.email,

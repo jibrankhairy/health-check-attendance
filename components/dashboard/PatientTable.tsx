@@ -16,6 +16,7 @@ import {
   Printer,
   Download,
   Camera,
+  IdCard,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -155,89 +156,80 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
     const printWindow = window.open("", "_blank");
     if (printWindow) {
       printWindow.document.write(`
-    <html>
-      <head>
-        <title>Print QR Code</title>
-        <style>
-          /* Ukuran fisik label 40x30 mm */
-          @page { size: 40mm 30mm; margin: 0; }
-
-          html, body {
-            width: 40mm;
-            height: 30mm;
-            margin: 0;
-            padding: 0;
-          }
-
-          body {
-            font-family: Arial, sans-serif;
-            font-size: 6pt;                 /* kecil agar 3 baris muat */
-          }
-
-          .label {
-            box-sizing: border-box;
-            width: 40mm;
-            height: 30mm;
-            padding: 1.5mm 2mm;             /* top/bottom 1.5mm, kiri/kanan 2mm */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            overflow: hidden;               /* cegah tumpah */
-          }
-
-          .qr {
-            width: 18mm;                    /* tinggi konten total aman */
-            height: 18mm;
-            display: block;
-            margin: 0 auto 1mm;             /* jarak ke teks */
-            image-rendering: pixelated;
-            image-rendering: crisp-edges;
-          }
-
-          .info {
-            width: 100%;
-            text-align: center;
-            line-height: 1.1;
-          }
-          .info p {
-            margin: 0 0 0.6mm 0;            /* rapat */
-            font-weight: 600;
-          }
-          .info p:last-child { margin-bottom: 0; }
-          .info span { font-weight: 400; }
-
-          @media print {
-            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="label">
-          <img
-            class="qr"
-            src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(
-              patient.qrCode
-            )}"
-            alt="QR Code"
-          />
-          <div class="info">
-            <p>Nama: <span>${patient.fullName}</span></p>
-            <p>ID: <span>${patient.patientId}</span></p>
-            <p>NIK: <span>${patient.nik}</span></p>
+      <html>
+        <head>
+          <title>Print QR Code</title>
+          <style>
+            @page { size: 40mm 30mm; margin: 0; }
+            html, body {
+              width: 40mm;
+              height: 30mm;
+              margin: 0;
+              padding: 0;
+            }
+            body {
+              font-family: Arial, sans-serif;
+              font-size: 6pt;
+            }
+            .label {
+              box-sizing: border-box;
+              width: 40mm;
+              height: 30mm;
+              padding: 1.5mm 2mm;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: flex-start;
+              overflow: hidden;
+            }
+            .qr {
+              width: 18mm;
+              height: 18mm;
+              display: block;
+              margin: 0 auto 1mm;
+              image-rendering: pixelated;
+              image-rendering: crisp-edges;
+            }
+            .info {
+              width: 100%;
+              text-align: center;
+              line-height: 1.1;
+            }
+            .info p {
+              margin: 0 0 0.6mm 0;
+              font-weight: 600;
+            }
+            .info p:last-child { margin-bottom: 0; }
+            .info span { font-weight: 400; }
+            @media print {
+              body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="label">
+            <img
+              class="qr"
+              src="${patient.qrCode}"
+              alt="QR Code"
+            />
+            <div class="info">
+              <p>Nama: <span>${patient.fullName}</span></p>
+              <p>ID: <span>${patient.patientId}</span></p>
+              <p>NIK: <span>${patient.nik}</span></p>
+            </div>
           </div>
-        </div>
 
-        <script>
-          window.onload = function() {
-            window.focus();
-            window.print();
-            window.close();
-          };
-        </script>
-      </body>
-    </html>
-  `);
+          <script>
+            window.onload = function() {
+              window.focus();
+              window.print();
+              window.close();
+            };
+          </script>
+        </body>
+      </html>
+    `);
       printWindow.document.close();
     }
   };
@@ -251,6 +243,20 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
         <Eye className="mr-2 h-4 w-4" />
         <span>Lihat Progres</span>
       </DropdownMenuItem>
+
+      <DropdownMenuItem
+        onClick={() => {
+          const mcuResultId = patient.mcuResults[0]?.id;
+          if (mcuResultId) {
+            window.open(`/api/mcu/kartu-kontrol/${mcuResultId}`, "_blank");
+          }
+        }}
+        disabled={!patient.mcuResults || patient.mcuResults.length === 0}
+      >
+        <IdCard className="mr-2 h-4 w-4" />
+        <span>Unduh Kartu Kontrol</span>
+      </DropdownMenuItem>
+
       <DropdownMenuItem onClick={() => handleEditClick(patient.id)}>
         <Pencil className="mr-2 h-4 w-4" />
         <span>Edit</span>
@@ -418,13 +424,20 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                       <TableCell>
                         {format(new Date(patient.createdAt), "dd MMM yyyy")}
                       </TableCell>
+
                       <TableCell className="flex justify-center">
-                        <img
-                          src={`https://api.qrserver.com/v1/create-qr-code/?size=40x40&data=${patient.qrCode}`}
-                          alt={`QR Code for ${patient.fullName}`}
-                          className="rounded-sm"
-                        />
+                        {patient.qrCode ? (
+                          <img
+                            src={patient.qrCode}
+                            alt={`QR Code for ${patient.fullName}`}
+                            className="rounded-sm"
+                            style={{ width: "40px", height: "40px" }}
+                          />
+                        ) : (
+                          "N/A"
+                        )}
                       </TableCell>
+
                       <TableCell>
                         <TooltipProvider>
                           <div className="flex items-center justify-center gap-1">
@@ -517,6 +530,37 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                                 <p>Print QR Code</p>
                               </TooltipContent>
                             </Tooltip>
+
+                            {/* Tombol Baru untuk Unduh Kartu Kontrol */}
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="hover:text-green-600"
+                                  disabled={
+                                    !patient.mcuResults ||
+                                    patient.mcuResults.length === 0
+                                  }
+                                  onClick={() => {
+                                    const mcuResultId =
+                                      patient.mcuResults[0]?.id;
+                                    if (mcuResultId) {
+                                      window.open(
+                                        `/api/mcu/kartu-kontrol/${mcuResultId}`,
+                                        "_blank"
+                                      );
+                                    }
+                                  }}
+                                >
+                                  <IdCard className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Unduh Kartu Kontrol</p>
+                              </TooltipContent>
+                            </Tooltip>
+
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button

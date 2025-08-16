@@ -1,15 +1,12 @@
-// components/mcu/report/RontgenDocument.tsx
 "use client";
 
 import React from "react";
 import { Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
 
-// Layout & style global
 import { ReportHeader, PatientInfo, ReportFooter } from "./ReportLayout";
 import type { Patient } from "./ReportLayout";
 import { styles as globalStyles } from "./reportStyles";
 
-/** ===================== Types ===================== */
 type Maybe<T> = T | null | undefined;
 
 type RontgenData = {
@@ -21,7 +18,6 @@ type RontgenData = {
   rontgenValidatorQr?: string | null;
 };
 
-/** ===================== Styles (local) ===================== */
 const localStyles = StyleSheet.create({
   headerText: {
     fontFamily: "Helvetica-Bold",
@@ -59,7 +55,6 @@ const localStyles = StyleSheet.create({
   },
 });
 
-/** ===================== Component ===================== */
 export const RontgenDocument: React.FC<{ data: RontgenData }> = ({ data }) => {
   return (
     <Page size="A4" style={globalStyles.page}>
@@ -85,7 +80,6 @@ export const RontgenDocument: React.FC<{ data: RontgenData }> = ({ data }) => {
           </Text>
         </View>
 
-        {/* Signature ala Hematologi: kanan bawah */}
         {(data?.rontgenValidatorName || data?.rontgenValidatorQr) && (
           <View
             style={{ marginTop: 10, alignItems: "flex-end", paddingRight: 40 }}

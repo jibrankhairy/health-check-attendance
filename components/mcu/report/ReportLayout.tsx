@@ -1,4 +1,3 @@
-// components/mcu/report/ReportLayout.tsx
 "use client";
 
 import React from "react";
@@ -7,7 +6,6 @@ import { format } from "date-fns";
 import { id as localeID } from "date-fns/locale";
 import { styles } from "./reportStyles";
 
-/** ===================== Types ===================== */
 type Maybe<T> = T | null | undefined;
 type MaybeDate = Date | string | number | null | undefined;
 
@@ -23,14 +21,12 @@ export interface Patient {
   company?: Maybe<Company>;
   updatedAt?: MaybeDate;
   patientId?: Maybe<string | number>;
-  // tambahkan field lain jika diperlukan
 }
 
 interface PatientInfoProps {
   patient?: Maybe<Patient>;
 }
 
-/** ===================== Utils ===================== */
 const formatDate = (value: MaybeDate): string => {
   if (!value) return "-";
   const date = value instanceof Date ? value : new Date(value);
@@ -38,7 +34,6 @@ const formatDate = (value: MaybeDate): string => {
   return format(date, "dd MMMM yyyy", { locale: localeID });
 };
 
-/** ===================== HEADER ===================== */
 export const ReportHeader: React.FC = () => (
   <View style={styles.headerContainer} fixed>
     <View style={styles.headerLeft}>
@@ -55,7 +50,6 @@ export const ReportHeader: React.FC = () => (
   </View>
 );
 
-/** ===================== PATIENT INFO ===================== */
 export const PatientInfo: React.FC<PatientInfoProps> = ({ patient }) => (
   <View style={styles.patientInfoContainer}>
     <View style={styles.patientInfoColumn}>
@@ -92,19 +86,15 @@ export const PatientInfo: React.FC<PatientInfoProps> = ({ patient }) => (
   </View>
 );
 
-/** ===================== FOOTER ===================== */
 export const ReportFooter: React.FC = () => (
   <View style={styles.footerContainer} fixed>
-    {/* GARIS BIRU DEKORATIF */}
     <View style={styles.footerBlueBar} />
 
-    {/* Info perusahaan sekarang di tengah */}
     <View style={styles.companySection}>
       <Text style={styles.companyName}>PT. SUDAMI JAYA MEDIKA</Text>
       <Text style={styles.companyAddress}>
         Jl. Raya Setu Km. 3 Cibuntu Cibitung Kab. Bekasi
       </Text>
-      {/* TAMBAHAN WEB & TELP */}
       <Text style={styles.companyContact}>
         www.sudamijayamedika.com | Telp: (021) 1234 5678
       </Text>

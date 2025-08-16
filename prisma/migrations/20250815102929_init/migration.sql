@@ -284,6 +284,8 @@ CREATE TABLE `McuResult` (
     `rontgenValidatorQr` TEXT NULL,
     `conclusionValidatorName` VARCHAR(191) NULL,
     `conclusionValidatorQr` TEXT NULL,
+    `dassFasValidatorName` VARCHAR(191) NULL,
+    `dassFasValidatorQr` TEXT NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

@@ -1,4 +1,3 @@
-// components/mcu/report/PemeriksaanFisikDocument.tsx
 "use client";
 
 import React from "react";
@@ -6,16 +5,13 @@ import { Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import { ReportHeader, PatientInfo, ReportFooter } from "./ReportLayout";
 import { styles as globalStyles } from "./reportStyles";
 
-/** ===================== Types ===================== */
 type Nullable<T> = T | null | undefined;
 
 interface Patient {
-  // Tambahkan field lain bila diperlukan oleh <PatientInfo />
   [k: string]: unknown;
 }
 
 interface PemeriksaanFisikForm {
-  // A. Pemeriksaan Umum
   kondisiKesehatan?: Nullable<string>;
   kesadaran?: Nullable<string>;
   beratBadanKg?: Nullable<number | string>;
@@ -30,7 +26,6 @@ interface PemeriksaanFisikForm {
   hipoHiperpigmentasi?: Nullable<string>;
   rash?: Nullable<string>;
 
-  // B. Kepala & Leher
   deviasiSeptum?: Nullable<string>;
   pembesaranKonka?: Nullable<string>;
   tonsilUkuran?: Nullable<string>;
@@ -43,7 +38,6 @@ interface PemeriksaanFisikForm {
   tiroid?: Nullable<string>;
   kelenjarLymp?: Nullable<string>;
 
-  // C. Mata
   butaWarna?: Nullable<string>;
   anemiaOD?: Nullable<string>;
   anemiaOS?: Nullable<string>;
@@ -62,7 +56,6 @@ interface PemeriksaanFisikForm {
   ketajaman?: Nullable<string>;
   pupilDistance?: Nullable<string | number>;
 
-  // D. THT
   kemampuanPendengaranAD?: Nullable<string>;
   kemampuanPendengaranAS?: Nullable<string>;
   telingaLuarAD?: Nullable<string>;
@@ -74,31 +67,26 @@ interface PemeriksaanFisikForm {
   gendangAD?: Nullable<string>;
   gendangAS?: Nullable<string>;
 
-  // E. Kardiovaskular
   ictusInspeksi?: Nullable<string>;
   ictusPalpasi?: Nullable<string>;
   batasJantung?: Nullable<string>;
   bisingJantung?: Nullable<string>;
 
-  // F. Pernafasan
   paruInspeksi?: Nullable<string>;
   paruPalpasi?: Nullable<string>;
   paruPerkusi?: Nullable<string>;
   paruAuskultasi?: Nullable<string>;
 
-  // G. Pencernaan
   cernaInspeksi?: Nullable<string>;
   hepar?: Nullable<string>;
   lien?: Nullable<string>;
   peristaltik?: Nullable<string>;
 
-  // H. Ekstremitas
   deformitas?: Nullable<string>;
   oedema?: Nullable<string>;
   refleksFisiologis?: Nullable<string>;
   refleksPatologis?: Nullable<string>;
 
-  // I & J
   tulangBelakang?: Nullable<string>;
   psikis?: Nullable<string>;
   sikap?: Nullable<string>;
@@ -112,7 +100,6 @@ type PemeriksaanFisikDocumentProps = {
   };
 };
 
-/** ===================== Styles Khusus Halaman Ini ===================== */
 const localStyles = StyleSheet.create({
   title: {
     fontSize: 12,
@@ -122,7 +109,7 @@ const localStyles = StyleSheet.create({
     textAlign: "center",
   },
   section: {
-    marginBottom: 12, // Menambah spasi antar seksi
+    marginBottom: 12,
   },
   sectionTitle: {
     fontSize: 10,
@@ -133,12 +120,12 @@ const localStyles = StyleSheet.create({
   },
   row: {
     flexDirection: "row",
-    marginBottom: 5, // Menambah sedikit spasi
+    marginBottom: 5,
     fontSize: 9,
     lineHeight: 1.4,
     borderBottomWidth: 0.5,
     borderBottomColor: "#eaeaea",
-    paddingBottom: 5, // Menambah sedikit spasi
+    paddingBottom: 5,
   },
   label: {
     width: "35%",
@@ -155,8 +142,8 @@ const localStyles = StyleSheet.create({
   gridItem: {
     width: "50%",
     flexDirection: "row",
-    marginBottom: 6, // Spasi antar item di grid
-    paddingRight: 10, // Spasi horizontal
+    marginBottom: 6,
+    paddingRight: 10,
   },
   gridLabel: {
     width: "50%",
@@ -167,11 +154,9 @@ const localStyles = StyleSheet.create({
   },
 });
 
-/** ===================== Helpers ===================== */
 const display = (v: unknown): string =>
   v !== null && v !== undefined && v !== "" ? String(v) : "-";
 
-// Helper untuk menampilkan baris data
 const DataRow: React.FC<{ label: string; value: unknown; unit?: string }> = ({
   label,
   value,
@@ -188,7 +173,6 @@ const DataRow: React.FC<{ label: string; value: unknown; unit?: string }> = ({
   );
 };
 
-// Helper untuk menampilkan data dalam format grid (2 kolom)
 const DataGrid: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <View style={localStyles.grid}>{children}</View>
 );
@@ -206,7 +190,6 @@ const GridItem: React.FC<{ label: string; value: unknown }> = ({
   );
 };
 
-/** ===================== Component ===================== */
 export const PemeriksaanFisikDocument: React.FC<
   PemeriksaanFisikDocumentProps
 > = ({ data }) => {
@@ -221,7 +204,6 @@ export const PemeriksaanFisikDocument: React.FC<
       <View style={globalStyles.body}>
         <Text style={localStyles.title}>HASIL PEMERIKSAAN FISIK</Text>
 
-        {/* A. Pemeriksaan Umum */}
         <View style={localStyles.section}>
           <Text style={localStyles.sectionTitle}>A. PEMERIKSAAN UMUM</Text>
           <DataRow label="Kondisi Kesehatan" value={pf.kondisiKesehatan} />
@@ -263,7 +245,6 @@ export const PemeriksaanFisikDocument: React.FC<
           <DataRow label="Kulit (Rash)" value={pf.rash} />
         </View>
 
-        {/* B. Kepala & Leher */}
         <View style={localStyles.section}>
           <Text style={localStyles.sectionTitle}>B. KEPALA DAN LEHER</Text>
           <DataRow label="Hidung (Deviasi Septum)" value={pf.deviasiSeptum} />
@@ -284,7 +265,6 @@ export const PemeriksaanFisikDocument: React.FC<
           <DataRow label="Leher (Kelenjar Lymph)" value={pf.kelenjarLymp} />
         </View>
 
-        {/* C. Penglihatan (Mata) */}
         <View style={localStyles.section}>
           <Text style={localStyles.sectionTitle}>
             C. SISTEM PENGLIHATAN (MATA)
@@ -322,7 +302,6 @@ export const PemeriksaanFisikDocument: React.FC<
           </DataGrid>
         </View>
 
-        {/* D. Pendengaran (THT) */}
         <View style={localStyles.section}>
           <Text style={localStyles.sectionTitle}>
             D. SISTEM PENDENGARAN (THT)
@@ -357,7 +336,6 @@ export const PemeriksaanFisikDocument: React.FC<
           </DataGrid>
         </View>
 
-        {/* E. KARDIOVASKULAR */}
         <View style={localStyles.section}>
           <Text style={localStyles.sectionTitle}>E. SISTEM KARDIOVASKULAR</Text>
           <DataGrid>
@@ -371,7 +349,6 @@ export const PemeriksaanFisikDocument: React.FC<
           </DataGrid>
         </View>
 
-        {/* F. PERNAFASAN */}
         <View style={localStyles.section}>
           <Text style={localStyles.sectionTitle}>F. SISTEM PERNAFASAN</Text>
           <DataGrid>
@@ -382,7 +359,6 @@ export const PemeriksaanFisikDocument: React.FC<
           </DataGrid>
         </View>
 
-        {/* G. PENCERNAAN */}
         <View style={localStyles.section}>
           <Text style={localStyles.sectionTitle}>G. SISTEM PENCERNAAN</Text>
           <DataGrid>
@@ -393,7 +369,6 @@ export const PemeriksaanFisikDocument: React.FC<
           </DataGrid>
         </View>
 
-        {/* H. EKSTREMITAS */}
         <View style={localStyles.section}>
           <Text style={localStyles.sectionTitle}>H. EKSTREMITAS</Text>
           <DataGrid>
@@ -404,7 +379,6 @@ export const PemeriksaanFisikDocument: React.FC<
           </DataGrid>
         </View>
 
-        {/* I & J */}
         <View style={localStyles.section}>
           <DataGrid>
             <GridItem label="Tulang Belakang" value={pf.tulangBelakang} />
