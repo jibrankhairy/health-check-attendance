@@ -66,13 +66,19 @@ export async function PUT(
       updateData.saran = JSON.stringify(updateData.saran);
     }
 
+    const dataToUpdate: any = {
+      ...updateData,
+      status: "COMPLETED",
+      updatedAt: new Date(),
+    };
+
+    if (dataToUpdate.status === "COMPLETED" && !dataToUpdate.fileUrl) {
+      dataToUpdate.fileUrl = `/dashboard/reports/view/${reportId}`;
+    }
+
     const updatedMcuResult = await prisma.mcuResult.update({
       where: { id: reportId },
-      data: {
-        ...updateData,
-        status: "COMPLETED",
-        updatedAt: new Date(),
-      },
+      data: dataToUpdate,
     });
 
     return NextResponse.json(updatedMcuResult);

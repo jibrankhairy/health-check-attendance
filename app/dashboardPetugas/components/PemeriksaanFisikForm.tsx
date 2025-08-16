@@ -25,22 +25,20 @@ import {
 } from "@/components/ui/dialog";
 
 export type PemeriksaanFisikFormValues = {
-  // A. UMUM
   kondisiKesehatan: "BAIK" | "SEDANG" | "BURUK";
   kesadaran: string;
-  beratBadanKg: number;
-  tinggiBadanCm: number;
+  beratBadanKg: number | "";
+  tinggiBadanCm: number | "";
   bmi: number;
-  lingkarPerutCm: number;
-  suhuC: number;
-  tensiSistol: number;
-  tensiDiastol: number;
-  nadiPerMenit: number;
-  pernapasanPerMenit: number;
+  lingkarPerutCm: number | "";
+  suhuC: number | "";
+  tensiSistol: number | "";
+  tensiDiastol: number | "";
+  nadiPerMenit: number | "";
+  pernapasanPerMenit: number | "";
   hipoHiperpigmentasi: "POSITIF" | "NEGATIF";
   rash: "POSITIF" | "NEGATIF";
 
-  // B. KEPALA & LEHER
   deviasiSeptum: "YA" | "TIDAK";
   pembesaranKonka: "YA" | "TIDAK";
   tonsilUkuran: string;
@@ -53,7 +51,6 @@ export type PemeriksaanFisikFormValues = {
   tiroid: "POSITIF" | "NEGATIF";
   kelenjarLymp: "POSITIF" | "NEGATIF";
 
-  // C. PENGlihatan (Mata)
   butaWarna: "NORMAL" | "ABNORMAL";
   anemiaOD: "YA" | "TIDAK";
   anemiaOS: "YA" | "TIDAK";
@@ -72,7 +69,6 @@ export type PemeriksaanFisikFormValues = {
   lapangPandang: "NORMAL" | "ABNORMAL";
   ketajaman: "NORMAL" | "ABNORMAL";
 
-  // D. PENDENGARAN (THT)
   kemampuanPendengaranAD: "BAIK" | "SEDANG" | "BURUK";
   kemampuanPendengaranAS: "BAIK" | "SEDANG" | "BURUK";
   telingaLuarAD: "NORMAL" | "ABNORMAL";
@@ -81,39 +77,33 @@ export type PemeriksaanFisikFormValues = {
   nyeriTekanAS: "YA" | "TIDAK";
   serumenAD: "POSITIF" | "NEGATIF";
   serumenAS: "POSITIF" | "NEGATIF";
-  gendangAD: string; // INTAK / PERFORASI
+  gendangAD: string;
   gendangAS: string;
 
-  // E. KARDIOVASKULAR
-  ictusInspeksi: string; // TIDAK TAMPAK
-  ictusPalpasi: string; // TERABA
+  ictusInspeksi: string;
+  ictusPalpasi: string;
   batasJantung: "NORMAL" | "ABNORMAL";
   bisingJantung: "ADA" | "TIDAK";
 
-  // F. SISTEM PERNAFASAN
-  paruInspeksi: string; // SIMETRIS
+  paruInspeksi: string;
   paruPalpasi: "NORMAL" | "ABNORMAL";
-  paruPerkusi: string; // SONOR
-  paruAuskultasi: string; // VESIKULER
+  paruPerkusi: string;
+  paruAuskultasi: string;
 
-  // G. SISTEM PENCERNAAN
-  cernaInspeksi: string; // SIMETRIS
-  hepar: string; // TIDAK TERABA
-  lien: string; // TIDAK TERABA
+  cernaInspeksi: string;
+  hepar: string;
+  lien: string;
   cernaPerkusi: "NORMAL" | "ABNORMAL";
   peristaltik: "NORMAL" | "ABNORMAL";
 
-  // H. EKSTREMITAS
   deformitas: string;
   oedema: string;
   functioLaesa: string;
   refleksFisiologis: "ADA" | "TIDAK";
   refleksPatologis: "ADA" | "TIDAK";
 
-  // I. TULANG BELAKANG
   tulangBelakang: "NORMAL" | "ABNORMAL";
 
-  // J. SARAF & FUNGSI LUHUR
   psikis: "NORMAL" | "ABNORMAL";
   sikap: "NORMAL" | "ABNORMAL";
   dayaIngat: "BAIK" | "SEDANG" | "BURUK";
@@ -135,100 +125,93 @@ export default function PemeriksaanFisikFormModal({
   submitting,
   onBack,
 }: Props) {
+  const DEFAULTS: PemeriksaanFisikFormValues = {
+    kondisiKesehatan: "BAIK",
+    kesadaran: "",
+    beratBadanKg: "",
+    tinggiBadanCm: "",
+    bmi: 0,
+    lingkarPerutCm: "",
+    suhuC: "",
+    tensiSistol: "",
+    tensiDiastol: "",
+    nadiPerMenit: "",
+    pernapasanPerMenit: "",
+    hipoHiperpigmentasi: "NEGATIF",
+    rash: "NEGATIF",
+    deviasiSeptum: "TIDAK",
+    pembesaranKonka: "TIDAK",
+    tonsilUkuran: "",
+    pharingHipermis: "TIDAK",
+    lidah: "NORMAL",
+    gigiKaries: "TIDAK",
+    gigiHilang: "TIDAK",
+    gigiPalsu: "TIDAK",
+    leherKondisi: "NORMAL",
+    tiroid: "NEGATIF",
+    kelenjarLymp: "NEGATIF",
+    butaWarna: "NORMAL",
+    anemiaOD: "TIDAK",
+    anemiaOS: "TIDAK",
+    ikterikOD: "TIDAK",
+    ikterikOS: "TIDAK",
+    pupilOD: "",
+    pupilOS: "",
+    refleksOD: "NORMAL",
+    refleksOS: "NORMAL",
+    pupilDistance: "-",
+    kacamata: "TIDAK",
+    ukuranOD: "-",
+    ukuranOS: "-",
+    visusOD: "",
+    visusOS: "",
+    lapangPandang: "NORMAL",
+    ketajaman: "NORMAL",
+    kemampuanPendengaranAD: "BAIK",
+    kemampuanPendengaranAS: "BAIK",
+    telingaLuarAD: "NORMAL",
+    telingaLuarAS: "NORMAL",
+    nyeriTekanAD: "TIDAK",
+    nyeriTekanAS: "TIDAK",
+    serumenAD: "NEGATIF",
+    serumenAS: "NEGATIF",
+    gendangAD: "",
+    gendangAS: "",
+    ictusInspeksi: "",
+    ictusPalpasi: "",
+    batasJantung: "NORMAL",
+    bisingJantung: "TIDAK",
+    paruInspeksi: "",
+    paruPalpasi: "NORMAL",
+    paruPerkusi: "",
+    paruAuskultasi: "",
+    cernaInspeksi: "",
+    hepar: "",
+    lien: "",
+    cernaPerkusi: "NORMAL",
+    peristaltik: "NORMAL",
+    deformitas: "-",
+    oedema: "-",
+    functioLaesa: "-",
+    refleksFisiologis: "TIDAK",
+    refleksPatologis: "TIDAK",
+    tulangBelakang: "NORMAL",
+    psikis: "NORMAL",
+    sikap: "NORMAL",
+    dayaIngat: "BAIK",
+    orientasi: "BAIK",
+  };
+
   const form = useForm<PemeriksaanFisikFormValues>({
-    defaultValues: {
-      // A. Umum
-      kondisiKesehatan: "BAIK",
-      kesadaran: "",
-      beratBadanKg: 0,
-      tinggiBadanCm: 0,
-      bmi: 0,
-      lingkarPerutCm: 0,
-      suhuC: 0,
-      tensiSistol: 0,
-      tensiDiastol: 0,
-      nadiPerMenit: 0,
-      pernapasanPerMenit: 0,
-      hipoHiperpigmentasi: "NEGATIF",
-      rash: "NEGATIF",
-
-      // B
-      deviasiSeptum: "TIDAK",
-      pembesaranKonka: "TIDAK",
-      tonsilUkuran: "",
-      pharingHipermis: "TIDAK",
-      lidah: "NORMAL",
-      gigiKaries: "TIDAK",
-      gigiHilang: "TIDAK",
-      gigiPalsu: "TIDAK",
-      leherKondisi: "NORMAL",
-      tiroid: "NEGATIF",
-      kelenjarLymp: "NEGATIF",
-
-      // C
-      butaWarna: "NORMAL",
-      pupilOD: "",
-      pupilOS: "",
-      refleksOD: "NORMAL",
-      refleksOS: "NORMAL",
-      pupilDistance: "-",
-      kacamata: "TIDAK",
-      ukuranOD: "-",
-      ukuranOS: "-",
-      visusOD: "",
-      visusOS: "",
-      lapangPandang: "NORMAL",
-      ketajaman: "NORMAL",
-
-      // D
-      kemampuanPendengaranAD: "BAIK",
-      kemampuanPendengaranAS: "BAIK",
-      telingaLuarAD: "NORMAL",
-      telingaLuarAS: "NORMAL",
-      nyeriTekanAD: "TIDAK",
-      nyeriTekanAS: "TIDAK",
-      serumenAD: "NEGATIF",
-      serumenAS: "NEGATIF",
-      gendangAD: "",
-      gendangAS: "",
-
-      // E
-      ictusInspeksi: "",
-      ictusPalpasi: "",
-      batasJantung: "NORMAL",
-      bisingJantung: "TIDAK",
-
-      // F
-      paruInspeksi: "",
-      paruPalpasi: "NORMAL",
-      paruPerkusi: "",
-      paruAuskultasi: "",
-
-      // G
-      cernaInspeksi: "",
-      hepar: "",
-      lien: "",
-      cernaPerkusi: "NORMAL",
-      peristaltik: "NORMAL",
-
-      // H
-      deformitas: "-",
-      oedema: "-",
-      functioLaesa: "-",
-      refleksFisiologis: "TIDAK",
-      refleksPatologis: "TIDAK",
-
-      // I
-      tulangBelakang: "NORMAL",
-
-      // J
-      psikis: "NORMAL",
-      sikap: "NORMAL",
-      dayaIngat: "BAIK",
-      orientasi: "BAIK",
-    },
+    defaultValues: DEFAULTS,
     mode: "onSubmit",
   });
+
+  useEffect(() => {
+    if (isOpen) {
+      form.reset(DEFAULTS);
+    }
+  }, [isOpen, form]);
 
   const bb = form.watch("beratBadanKg");
   const tb = form.watch("tinggiBadanCm");
@@ -277,34 +260,6 @@ export default function PemeriksaanFisikFormModal({
               name={field.name}
               ref={field.ref}
               {...inputProps}
-            />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-  );
-
-  const RowText = (
-    name: keyof PemeriksaanFisikFormValues,
-    label: string,
-    placeholder?: string
-  ) => (
-    <FormField
-      control={form.control}
-      name={name as any}
-      rules={{ required: "Wajib diisi" }}
-      render={({ field }) => (
-        <FormItem className="rounded-lg border p-4 shadow-sm">
-          <FormLabel className="text-sm font-normal">{label}</FormLabel>
-          <FormControl>
-            <Textarea
-              placeholder={placeholder}
-              value={field.value ?? ""}
-              onChange={field.onChange}
-              onBlur={field.onBlur}
-              name={field.name}
-              ref={field.ref}
             />
           </FormControl>
           <FormMessage />
@@ -385,8 +340,8 @@ export default function PemeriksaanFisikFormModal({
             xl:max-w-6xl
             max-h-[90vh]
             p-0
-            flex flex-col           /* ← parent flex kolom */
-            overflow-hidden         /* ← biar scroll hanya di content */
+            flex flex-col   
+            overflow-hidden    
         "
         aria-describedby={undefined}
       >
@@ -402,8 +357,8 @@ export default function PemeriksaanFisikFormModal({
         <div
           className="
             px-6 pb-6
-            flex-1 min-h-0          /* ← sisakan ruang untuk scroll */
-            overflow-y-auto         /* ← scroll di sini */
+            flex-1 min-h-0 
+            overflow-y-auto 
             "
         >
           <Form {...form}>
@@ -426,11 +381,16 @@ export default function PemeriksaanFisikFormModal({
                 <div className="rounded-lg border p-4 shadow-sm space-y-4">
                   <div className="text-sm font-semibold">Ukuran Badan</div>
                   <div className="grid sm:grid-cols-2 gap-4">
-                    {RowInput("beratBadanKg", "Berat Badan (Kg)", "", "number")}
+                    {RowInput(
+                      "beratBadanKg",
+                      "Berat Badan (Kg)",
+                      "Masukkan berat badan",
+                      "number"
+                    )}
                     {RowInput(
                       "tinggiBadanCm",
                       "Tinggi Badan (cm)",
-                      "",
+                      "Masukkan tinggi badan",
                       "number"
                     )}
                     {RowInput("bmi", "Body Mass Index (kg/m²)", "", "number", {
@@ -442,14 +402,19 @@ export default function PemeriksaanFisikFormModal({
                     {RowInput(
                       "lingkarPerutCm",
                       "Lingkar Perut (cm)",
-                      "",
+                      "Masukkan lingkar perut",
                       "number"
                     )}
                   </div>
                 </div>
 
                 <div className="grid sm:grid-cols-2 gap-4">
-                  {RowInput("suhuC", "Suhu Badan (°C)", "", "number")}
+                  {RowInput(
+                    "suhuC",
+                    "Suhu Badan (°C)",
+                    "Masukkan suhu badan",
+                    "number"
+                  )}
 
                   <div className="rounded-lg border p-4 shadow-sm">
                     <div className="text-sm font-normal mb-3">
@@ -466,7 +431,8 @@ export default function PemeriksaanFisikFormModal({
                             <FormControl>
                               <Input
                                 type="number"
-                                value={field.value ?? 0}
+                                placeholder="cth.. 120"
+                                value={field.value === 0 ? "" : field.value}
                                 onChange={(e) =>
                                   field.onChange(
                                     e.target.value === ""
@@ -483,6 +449,7 @@ export default function PemeriksaanFisikFormModal({
                           </FormItem>
                         )}
                       />
+
                       <FormField
                         control={form.control}
                         name={"tensiDiastol"}
@@ -493,7 +460,8 @@ export default function PemeriksaanFisikFormModal({
                             <FormControl>
                               <Input
                                 type="number"
-                                value={field.value ?? 0}
+                                placeholder="cth.. 80"
+                                value={field.value === 0 ? "" : field.value}
                                 onChange={(e) =>
                                   field.onChange(
                                     e.target.value === ""
@@ -515,11 +483,11 @@ export default function PemeriksaanFisikFormModal({
                 </div>
 
                 <div className="grid sm:grid-cols-3 gap-4">
-                  {RowInput("nadiPerMenit", "Nadi / Menit", "", "number")}
+                  {RowInput("nadiPerMenit", "Nadi / Menit", "0", "number")}
                   {RowInput(
                     "pernapasanPerMenit",
                     "Pernapasan / Menit",
-                    "",
+                    "0",
                     "number"
                   )}
                 </div>
@@ -540,7 +508,6 @@ export default function PemeriksaanFisikFormModal({
                 </div>
               </section>
 
-              {/* B. Kepala & Leher */}
               <section className="space-y-4">
                 <h3 className="text-base font-semibold">B. Kepala dan Leher</h3>
                 <div className="rounded-lg border p-4 shadow-sm space-y-4">
@@ -587,7 +554,6 @@ export default function PemeriksaanFisikFormModal({
                 </div>
               </section>
 
-              {/* C. Sistem Penglihatan */}
               <section className="space-y-4">
                 <h3 className="text-base font-semibold">
                   C. Sistem Penglihatan
@@ -649,7 +615,6 @@ export default function PemeriksaanFisikFormModal({
                 </div>
               </section>
 
-              {/* D. Sistem Pendengaran */}
               <section className="space-y-4">
                 <h3 className="text-base font-semibold">
                   D. Sistem Pendengaran
@@ -716,7 +681,6 @@ export default function PemeriksaanFisikFormModal({
                 </div>
               </section>
 
-              {/* E. Sistem Kardiovaskular */}
               <section className="space-y-4">
                 <h3 className="text-base font-semibold">
                   E. Sistem Kardiovaskular
@@ -741,7 +705,6 @@ export default function PemeriksaanFisikFormModal({
                 ])}
               </section>
 
-              {/* F. Sistem Pernafasan */}
               <section className="space-y-4">
                 <h3 className="text-base font-semibold">
                   F. Sistem Pernafasan
@@ -752,7 +715,6 @@ export default function PemeriksaanFisikFormModal({
                 {RowInput("paruAuskultasi", "Auskultasi", "cth.. VESIKULER")}
               </section>
 
-              {/* G. Sistem Pencernaan */}
               <section className="space-y-4">
                 <h3 className="text-base font-semibold">
                   G. Sistem Pencernaan
@@ -770,7 +732,6 @@ export default function PemeriksaanFisikFormModal({
                 ])}
               </section>
 
-              {/* H. Ekstremitas */}
               <section className="space-y-4">
                 <h3 className="text-base font-semibold">
                   H. Ekstremitas / Anggota Gerak
@@ -793,13 +754,11 @@ export default function PemeriksaanFisikFormModal({
                 </div>
               </section>
 
-              {/* I. Tulang Belakang */}
               <section className="space-y-4">
                 <h3 className="text-base font-semibold">I. Tulang Belakang</h3>
                 {RowRadio("tulangBelakang", "Bentuk", ["NORMAL", "ABNORMAL"])}
               </section>
 
-              {/* J. Saraf & Fungsi Luhur */}
               <section className="space-y-4">
                 <h3 className="text-base font-semibold">
                   J. Saraf dan Fungsi Luhur
