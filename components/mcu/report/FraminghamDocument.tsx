@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Page, Text, View, Image } from "@react-pdf/renderer";
+import { Page, Text, View, Image, StyleSheet } from "@react-pdf/renderer";
 import { ReportHeader, PatientInfo, ReportFooter } from "./ReportLayout";
 import { styles } from "./reportStyles";
 
@@ -31,7 +31,7 @@ const framinghamInputMap = [
     field: "framinghamIsOnHypertensionTreatment",
     unit: "",
   },
-];
+] as const;
 
 const framinghamResultMap = [
   {
@@ -45,7 +45,14 @@ const framinghamResultMap = [
     field: "framinghamVascularAge",
     unit: "tahun",
   },
-];
+] as const;
+
+const localStyles = StyleSheet.create({
+  subTitle: {
+    fontSize: 10,
+    fontFamily: "Helvetica-Bold",
+  },
+});
 
 const displayValue = (v: unknown): string =>
   v === null || v === undefined || String(v) === "" ? "-" : String(v);
@@ -75,7 +82,9 @@ export const FraminghamDocument: React.FC<{ data: FraminghamData }> = ({
               key={index}
               style={[
                 styles.tableRow,
-                index === framinghamInputMap.length - 1 && styles.tableRowLast,
+                ...(index === framinghamInputMap.length - 1
+                  ? [styles.tableRowLast]
+                  : []),
               ]}
             >
               <Text style={[styles.tableCol, { flex: 3 }]}>{item.label}</Text>
@@ -91,7 +100,9 @@ export const FraminghamDocument: React.FC<{ data: FraminghamData }> = ({
 
         <View style={{ height: 20 }} />
 
-        <Text style={[styles.subTitle, { textAlign: "left", marginBottom: 8 }]}>
+        <Text
+          style={[localStyles.subTitle, { textAlign: "left", marginBottom: 8 }]}
+        >
           HASIL
         </Text>
         <View style={styles.table}>
@@ -109,7 +120,9 @@ export const FraminghamDocument: React.FC<{ data: FraminghamData }> = ({
               key={index}
               style={[
                 styles.tableRow,
-                index === framinghamResultMap.length - 1 && styles.tableRowLast,
+                ...(index === framinghamResultMap.length - 1
+                  ? [styles.tableRowLast]
+                  : []),
               ]}
             >
               <Text style={[styles.tableCol, { flex: 3 }]}>{item.label}</Text>

@@ -50,7 +50,7 @@ CREATE TABLE `Patient` (
     `location` VARCHAR(191) NOT NULL,
     `address` TEXT NULL,
     `phoneNumber` VARCHAR(191) NULL,
-    `qrCode` VARCHAR(191) NOT NULL,
+    `qrCode` TEXT NOT NULL,
     `mcuPackage` JSON NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
@@ -60,7 +60,6 @@ CREATE TABLE `Patient` (
 
     UNIQUE INDEX `Patient_nik_key`(`nik`),
     UNIQUE INDEX `Patient_patientId_key`(`patientId`),
-    UNIQUE INDEX `Patient_qrCode_key`(`qrCode`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -103,6 +102,7 @@ CREATE TABLE `McuResult` (
     `fasTestAnswers` JSON NULL,
     `formSubmittedAt` DATETIME(3) NULL,
     `pemeriksaanFisikForm` JSON NULL,
+    `timeCheckIn` VARCHAR(191) NULL,
     `beratBadan` DOUBLE NULL,
     `tinggiBadan` DOUBLE NULL,
     `bmi` TEXT NULL,
@@ -130,6 +130,7 @@ CREATE TABLE `McuResult` (
     `fisikPernafasan` TEXT NULL,
     `fisikPencernaan` TEXT NULL,
     `fisikEkstremitas` TEXT NULL,
+    `examinationStartedAt` DATETIME(3) NULL,
     `hemoglobin` TEXT NULL,
     `leukosit` TEXT NULL,
     `trombosit` TEXT NULL,
@@ -239,6 +240,16 @@ CREATE TABLE `McuResult` (
     `spirometriFev1` TEXT NULL,
     `spirometriFev1Fvc` TEXT NULL,
     `kesimpulanSpirometri` TEXT NULL,
+    `framinghamGender` VARCHAR(191) NULL,
+    `framinghamAge` VARCHAR(191) NULL,
+    `framinghamTotalCholesterol` VARCHAR(191) NULL,
+    `framinghamHdlCholesterol` VARCHAR(191) NULL,
+    `framinghamSystolicBp` VARCHAR(191) NULL,
+    `framinghamIsOnHypertensionTreatment` VARCHAR(191) NULL,
+    `framinghamIsSmoker` VARCHAR(191) NULL,
+    `framinghamRiskPercentage` VARCHAR(191) NULL,
+    `framinghamRiskCategory` VARCHAR(191) NULL,
+    `framinghamVascularAge` VARCHAR(191) NULL,
     `usgAbdomenImage1` TEXT NULL,
     `usgAbdomenImage2` TEXT NULL,
     `usgAbdomenImage3` TEXT NULL,
@@ -260,7 +271,6 @@ CREATE TABLE `McuResult` (
     `usgMammaeImage6` TEXT NULL,
     `usgMammaeLaporan` TEXT NULL,
     `usgMammaeKesimpulan` TEXT NULL,
-    `framinghamScore` TEXT NULL,
     `kesimpulanTesPsikologi` TEXT NULL,
     `kesimpulan` TEXT NULL,
     `saran` TEXT NULL,
@@ -286,6 +296,8 @@ CREATE TABLE `McuResult` (
     `conclusionValidatorQr` TEXT NULL,
     `dassFasValidatorName` VARCHAR(191) NULL,
     `dassFasValidatorQr` TEXT NULL,
+    `framinghamValidatorName` VARCHAR(191) NULL,
+    `framinghamValidatorQr` TEXT NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

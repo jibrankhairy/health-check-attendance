@@ -34,8 +34,9 @@ export async function POST(request: Request) {
       }),
     ]);
 
-    if (!foundMcuResult) {
-      throw new Error("MCU Result ID tidak ditemukan.");
+    if (!mcuResult || !checkpoint) {
+      const notFoundResource = !mcuResult ? "MCU Result ID" : "Checkpoint Slug";
+      throw new Error(`${notFoundResource} tidak ditemukan.`);
     }
 
     const transactionPromises = [];
