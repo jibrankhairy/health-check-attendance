@@ -118,6 +118,7 @@ model McuResult {
   fasTestAnswers        Json?
   formSubmittedAt       DateTime?
   pemeriksaanFisikForm  Json?
+  timeCheckIn           String?
 
   // --- Pemeriksaan Fisik ---
   beratBadan           Float?

@@ -6,7 +6,13 @@ const prisma = new PrismaClient();
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { mcuResultId, checkpointSlug, petugasName, notes } = body;
+    const {
+      mcuResultId,
+      checkpointSlug,
+      petugasName,
+      notes,
+      pemeriksaanFisikForm,
+    } = body;
 
     if (!mcuResultId || !checkpointSlug || !petugasName) {
       return NextResponse.json(
@@ -15,68 +21,89 @@ export async function POST(request: Request) {
       );
     }
 
-    const [mcuResult, checkpoint] = await Promise.all([
-      prisma.mcuResult.findUnique({
-        where: { id: mcuResultId },
-        select: { patientId: true },
-      }),
-      prisma.checkpoint.findUnique({
-        where: { slug: checkpointSlug },
-      }),
-    ]);
+    const [mcuResult, checkpoint, progressLog] = await prisma.$transaction(
+      async (tx) => {
+        const foundMcuResult = await tx.mcuResult.findUnique({
+          where: { id: mcuResultId },
+          select: { patientId: true },
+        });
 
-    if (!mcuResult) {
-      return NextResponse.json(
-        { message: "MCU Result ID tidak ditemukan." },
-        { status: 404 }
-      );
-    }
-    if (!checkpoint) {
-      return NextResponse.json(
-        { message: "Checkpoint tidak valid." },
-        { status: 400 }
-      );
-    }
+        if (!foundMcuResult) {
+          throw new Error("MCU Result ID tidak ditemukan.");
+        }
 
-    const progressLog = await prisma.mcuProgress.upsert({
-      where: {
-        mcuResultId_checkpointId: {
-          mcuResultId: mcuResultId,
-          checkpointId: checkpoint.id,
-        },
-      },
-      update: {
-        status: "COMPLETED",
-        petugasName: petugasName,
-        completedAt: new Date(),
-        notes: notes,
-      },
-      create: {
-        mcuResultId: mcuResultId,
-        checkpointId: checkpoint.id,
-        status: "COMPLETED",
-        petugasName: petugasName,
-        completedAt: new Date(),
-        notes: notes,
-      },
-    });
+        const foundCheckpoint = await tx.checkpoint.findUnique({
+          where: { slug: checkpointSlug },
+        });
 
-    await prisma.patient.update({
-      where: {
-        id: mcuResult.patientId,
-      },
-      data: { lastProgress: `Selesai di ${checkpoint.name}` },
-    });
+        if (!foundCheckpoint) {
+          throw new Error("Checkpoint tidak valid.");
+        }
+
+        if (pemeriksaanFisikForm) {
+          const now = new Date();
+
+          const dateTimeInWIB = now.toLocaleString("id-ID", {
+            timeZone: "Asia/Jakarta",
+            hour12: false,
+          });
+          await tx.mcuResult.update({
+            where: { id: mcuResultId },
+            data: {
+              pemeriksaanFisikForm: pemeriksaanFisikForm,
+              timeCheckIn: dateTimeInWIB,
+            },
+          });
+        }
+
+        const newProgressLog = await tx.mcuProgress.upsert({
+          where: {
+            mcuResultId_checkpointId: {
+              mcuResultId: mcuResultId,
+              checkpointId: foundCheckpoint.id,
+            },
+          },
+          update: {
+            status: "COMPLETED",
+            petugasName: petugasName,
+            completedAt: new Date(),
+            notes: notes,
+          },
+          create: {
+            mcuResultId: mcuResultId,
+            checkpointId: foundCheckpoint.id,
+            status: "COMPLETED",
+            petugasName: petugasName,
+            completedAt: new Date(),
+            notes: notes,
+          },
+        });
+
+        await tx.patient.update({
+          where: {
+            id: foundMcuResult.patientId,
+          },
+          data: { lastProgress: `Selesai di ${foundCheckpoint.name}` },
+        });
+
+        return [foundMcuResult, foundCheckpoint, newProgressLog];
+      }
+    );
 
     return NextResponse.json({
       message: `Check-in untuk ${checkpoint.name} oleh ${petugasName} berhasil!`,
       data: progressLog,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("MCU Check-in Error:", error);
-    return NextResponse.json(
-      { message: "Internal Server Error" },
-      { status: 500 }
-    );
+
+    const message = error.message || "Internal Server Error";
+    const status =
+      error.message.includes("tidak ditemukan") ||
+      error.message.includes("tidak valid")
+        ? 404
+        : 500;
+
+    return NextResponse.json({ message }, { status });
   }
 }

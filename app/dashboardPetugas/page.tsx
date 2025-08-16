@@ -207,6 +207,7 @@ const PetugasDashboardPage = () => {
           checkpointSlug: selectedCheckPointSlug,
           petugasName: user.fullName,
           pemeriksaanFisikForm: values,
+          timestamp: new Date().toISOString(),
         }),
       });
       const data = await res.json().catch(() => ({}));
