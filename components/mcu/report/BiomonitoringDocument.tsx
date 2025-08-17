@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Page, Text, View, Image } from "@react-pdf/renderer";
+import { Page, Text, View, Image, StyleSheet } from "@react-pdf/renderer";
 import { ReportHeader, PatientInfo, ReportFooter } from "./ReportLayout";
 import { styles } from "./reportStyles";
 
@@ -68,6 +68,27 @@ const isAbnormal = (item: BiomonitoringItem, resultValue: unknown): boolean => {
 
 const displayValue = (v: unknown): string =>
   v === null || v === undefined || String(v) === "" ? "-" : String(v);
+
+const localStyles = StyleSheet.create({
+  validatorBox: {
+    position: "absolute",
+    right: 40,
+    bottom: 72,
+    alignItems: "center",
+  },
+  validatorQr: {
+    width: 80,
+    height: 80,
+    marginBottom: 8,
+  },
+  validatorName: {
+    fontSize: 8,
+    fontFamily: "Helvetica-Bold",
+  },
+  validatorLabel: {
+    fontSize: 5,
+  },
+});
 
 export const BiomonitoringDocument: React.FC<{ data: BiomonitoringData }> = ({
   data,
@@ -152,31 +173,24 @@ export const BiomonitoringDocument: React.FC<{ data: BiomonitoringData }> = ({
             toksik bagi tubuh.
           </Text>
         </View>
-
-        {(data?.biomonitoringValidatorName ||
-          data?.biomonitoringValidatorQr) && (
-          <View
-            style={{
-              marginTop: 20,
-              alignItems: "flex-end",
-              paddingRight: 40,
-            }}
-          >
-            {data?.biomonitoringValidatorQr && (
-              <Image
-                src={String(data.biomonitoringValidatorQr)}
-                style={{ width: 80, height: 80, marginBottom: 8 }}
-              />
-            )}
-            {data?.biomonitoringValidatorName && (
-              <Text style={{ fontSize: 8, fontFamily: "Helvetica-Bold" }}>
-                {String(data.biomonitoringValidatorName)}
-              </Text>
-            )}
-            <Text style={{ fontSize: 5 }}>Validator</Text>
-          </View>
-        )}
       </View>
+
+      {(data?.biomonitoringValidatorName || data?.biomonitoringValidatorQr) && (
+        <View style={localStyles.validatorBox}>
+          {data?.biomonitoringValidatorQr && (
+            <Image
+              src={String(data.biomonitoringValidatorQr)}
+              style={localStyles.validatorQr}
+            />
+          )}
+          {data?.biomonitoringValidatorName && (
+            <Text style={localStyles.validatorName}>
+              {String(data.biomonitoringValidatorName)}
+            </Text>
+          )}
+          <Text style={localStyles.validatorLabel}>Validator</Text>
+        </View>
+      )}
 
       <ReportFooter />
     </Page>

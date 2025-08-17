@@ -3,8 +3,8 @@ import { PrismaClient, Prisma } from "@prisma/client";
 import nodemailer from "nodemailer";
 import QRCode from "qrcode";
 
-export const runtime = "nodejs"; // pastikan pakai Node runtime
-export const maxDuration = 60; // beri napas saat import banyak
+export const runtime = "nodejs";
+export const maxDuration = 30;
 
 const prisma = new PrismaClient();
 
@@ -26,17 +26,15 @@ function calculateAge(dateOfBirth: Date): number {
   return age;
 }
 
-// terima tx agar cek uniknya ikut transaksi & aman race condition
 async function generateUniquePatientId(
   tx: PrismaClient | Prisma.TransactionClient
 ): Promise<string> {
   const prefix = "MCU";
-  // batasi jumlah percobaan biar gak infinite loop
   for (let i = 0; i < 100; i++) {
     const randomDigits = Math.floor(1000 + Math.random() * 9000);
     const candidate = `${prefix}-${randomDigits}`;
     const exists = await tx.patient.findFirst({
-      where: { patientId: candidate }, // findFirst aman walau kolom tidak @unique
+      where: { patientId: candidate },
       select: { id: true },
     });
     if (!exists) return candidate;
@@ -73,7 +71,6 @@ export async function POST(request: Request) {
       const dob = new Date(patientData.dob);
       if (isNaN(dob.getTime())) continue;
 
-      // kalau NIK bukan @unique di prod, ganti ke findFirst. Kalau memang @unique, findUnique juga ok.
       const existingPatient = await prisma.patient.findFirst({
         where: { nik: String(patientData.nik) },
         select: { id: true },
@@ -102,7 +99,7 @@ export async function POST(request: Request) {
             location: patientData.location || "N/A",
             mcuPackage: patientData.mcuPackage || [],
             companyId,
-            qrCode: "", // diisi setelah generate QR
+            qrCode: "",
           },
           select: { id: true, fullName: true, patientId: true, email: true },
         });
@@ -141,7 +138,6 @@ export async function POST(request: Request) {
     }
 
     if (sendEmail) {
-      // kirim email di luar transaksi
       for (const p of createdPatients) {
         if (p.email && p.qrCode) {
           try {
