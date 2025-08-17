@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import nodemailer from "nodemailer";
 import QRCode from "qrcode";
+
+export const runtime = "nodejs"; // pastikan pakai Node runtime
+export const maxDuration = 60; // beri napas saat import banyak
 
 const prisma = new PrismaClient();
 
@@ -19,27 +22,26 @@ function calculateAge(dateOfBirth: Date): number {
   const today = new Date();
   let age = today.getFullYear() - dateOfBirth.getFullYear();
   const m = today.getMonth() - dateOfBirth.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < dateOfBirth.getDate())) {
-    age--;
-  }
+  if (m < 0 || (m === 0 && today.getDate() < dateOfBirth.getDate())) age--;
   return age;
 }
 
-async function generateUniquePatientId(): Promise<string> {
+// terima tx agar cek uniknya ikut transaksi & aman race condition
+async function generateUniquePatientId(
+  tx: PrismaClient | Prisma.TransactionClient
+): Promise<string> {
   const prefix = "MCU";
-  let isUnique = false;
-  let patientId = "";
-  while (!isUnique) {
+  // batasi jumlah percobaan biar gak infinite loop
+  for (let i = 0; i < 100; i++) {
     const randomDigits = Math.floor(1000 + Math.random() * 9000);
-    patientId = `${prefix}-${randomDigits}`;
-    const existingPatient = await prisma.patient.findUnique({
-      where: { patientId },
+    const candidate = `${prefix}-${randomDigits}`;
+    const exists = await tx.patient.findFirst({
+      where: { patientId: candidate }, // findFirst aman walau kolom tidak @unique
+      select: { id: true },
     });
-    if (!existingPatient) {
-      isUnique = true;
-    }
+    if (!exists) return candidate;
   }
-  return patientId;
+  throw new Error("Gagal membuat patientId unik setelah 100 percobaan");
 }
 
 export async function POST(request: Request) {
@@ -56,27 +58,34 @@ export async function POST(request: Request) {
 
     let createdCount = 0;
     let skippedCount = 0;
-    const createdPatients = [];
+    const createdPatients: Array<{
+      id: number;
+      fullName: string;
+      patientId: string;
+      email: string | null;
+      qrCode: string | null;
+    }> = [];
 
     for (const patientData of patients) {
-      if (!patientData.nik || !patientData.fullName || !patientData.dob)
+      if (!patientData?.nik || !patientData?.fullName || !patientData?.dob)
         continue;
 
       const dob = new Date(patientData.dob);
       if (isNaN(dob.getTime())) continue;
 
-      const existingPatient = await prisma.patient.findUnique({
+      // kalau NIK bukan @unique di prod, ganti ke findFirst. Kalau memang @unique, findUnique juga ok.
+      const existingPatient = await prisma.patient.findFirst({
         where: { nik: String(patientData.nik) },
+        select: { id: true },
       });
-
       if (existingPatient) {
         skippedCount++;
         continue;
       }
 
-      const result = await prisma.$transaction(async (tx) => {
+      const updatedPatient = await prisma.$transaction(async (tx) => {
         const age = patientData.age || calculateAge(dob);
-        const newPatientId = await generateUniquePatientId();
+        const newPatientId = await generateUniquePatientId(tx);
 
         const newPatient = await tx.patient.create({
           data: {
@@ -84,61 +93,68 @@ export async function POST(request: Request) {
             nik: String(patientData.nik),
             fullName: patientData.fullName,
             email: patientData.email || null,
-            dob: dob,
-            age: age,
+            dob,
+            age,
             gender: patientData.gender || "N/A",
             position: patientData.position || "N/A",
             division: patientData.division || "N/A",
             status: patientData.status || "N/A",
             location: patientData.location || "N/A",
             mcuPackage: patientData.mcuPackage || [],
-            companyId: companyId,
-            qrCode: "",
+            companyId,
+            qrCode: "", // diisi setelah generate QR
           },
+          select: { id: true, fullName: true, patientId: true, email: true },
         });
 
         const newMcuResult = await tx.mcuResult.create({
-          data: {
-            patientId: newPatient.id,
-          },
+          data: { patientId: newPatient.id },
+          select: { id: true },
         });
 
         const qrContent = {
           mcuResultId: newMcuResult.id,
           patientId: newPatient.patientId,
           fullName: newPatient.fullName,
-          mcuPackage: newPatient.mcuPackage,
+          mcuPackage: patientData.mcuPackage || [],
         };
 
         const qrCodeDataUrl = await QRCode.toDataURL(JSON.stringify(qrContent));
 
-        const updatedPatient = await tx.patient.update({
+        const updated = await tx.patient.update({
           where: { id: newPatient.id },
-          data: {
-            qrCode: qrCodeDataUrl,
+          data: { qrCode: qrCodeDataUrl },
+          select: {
+            id: true,
+            fullName: true,
+            patientId: true,
+            email: true,
+            qrCode: true,
           },
         });
 
-        return updatedPatient;
+        return updated;
       });
 
-      createdPatients.push(result);
+      createdPatients.push(updatedPatient);
       createdCount++;
     }
 
     if (sendEmail) {
-      for (const patient of createdPatients) {
-        if (patient.email && patient.qrCode) {
+      // kirim email di luar transaksi
+      for (const p of createdPatients) {
+        if (p.email && p.qrCode) {
           try {
-            const base64Data = patient.qrCode.replace(
-              /^data:image\/png;base64,/,
-              ""
-            );
+            const base64Data = p.qrCode.replace(/^data:image\/png;base64,/, "");
             await transporter.sendMail({
               from: process.env.EMAIL_FROM,
-              to: patient.email,
-              subject: `QR Code Pendaftaran MCU untuk ${patient.fullName}`,
-              html: `<p><h1>Pendaftaran MCU Berhasil</h1><p>Halo <strong>${patient.fullName}</strong>,</p><p>Pendaftaran Anda untuk Medical Check Up telah berhasil dengan nomor pasien <strong>${patient.patientId}</strong>.</p><p>Silakan tunjukkan QR Code di bawah ini kepada petugas saat tiba di lokasi.</p><p>Terima kasih.</p><br><img src="cid:qrcode"/>`,
+              to: p.email,
+              subject: `QR Code Pendaftaran MCU untuk ${p.fullName}`,
+              html: `<h1>Pendaftaran MCU Berhasil</h1>
+                     <p>Halo <strong>${p.fullName}</strong>,</p>
+                     <p>Nomor pasien Anda: <strong>${p.patientId}</strong>.</p>
+                     <p>Tunjukkan QR Code di bawah saat registrasi.</p>
+                     <br><img src="cid:qrcode"/>`,
               attachments: [
                 {
                   filename: "qrcode.png",
@@ -149,22 +165,17 @@ export async function POST(request: Request) {
               ],
             });
           } catch (emailError) {
-            console.error(
-              `Gagal mengirim email ke ${patient.email}:`,
-              emailError
-            );
+            console.error(`Gagal mengirim email ke ${p.email}:`, emailError);
           }
         }
       }
     }
 
     let message = `Berhasil mengimpor ${createdCount} data pasien baru.`;
-    if (skippedCount > 0) {
+    if (skippedCount > 0)
       message += ` ${skippedCount} data dilewati karena NIK sudah ada.`;
-    }
-    if (createdCount === 0 && skippedCount === 0) {
+    if (createdCount === 0 && skippedCount === 0)
       message = "Tidak ada data pasien baru untuk ditambahkan.";
-    }
 
     return NextResponse.json(
       { message },
