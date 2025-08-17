@@ -20,9 +20,9 @@ export const executivePackageItems = [
   "Treadmill",
   "Panel Hepatitis",
   "USG Whole Abdomen",
-  "Pemeriksaan Dokter Gigi",
-  "Pemeriksaan Dokter Spesialis Mata",
-  "Pemeriksaan Dokter THT",
+  // "Pemeriksaan Dokter Gigi",
+  // "Pemeriksaan Dokter Spesialis Mata",
+  // "Pemeriksaan Dokter THT",
 ];
 
 export const finalPackageItems = [...regularPackageItems];

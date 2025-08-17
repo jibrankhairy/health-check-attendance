@@ -146,11 +146,30 @@ export async function POST(request: Request) {
               from: process.env.EMAIL_FROM,
               to: p.email,
               subject: `QR Code Pendaftaran MCU untuk ${p.fullName}`,
-              html: `<h1>Pendaftaran MCU Berhasil</h1>
-                     <p>Halo <strong>${p.fullName}</strong>,</p>
-                     <p>Nomor pasien Anda: <strong>${p.patientId}</strong>.</p>
-                     <p>Tunjukkan QR Code di bawah saat registrasi.</p>
-                     <br><img src="cid:qrcode"/>`,
+              html: `
+    <div style="font-family: Arial, sans-serif; line-height:1.6; color:#222">
+      <h1 style="margin:0 0 12px">Pendaftaran MCU Berhasil</h1>
+      <p>Halo <strong>${p.fullName}</strong>,</p>
+      <p>Pendaftaran Anda untuk Medical Check Up telah berhasil dengan nomor pasien <strong>${p.patientId}</strong>.</p>
+
+      <p style="margin:16px 0 8px">Sebelum datang, mohon mengisi kuesioner pra-MCU melalui tautan berikut:</p>
+      <p>
+        <a href="https://mitralab.deltaindonesialab.com/form" target="_blank" rel="noopener noreferrer"
+           style="display:inline-block; background:#01449D; color:#fff; text-decoration:none; padding:10px 16px; border-radius:6px; font-weight:600">
+          Isi Kuesioner Pra-MCU
+        </a>
+      </p>
+      <p style="font-size:12px; color:#555; margin-top:8px">
+        Jika tombol tidak bisa diklik, salin alamat ini ke browser Anda:<br/>
+        <span>https://mitralab.deltaindonesialab.com/form</span>
+      </p>
+
+      <p>Silakan tunjukkan QR Code di bawah saat registrasi.</p>
+      <br/>
+      <img src="cid:qrcode" alt="QR Code" style="display:block; width:160px; height:160px;"/>
+      <p style="margin-top:16px">Terima kasih.</p>
+    </div>
+  `,
               attachments: [
                 {
                   filename: "qrcode.png",

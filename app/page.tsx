@@ -184,7 +184,7 @@ export default function LoginPage() {
                     Remember Me
                   </label>
                 </div>
-                <div className="text-sm">
+                {/* <div className="text-sm">
                   <a
                     href="#"
                     className="font-medium hover:underline"
@@ -192,7 +192,7 @@ export default function LoginPage() {
                   >
                     Forgot Your Password?
                   </a>
-                </div>
+                </div> */}
               </div>
 
               <div>
