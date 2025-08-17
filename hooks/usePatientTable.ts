@@ -3,6 +3,14 @@ import { toast } from "sonner";
 import { downloadMultipleQrCodes, parseExcelFile } from "@/lib/patient-utils";
 import { type PatientData } from "@/components/dashboard/PatientTable";
 
+function chunkArray<T>(arr: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) {
+    chunks.push(arr.slice(i, i + size));
+  }
+  return chunks;
+}
+
 export const usePatientTable = (companyId: string) => {
   const [patients, setPatients] = useState<PatientData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -158,28 +166,83 @@ export const usePatientTable = (companyId: string) => {
     setIsImportConfirmOpen(false);
     if (parsedPatients.length === 0) return;
 
-    const toastId = toast.loading("Mengimpor data pasien...");
-    try {
-      const response = await fetch("/api/patients/bulk", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          patients: parsedPatients,
-          companyId,
-          sendEmail,
-        }),
-      });
-      const resultData = await response.json();
-      if (!response.ok)
-        throw new Error(resultData.message || "Gagal mengimpor data.");
+    const CHUNK_SIZE = 25;
+    const chunks = chunkArray(parsedPatients, CHUNK_SIZE);
 
-      toast.success(resultData.message, { id: toastId });
+    let totalCreated = 0;
+    let totalSkipped = 0;
+    let totalFailedBatches = 0;
+
+    const toastId = toast.loading(
+      `Mengimpor ${parsedPatients.length} pasien (0/${chunks.length} batch)...`
+    );
+
+    try {
+      for (let i = 0; i < chunks.length; i++) {
+        const batch = chunks[i];
+
+        const res = await fetch("/api/patients/bulk", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            patients: batch,
+            companyId,
+            sendEmail,
+          }),
+        });
+
+        // Ambil text dulu untuk hindari error "unexpected JSON" saat server timeout/truncated
+        const text = await res.text();
+        let data: any = {};
+        try {
+          data = text ? JSON.parse(text) : {};
+        } catch {
+          totalFailedBatches += 1;
+          toast.loading(
+            `Batch ${i + 1}/${
+              chunks.length
+            } timeout. Melanjutkan batch berikutnya...`,
+            { id: toastId }
+          );
+          continue;
+        }
+
+        if (!res.ok) {
+          totalFailedBatches += 1;
+          toast.loading(
+            `Batch ${i + 1}/${chunks.length} gagal: ${
+              data?.message || res.statusText
+            }`,
+            { id: toastId }
+          );
+        } else {
+          totalCreated += Number(data?.createdCount ?? 0);
+          totalSkipped += Number(data?.skippedCount ?? 0);
+          toast.loading(
+            `Mengimpor ${parsedPatients.length} pasien (${i + 1}/${
+              chunks.length
+            } batch)...`,
+            { id: toastId }
+          );
+        }
+
+        // jeda kecil antar batch (mengurangi risiko timeout & load DB)
+        await new Promise((r) => setTimeout(r, 150));
+      }
+
+      const summary =
+        `Selesai.\n` +
+        `✔️ Berhasil: ${totalCreated}\n` +
+        (totalSkipped ? `⚠️ Dilewati (NIK duplikat): ${totalSkipped}\n` : "") +
+        (totalFailedBatches
+          ? `❌ Batch gagal: ${totalFailedBatches} (silakan impor ulang batch yang gagal).`
+          : "");
+
+      toast.success(summary, { id: toastId, duration: 6000 });
       fetchPatients();
-    } catch (error) {
+    } catch (err: any) {
       toast.error(
-        `Error: ${
-          error instanceof Error ? error.message : "Terjadi kesalahan"
-        }`,
+        `Impor gagal: ${err?.message || "Terjadi kesalahan tak terduga."}`,
         { id: toastId }
       );
     } finally {

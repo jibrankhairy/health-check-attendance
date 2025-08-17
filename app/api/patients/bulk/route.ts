@@ -174,7 +174,7 @@ export async function POST(request: Request) {
       message = "Tidak ada data pasien baru untuk ditambahkan.";
 
     return NextResponse.json(
-      { message },
+      { message, createdCount, skippedCount },
       { status: createdCount > 0 ? 201 : 200 }
     );
   } catch (error) {
