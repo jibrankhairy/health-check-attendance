@@ -52,10 +52,10 @@ export type PemeriksaanFisikFormValues = {
   kelenjarLymp: "POSITIF" | "NEGATIF";
 
   butaWarna: "NORMAL" | "ABNORMAL";
-  anemiaOD: "YA" | "TIDAK";
-  anemiaOS: "YA" | "TIDAK";
-  ikterikOD: "YA" | "TIDAK";
-  ikterikOS: "YA" | "TIDAK";
+  anemiaOD: string;
+  anemiaOS: string;
+  ikterikOD: string;
+  ikterikOS: string;
   pupilOD: string;
   pupilOS: string;
   refleksOD: "NORMAL" | "ABNORMAL";
@@ -151,10 +151,10 @@ export default function PemeriksaanFisikFormModal({
     tiroid: "NEGATIF",
     kelenjarLymp: "NEGATIF",
     butaWarna: "NORMAL",
-    anemiaOD: "TIDAK",
-    anemiaOS: "TIDAK",
-    ikterikOD: "TIDAK",
-    ikterikOS: "TIDAK",
+    anemiaOD: "",
+    anemiaOS: "",
+    ikterikOD: "",
+    ikterikOS: "",
     pupilOD: "",
     pupilOS: "",
     refleksOD: "NORMAL",
@@ -393,12 +393,62 @@ export default function PemeriksaanFisikFormModal({
                       "Masukkan tinggi badan",
                       "number"
                     )}
-                    {RowInput("bmi", "Body Mass Index (kg/m²)", "", "number", {
-                      readOnly: true,
-                      tabIndex: -1,
-                      className: "bg-gray-50",
-                      inputMode: "numeric",
-                    })}
+                    <div>
+                      <FormField
+                        control={form.control}
+                        name="bmi"
+                        render={({ field }) => (
+                          <FormItem className="rounded-lg border p-4 shadow-sm">
+                            <FormLabel className="text-sm font-normal">
+                              Body Mass Index (kg/m²)
+                            </FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Input
+                                  type="number"
+                                  readOnly
+                                  tabIndex={-1}
+                                  className="bg-gray-50 pr-28"
+                                  inputMode="numeric"
+                                  value={field.value ?? ""}
+                                />
+                                {(() => {
+                                  const bmi = field.value;
+                                  let text = "Belum dihitung";
+                                  let color = "text-gray-500 border-gray-300";
+
+                                  if (bmi && bmi > 0) {
+                                    if (bmi < 18.5) {
+                                      text = "Kekurangan";
+                                      color = "text-blue-600 border-blue-400";
+                                    } else if (bmi <= 24.9) {
+                                      text = "Normal";
+                                      color = "text-green-600 border-green-400";
+                                    } else if (bmi <= 29.9) {
+                                      text = "Kelebihan";
+                                      color =
+                                        "text-yellow-600 border-yellow-400";
+                                    } else {
+                                      text = "Obesitas";
+                                      color = "text-red-600 border-red-400";
+                                    }
+                                  }
+
+                                  return (
+                                    <span
+                                      className={`absolute right-2 top-1/2 -translate-y-1/2 text-xs px-2 py-0.5 rounded border ${color} bg-white`}
+                                    >
+                                      {text}
+                                    </span>
+                                  );
+                                })()}
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                     {RowInput(
                       "lingkarPerutCm",
                       "Lingkar Perut (cm)",
@@ -572,7 +622,7 @@ export default function PemeriksaanFisikFormModal({
                     {RowRadio(
                       "refleksOD",
                       "Refleks Cahaya OD",
-                      ["NORMAL", "AB  NORMAL"],
+                      ["NORMAL", "ABNORMAL"],
                       { stacked: true }
                     )}
                     {RowRadio(
