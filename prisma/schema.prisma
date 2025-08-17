@@ -194,6 +194,9 @@ model McuResult {
   bilirubinDirect      String?   @db.Text
   alkaliPhosphatase    String?   @db.Text
 
+  timbalDarah          String?   @db.Text
+  arsenikUrin          String?   @db.Text
+
   // --- Urinalisa ---
   urinWarna            String?   @db.Text
   urinKejernihan        String?   @db.Text
@@ -327,6 +330,8 @@ model McuResult {
   hematologiValidatorQr       String? @db.Text
   kimiaDarahValidatorName     String?
   kimiaDarahValidatorQr       String? @db.Text
+  biomonitoringValidatorName  String?
+  biomonitoringValidatorQr    String? @db.Text
   urinalisaValidatorName      String?
   urinalisaValidatorQr        String? @db.Text
   audiometriValidatorName     String?

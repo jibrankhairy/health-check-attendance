@@ -11,6 +11,7 @@ import * as XLSX from "xlsx";
 
 import { HematologiForm } from "./forms/HematologiForm";
 import { KimiaDarahForm } from "./forms/KimiaDarahForm";
+import { BiomonitoringForm } from "./forms/BiomonitoringForm";
 import { UrinalisaForm } from "./forms/UrinalisaForm";
 import { AudiometriSpirometriForm } from "./forms/AudiometriSpirometriForm";
 import { UsgAbdomenForm } from "./forms/UsgAbdomenForm";
@@ -40,6 +41,8 @@ const formSchema = z.object({
   hitungJenisNeutrofilSegmen: z.string().optional().nullable(),
   hitungJenisLimfosit: z.string().optional().nullable(),
   hitungJenisMonosit: z.string().optional().nullable(),
+
+  // Kimia Darah fields
   gulaDarahPuasa: z.string().optional().nullable(),
   gulaDarah2JamPP: z.string().optional().nullable(),
   hbsag: z.string().optional().nullable(),
@@ -55,6 +58,11 @@ const formSchema = z.object({
   bilirubinTotal: z.string().optional().nullable(),
   bilirubinDirect: z.string().optional().nullable(),
   alkaliPhosphatase: z.string().optional().nullable(),
+
+  timbalDarah: z.string().optional().nullable(),
+  arsenikUrin: z.string().optional().nullable(),
+
+  // Urinalisa fields
   urinWarna: z.string().optional().nullable(),
   urinKejernihan: z.string().optional().nullable(),
   urinBau: z.string().optional().nullable(),
@@ -74,6 +82,8 @@ const formSchema = z.object({
   urinCaOxalat: z.string().optional().nullable(),
   urinUridAcid: z.string().optional().nullable(),
   urinGranulaCast: z.string().optional().nullable(),
+
+  // ... a bunch of other fields ...
   audioAcKanan250: z.coerce.number().optional().nullable(),
   audioAcKanan500: z.coerce.number().optional().nullable(),
   audioAcKanan1000: z.coerce.number().optional().nullable(),
@@ -152,10 +162,14 @@ const formSchema = z.object({
   kesanRontgen: z.string().optional().nullable(),
   kesimpulan: z.string().optional().nullable(),
   saran: z.array(z.string()).optional(),
+
+  // Validator fields
   hematologiValidatorName: z.string().optional().nullable(),
   hematologiValidatorQr: z.string().optional().nullable(),
   kimiaDarahValidatorName: z.string().optional().nullable(),
   kimiaDarahValidatorQr: z.string().optional().nullable(),
+  biomonitoringValidatorName: z.string().optional().nullable(),
+  biomonitoringValidatorQr: z.string().optional().nullable(),
   urinalisaValidatorName: z.string().optional().nullable(),
   urinalisaValidatorQr: z.string().optional().nullable(),
   audiometriValidatorName: z.string().optional().nullable(),
@@ -174,6 +188,8 @@ const formSchema = z.object({
   conclusionValidatorQr: z.string().optional().nullable(),
   dassFasValidatorName: z.string().optional().nullable(),
   dassFasValidatorQr: z.string().optional().nullable(),
+
+  // Framingham fields
   framinghamGender: z.string().optional().nullable(),
   framinghamAge: z.string().optional().nullable(),
   framinghamTotalCholesterol: z.string().optional().nullable(),
@@ -358,6 +374,11 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
     hasItem("mcu regular") || hasItem("mcu eksekutif") || hasItem("mcu akhir");
   const showKimiaDarah =
     hasItem("mcu regular") || hasItem("mcu eksekutif") || hasItem("mcu akhir");
+  const showBiomonitoring =
+    hasItem("mcu regular") ||
+    hasItem("mcu eksekutif") ||
+    hasItem("mcu akhir") ||
+    hasItem("biomonitoring");
   const showUrinalisa =
     hasItem("mcu regular") || hasItem("mcu eksekutif") || hasItem("mcu akhir");
   const showAudioSpiro =
@@ -419,6 +440,9 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
 
         {showHematologi && <HematologiForm />}
         {showKimiaDarah && <KimiaDarahForm />}
+
+        {showBiomonitoring && <BiomonitoringForm />}
+
         {showUrinalisa && <UrinalisaForm />}
         {showAudioSpiro && (
           <AudiometriSpirometriForm itemsToCheck={itemsToCheck} />

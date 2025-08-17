@@ -113,6 +113,7 @@ export async function POST(request: Request) {
     const validatorMap: { [key: string]: string } = {
       hematologiValidatorName: "hematologiValidatorQr",
       kimiaDarahValidatorName: "kimiaDarahValidatorQr",
+      biomonitoringValidatorName: "biomonitoringValidatorQr",
       urinalisaValidatorName: "urinalisaValidatorQr",
       audiometriValidatorName: "audiometriValidatorQr",
       spirometriValidatorName: "spirometriValidatorQr",

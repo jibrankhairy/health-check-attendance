@@ -51,6 +51,10 @@ const templateHeaders = [
   "alkaliPhosphatase",
   "kimiaDarahValidatorName",
 
+  "timbalDarah",
+  "arsenikUrin",
+  "biomonitoringValidatorName",
+
   // Framingham Score (Posisi Baru & Field Diperbarui)
   "framinghamGender",
   "framinghamAge",

@@ -13,6 +13,7 @@ import { ConsentDocument } from "./ConsentDocument";
 import { HematologiDocument } from "./HematologiDocument";
 import { UrinalisaDocument } from "./UrinalisaDocument";
 import { KimiaDarahDocument } from "./KimiaDarahDocument";
+import { BiomonitoringDocument } from "./BiomonitoringDocument";
 import { RontgenDocument } from "./RontgenDocument";
 import { EkgDocument } from "./EkgDocument";
 import { AudiometriDocument } from "./AudiometriDocument";
@@ -59,6 +60,7 @@ const KIMIA_DARAH_FIELDS = [
   "bilirubinDirect",
   "alkaliPhosphatase",
 ];
+const BIOMONITORING_FIELDS = ["timbalDarah", "arsenikUrin"];
 const URINALISA_FIELDS = [
   "urinWarna",
   "urinKejernihan",
@@ -183,6 +185,8 @@ export const FullReportDocument: React.FC<FullReportDocumentProps> = ({
       hasItem("mcu akhir")) &&
     sectionHasData(d, KIMIA_DARAH_FIELDS);
 
+  const showBiomonitoring = sectionHasData(d, BIOMONITORING_FIELDS);
+
   const showUrinalisa =
     (hasItem("mcu regular") ||
       hasItem("mcu eksekutif") ||
@@ -237,6 +241,9 @@ export const FullReportDocument: React.FC<FullReportDocumentProps> = ({
   type HematologiData = React.ComponentProps<typeof HematologiDocument>["data"];
   type UrinalisaData = React.ComponentProps<typeof UrinalisaDocument>["data"];
   type KimiaDarahData = React.ComponentProps<typeof KimiaDarahDocument>["data"];
+  type BiomonitoringData = React.ComponentProps<
+    typeof BiomonitoringDocument
+  >["data"];
   type RontgenData = React.ComponentProps<typeof RontgenDocument>["data"];
   type EkgData = React.ComponentProps<typeof EkgDocument>["data"];
   type AudiometriData = React.ComponentProps<typeof AudiometriDocument>["data"];
@@ -266,6 +273,11 @@ export const FullReportDocument: React.FC<FullReportDocumentProps> = ({
       {showHematologi && <HematologiDocument data={data as HematologiData} />}
       {showUrinalisa && <UrinalisaDocument data={data as UrinalisaData} />}
       {showKimiaDarah && <KimiaDarahDocument data={data as KimiaDarahData} />}
+
+      {showBiomonitoring && (
+        <BiomonitoringDocument data={data as BiomonitoringData} />
+      )}
+
       {showRontgen && <RontgenDocument data={data as RontgenData} />}
       {showEkg && <EkgDocument data={data as EkgData} />}
       {showAudiometri && <AudiometriDocument data={data as AudiometriData} />}
