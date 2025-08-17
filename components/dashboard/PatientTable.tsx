@@ -284,6 +284,275 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
     }
   };
 
+  const buildKartuKontrolItems = (patient: PatientData): string[] => {
+    const baseItems = [
+      "POS PEMERIKSAAN FISIK",
+      "POS PEMERIKSAAN LAB",
+      "POS PEMERIKSAAN URIN",
+      "POS PEMERIKSAAN RADIOLOGI",
+    ];
+
+    const pkgArr: string[] = Array.isArray(patient.mcuPackage)
+      ? (patient.mcuPackage as string[])
+      : typeof patient.mcuPackage === "string"
+      ? (patient.mcuPackage as string)
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : [];
+
+    const norm = pkgArr.map((s) => s.toLowerCase());
+
+    const addIf = (cond: boolean, label: string) => {
+      if (cond && !baseItems.includes(label)) baseItems.push(label);
+    };
+
+    addIf(
+      norm.some((s) => s.includes("ekg")),
+      "POS PEMERIKSAAN EKG"
+    );
+    addIf(
+      norm.some((s) => s.includes("audiometri") || s.includes("audiometry")),
+      "POS PEMERIKSAAN AUDIOMETRI"
+    );
+    addIf(
+      norm.some((s) => s.includes("spirometri") || s.includes("spirometry")),
+      "POS PEMERIKSAAN SPIROMETRI"
+    );
+    addIf(
+      norm.some((s) => s.includes("treadmill")),
+      "POS PEMERIKSAAN TREADMILL"
+    );
+
+    return baseItems;
+  };
+
+  const handlePrintKartuKontrol = (patient: PatientData) => {
+    if (!patient.qrCode) {
+      toast.info("QR pasien belum tersedia.");
+      return;
+    }
+
+    const company = companyName || "KARTU KONTROL";
+    const fullName = (patient.fullName || "").toUpperCase();
+    const patientId = patient.patientId || "-";
+    const location = (patient.location || "").toUpperCase();
+
+    const pkg = Array.isArray(patient.mcuPackage)
+      ? (patient.mcuPackage as string[])
+      : typeof patient.mcuPackage === "string"
+      ? (patient.mcuPackage as string).split(",").map((s: string) => s.trim())
+      : [];
+    const packageText = pkg.join(", ").toUpperCase();
+
+    // Pos dasar + tambahan sesuai paket
+    const baseItems = [
+      "POS PEMERIKSAAN FISIK",
+      "POS PEMERIKSAAN LAB",
+      "POS PEMERIKSAAN URIN",
+      "POS PEMERIKSAAN RADIOLOGI",
+    ];
+    const norm = pkg.map((s) => s.toLowerCase());
+    const addIf = (cond: boolean, label: string) => {
+      if (cond && !baseItems.includes(label)) baseItems.push(label);
+    };
+    addIf(
+      norm.some((s) => s.includes("ekg")),
+      "POS PEMERIKSAAN EKG"
+    );
+    addIf(
+      norm.some((s) => s.includes("audiometri") || s.includes("audiometry")),
+      "POS PEMERIKSAAN AUDIOMETRI"
+    );
+    addIf(
+      norm.some((s) => s.includes("spirometri") || s.includes("spirometry")),
+      "POS PEMERIKSAAN SPIROMETRI"
+    );
+    addIf(
+      norm.some((s) => s.includes("treadmill")),
+      "POS PEMERIKSAAN TREADMILL"
+    );
+
+    const items = baseItems;
+
+    const esc = (s: unknown) =>
+      String(s ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+
+    const printWin = window.open("", "_blank");
+    if (!printWin) {
+      toast.error(
+        "Popup diblokir. Izinkan pop-up untuk mencetak kartu kontrol."
+      );
+      return;
+    }
+
+    printWin.document.write(`
+    <html>
+      <head>
+        <title>Print Kartu Kontrol</title>
+        <meta charset="utf-8" />
+        <style>
+          @page { size: A5 landscape; margin: 0; }
+          html, body { height: 100%; margin: 0; padding: 0; }
+          body {
+            font-family: Arial, sans-serif;
+            font-size: 9.5pt;
+            color: #333;
+          }
+          .page {
+            box-sizing: border-box;
+            padding: 8mm 10mm;
+            width: 100%;
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 6mm;
+          }
+          .header {
+            text-align: center;
+            font-weight: 700;
+            font-size: 12pt;
+          }
+          .top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 5mm;
+            border: 1px solid #000;
+            padding: 4.5mm;
+          }
+          .ident { flex: 1 1 auto; }
+          .qrwrap {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-end;
+            width: 36mm;
+          }
+          .qr {
+            width: 30mm;
+            height: 30mm;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+          }
+          .info-row { display: flex; margin-bottom: 2mm; }
+          .label { width: 33%; }
+          .colon { width: 5%; text-align: center; }
+          .value { width: 62%; font-weight: 700; }
+
+          /* GRID POS: 4 kolom, item ringkas */
+          .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 3mm 5mm;
+          }
+          .pos-card {
+            border: 1px solid #000;
+            padding: 2.5mm;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5mm;
+            text-align: center;
+            break-inside: avoid;
+            page-break-inside: avoid;
+          }
+          .pos-title {
+            font-weight: 600;
+            font-size: 8pt; /* kecil & di atas kotak */
+            line-height: 1.15;
+            min-height: 10mm;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          /* Tidak ada kotak di dalam kotak — hanya ruang kosong buat tanda tangan */
+          .sign-space {
+            height: 8mm; /* area untuk paraf/tanda tangan, tanpa border */
+          }
+          .name-line {
+            width: 22mm;
+            height: 0;
+            border-bottom: 0.5px solid #000;
+            margin-top: 1mm;
+          }
+          .hint {
+            font-size: 7pt;
+            line-height: 1;
+            color: #444;
+          }
+
+          @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="page">
+          <div class="header">${esc(company)}</div>
+
+          <div class="top">
+            <div class="ident">
+              <div class="info-row">
+                <div class="label">NAMA</div>
+                <div class="colon">:</div>
+                <div class="value">${esc(fullName)}</div>
+              </div>
+              <div class="info-row">
+                <div class="label">KODE MCU</div>
+                <div class="colon">:</div>
+                <div class="value">${esc(patientId)}</div>
+              </div>
+              <div class="info-row">
+                <div class="label">LOKASI</div>
+                <div class="colon">:</div>
+                <div class="value">${esc(location)}</div>
+              </div>
+              <div class="info-row">
+                <div class="label">JENIS PEMERIKSAAN</div>
+                <div class="colon">:</div>
+                <div class="value">${esc(packageText)}</div>
+              </div>
+            </div>
+            <div class="qrwrap">
+              <img class="qr" src="${esc(patient.qrCode)}" alt="QR" />
+            </div>
+          </div>
+
+          <div class="grid">
+            ${items
+              .map(
+                (it) => `
+              <div class="pos-card">
+                <div class="pos-title">${esc(it)}</div>
+                <div class="sign-space"></div>
+                <div class="name-line"></div>
+                <div class="hint">Nama Petugas</div>
+              </div>`
+              )
+              .join("")}
+          </div>
+        </div>
+
+        <script>
+          function doPrint() {
+            try { window.focus(); window.print(); } catch(e) { window.print(); }
+          }
+          window.addEventListener('load', () => setTimeout(doPrint, 200));
+          window.addEventListener('afterprint', () => window.close());
+        <\/script>
+      </body>
+    </html>
+  `);
+
+    printWin.document.close();
+  };
+
   const renderPatientActions = (patient: PatientData) => (
     <>
       <DropdownMenuItem
@@ -295,16 +564,11 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
       </DropdownMenuItem>
 
       <DropdownMenuItem
-        onClick={() => {
-          const mcuResultId = patient.mcuResults[0]?.id;
-          if (mcuResultId) {
-            window.open(`/api/mcu/kartu-kontrol/${mcuResultId}`, "_blank");
-          }
-        }}
+        onClick={() => handlePrintKartuKontrol(patient)}
         disabled={!patient.mcuResults || patient.mcuResults.length === 0}
       >
         <IdCard className="mr-2 h-4 w-4" />
-        <span>Unduh Kartu Kontrol</span>
+        <span>Print Kartu Kontrol</span>
       </DropdownMenuItem>
 
       <DropdownMenuItem onClick={() => handleEditClick(patient.id)}>
@@ -602,7 +866,7 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                               </TooltipContent>
                             </Tooltip>
 
-                            {/* Tombol Baru untuk Unduh Kartu Kontrol */}
+                            {/* Tombol Kartu Kontrol (client-side print) */}
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button
@@ -613,22 +877,15 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                                     !patient.mcuResults ||
                                     patient.mcuResults.length === 0
                                   }
-                                  onClick={() => {
-                                    const mcuResultId =
-                                      patient.mcuResults[0]?.id;
-                                    if (mcuResultId) {
-                                      window.open(
-                                        `/api/mcu/kartu-kontrol/${mcuResultId}`,
-                                        "_blank"
-                                      );
-                                    }
-                                  }}
+                                  onClick={() =>
+                                    handlePrintKartuKontrol(patient)
+                                  }
                                 >
                                   <IdCard className="h-4 w-4" />
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent>
-                                <p>Unduh Kartu Kontrol</p>
+                                <p>Print Kartu Kontrol</p>
                               </TooltipContent>
                             </Tooltip>
 
