@@ -186,6 +186,24 @@ export const AudiometriSpirometriForm = ({
   const fev1_post = toNum(spiroDataForChart.fev1Post);
   const fvc_post = toNum(spiroDataForChart.fvcPost);
 
+  const AudioCellInput = ({ name }: { name: string }) => (
+    <Input
+      type="number"
+      inputMode="numeric"
+      className="
+        h-10
+        text-base
+        text-center
+        w-full
+        px-2
+        [appearance:textfield]
+        [&::-webkit-outer-spin-button]:appearance-none
+        [&::-webkit-inner-spin-button]:appearance-none
+      "
+      {...register(name)}
+    />
+  );
+
   return (
     <Card>
       <CardHeader>
@@ -207,11 +225,13 @@ export const AudiometriSpirometriForm = ({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[100px]">Frekuensi</TableHead>
+                      <TableHead className="w-[110px] p-2 text-xs">
+                        Frekuensi
+                      </TableHead>
                       {frekuensi.map((f) => (
                         <TableHead
                           key={`kanan-head-${f}`}
-                          className="text-center"
+                          className="text-center p-2 text-xs"
                         >
                           {f}
                         </TableHead>
@@ -220,44 +240,41 @@ export const AudiometriSpirometriForm = ({
                   </TableHeader>
                   <TableBody>
                     <TableRow>
-                      <TableCell className="font-medium">AC - KANAN</TableCell>
+                      <TableCell className="font-medium p-2 text-xs whitespace-nowrap">
+                        AC - KANAN
+                      </TableCell>
                       {frekuensi.map((f) => (
-                        <TableCell key={`ac-kanan-${f}`}>
-                          <Input
-                            type="number"
-                            inputMode="numeric"
-                            className="text-center"
-                            {...register(`audioAcKanan${f}`)}
-                          />
+                        <TableCell key={`ac-kanan-${f}`} className="p-1.5">
+                          <AudioCellInput name={`audioAcKanan${f}`} />
                         </TableCell>
                       ))}
                     </TableRow>
                     <TableRow>
-                      <TableCell className="font-medium">BC - KANAN</TableCell>
+                      <TableCell className="font-medium p-2 text-xs whitespace-nowrap">
+                        BC - KANAN
+                      </TableCell>
                       {frekuensi.map((f) => (
-                        <TableCell key={`bc-kanan-${f}`}>
-                          <Input
-                            type="number"
-                            inputMode="numeric"
-                            className="text-center"
-                            {...register(`audioBcKanan${f}`)}
-                          />
+                        <TableCell key={`bc-kanan-${f}`} className="p-1.5">
+                          <AudioCellInput name={`audioBcKanan${f}`} />
                         </TableCell>
                       ))}
                     </TableRow>
                   </TableBody>
                 </Table>
               </div>
+
               <div>
                 <h4 className="font-medium mb-2 text-center">TELINGA KIRI</h4>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[100px]">Frekuensi</TableHead>
+                      <TableHead className="w-[110px] p-2 text-xs">
+                        Frekuensi
+                      </TableHead>
                       {frekuensi.map((f) => (
                         <TableHead
                           key={`kiri-head-${f}`}
-                          className="text-center"
+                          className="text-center p-2 text-xs"
                         >
                           {f}
                         </TableHead>
@@ -266,28 +283,22 @@ export const AudiometriSpirometriForm = ({
                   </TableHeader>
                   <TableBody>
                     <TableRow>
-                      <TableCell className="font-medium">AC - KIRI</TableCell>
+                      <TableCell className="font-medium p-2 text-xs whitespace-nowrap">
+                        AC - KIRI
+                      </TableCell>
                       {frekuensi.map((f) => (
-                        <TableCell key={`ac-kiri-${f}`}>
-                          <Input
-                            type="number"
-                            inputMode="numeric"
-                            className="text-center"
-                            {...register(`audioAcKiri${f}`)}
-                          />
+                        <TableCell key={`ac-kiri-${f}`} className="p-1.5">
+                          <AudioCellInput name={`audioAcKiri${f}`} />
                         </TableCell>
                       ))}
                     </TableRow>
                     <TableRow>
-                      <TableCell className="font-medium">BC - KIRI</TableCell>
+                      <TableCell className="font-medium p-2 text-xs whitespace-nowrap">
+                        BC - KIRI
+                      </TableCell>
                       {frekuensi.map((f) => (
-                        <TableCell key={`bc-kiri-${f}`}>
-                          <Input
-                            type="number"
-                            inputMode="numeric"
-                            className="text-center"
-                            {...register(`audioBcKiri${f}`)}
-                          />
+                        <TableCell key={`bc-kiri-${f}`} className="p-1.5">
+                          <AudioCellInput name={`audioBcKiri${f}`} />
                         </TableCell>
                       ))}
                     </TableRow>
@@ -323,7 +334,7 @@ export const AudiometriSpirometriForm = ({
                   <Label htmlFor="audio-kiri">Telinga Kiri</Label>
                   <Input
                     id="audio-kiri"
-                    placeholder="Normal / Tuli Sensorineural / etc."
+                    placeholder="Normal / Tuli Sensorineural / dll."
                     {...register("audiometriKesimpulanTelingaKiri")}
                   />
                 </div>
