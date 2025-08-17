@@ -1,3 +1,5 @@
+// app/api/reports/import/route.ts
+
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import * as XLSX from "xlsx";
@@ -113,6 +115,8 @@ export async function POST(request: Request) {
     const validatorMap: { [key: string]: string } = {
       hematologiValidatorName: "hematologiValidatorQr",
       kimiaDarahValidatorName: "kimiaDarahValidatorQr",
+      // ---> TAMBAHKAN MAPPING VALIDATOR DI SINI
+      biomonitoringValidatorName: "biomonitoringValidatorQr",
       urinalisaValidatorName: "urinalisaValidatorQr",
       audiometriValidatorName: "audiometriValidatorQr",
       spirometriValidatorName: "spirometriValidatorQr",

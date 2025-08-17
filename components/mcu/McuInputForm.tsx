@@ -11,6 +11,7 @@ import * as XLSX from "xlsx";
 
 import { HematologiForm } from "./forms/HematologiForm";
 import { KimiaDarahForm } from "./forms/KimiaDarahForm";
+import { BiomonitoringForm } from "./forms/BiomonitoringForm"; // <--- 1. IMPORT BARU
 import { UrinalisaForm } from "./forms/UrinalisaForm";
 import { AudiometriSpirometriForm } from "./forms/AudiometriSpirometriForm";
 import { UsgAbdomenForm } from "./forms/UsgAbdomenForm";
@@ -22,6 +23,7 @@ import { ConclusionForm } from "./forms/ConclusionForm";
 import { FraminghamForm } from "./forms/FraminghamForm";
 
 const formSchema = z.object({
+  // Hematologi fields
   hemoglobin: z.string().optional().nullable(),
   leukosit: z.string().optional().nullable(),
   trombosit: z.string().optional().nullable(),
@@ -40,6 +42,8 @@ const formSchema = z.object({
   hitungJenisNeutrofilSegmen: z.string().optional().nullable(),
   hitungJenisLimfosit: z.string().optional().nullable(),
   hitungJenisMonosit: z.string().optional().nullable(),
+  
+  // Kimia Darah fields
   gulaDarahPuasa: z.string().optional().nullable(),
   gulaDarah2JamPP: z.string().optional().nullable(),
   hbsag: z.string().optional().nullable(),
@@ -55,6 +59,12 @@ const formSchema = z.object({
   bilirubinTotal: z.string().optional().nullable(),
   bilirubinDirect: z.string().optional().nullable(),
   alkaliPhosphatase: z.string().optional().nullable(),
+
+  // ---> 2. TAMBAHKAN FIELD BIOMONITORING DI SCHEMA
+  timbalDarah: z.string().optional().nullable(),
+  arsenikUrin: z.string().optional().nullable(),
+  
+  // Urinalisa fields
   urinWarna: z.string().optional().nullable(),
   urinKejernihan: z.string().optional().nullable(),
   urinBau: z.string().optional().nullable(),
@@ -74,6 +84,8 @@ const formSchema = z.object({
   urinCaOxalat: z.string().optional().nullable(),
   urinUridAcid: z.string().optional().nullable(),
   urinGranulaCast: z.string().optional().nullable(),
+  
+  // ... a bunch of other fields ...
   audioAcKanan250: z.coerce.number().optional().nullable(),
   audioAcKanan500: z.coerce.number().optional().nullable(),
   audioAcKanan1000: z.coerce.number().optional().nullable(),
@@ -152,10 +164,14 @@ const formSchema = z.object({
   kesanRontgen: z.string().optional().nullable(),
   kesimpulan: z.string().optional().nullable(),
   saran: z.array(z.string()).optional(),
+  
+  // Validator fields
   hematologiValidatorName: z.string().optional().nullable(),
   hematologiValidatorQr: z.string().optional().nullable(),
   kimiaDarahValidatorName: z.string().optional().nullable(),
   kimiaDarahValidatorQr: z.string().optional().nullable(),
+  biomonitoringValidatorName: z.string().optional().nullable(), // <-- Validator
+  biomonitoringValidatorQr: z.string().optional().nullable(),   // <-- Validator
   urinalisaValidatorName: z.string().optional().nullable(),
   urinalisaValidatorQr: z.string().optional().nullable(),
   audiometriValidatorName: z.string().optional().nullable(),
@@ -174,6 +190,8 @@ const formSchema = z.object({
   conclusionValidatorQr: z.string().optional().nullable(),
   dassFasValidatorName: z.string().optional().nullable(),
   dassFasValidatorQr: z.string().optional().nullable(),
+  
+  // Framingham fields
   framinghamGender: z.string().optional().nullable(),
   framinghamAge: z.string().optional().nullable(),
   framinghamTotalCholesterol: z.string().optional().nullable(),
@@ -358,6 +376,8 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
     hasItem("mcu regular") || hasItem("mcu eksekutif") || hasItem("mcu akhir");
   const showKimiaDarah =
     hasItem("mcu regular") || hasItem("mcu eksekutif") || hasItem("mcu akhir");
+  const showBiomonitoring =
+    hasItem("mcu regular") || hasItem("mcu eksekutif") || hasItem("mcu akhir") || hasItem("biomonitoring");
   const showUrinalisa =
     hasItem("mcu regular") || hasItem("mcu eksekutif") || hasItem("mcu akhir");
   const showAudioSpiro =
@@ -419,6 +439,10 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
 
         {showHematologi && <HematologiForm />}
         {showKimiaDarah && <KimiaDarahForm />}
+
+        {/* ---> 4. LETAKKAN KOMPONEN DI SINI */}
+        {showBiomonitoring && <BiomonitoringForm />}
+
         {showUrinalisa && <UrinalisaForm />}
         {showAudioSpiro && (
           <AudiometriSpirometriForm itemsToCheck={itemsToCheck} />

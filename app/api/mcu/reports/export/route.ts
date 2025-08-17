@@ -1,3 +1,5 @@
+// app/api/reports/export/route.ts
+
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import * as XLSX from "xlsx";
@@ -50,6 +52,12 @@ const templateHeaders = [
   "bilirubinDirect",
   "alkaliPhosphatase",
   "kimiaDarahValidatorName",
+
+  // ---> TAMBAHKAN HEADER BIOMONITORING DI SINI
+  // Biomonitoring
+  "timbalDarah",
+  "arsenikUrin",
+  "biomonitoringValidatorName",
 
   // Framingham Score (Posisi Baru & Field Diperbarui)
   "framinghamGender",
