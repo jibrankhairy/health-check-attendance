@@ -128,6 +128,25 @@ const localStyles = StyleSheet.create({
   conclusionRow: { flexDirection: "row", marginBottom: 4 },
   conclusionLabel: { width: 120, fontFamily: "Helvetica-Bold" },
   conclusionValue: { flex: 1 },
+
+  validatorBox: {
+    position: "absolute",
+    right: 40,
+    bottom: 72,
+    alignItems: "center",
+  },
+  validatorName: {
+    fontSize: 8,
+    fontFamily: "Helvetica-Bold",
+  },
+  validatorLabel: {
+    fontSize: 5,
+  },
+  validatorQr: {
+    width: 80,
+    height: 80,
+    marginBottom: 8,
+  },
 });
 
 function AudiogramSvg({
@@ -422,26 +441,24 @@ export const AudiometriDocument: React.FC<{ data: AudiometriData }> = ({
             <Text style={localStyles.conclusionValue}>: {saran}</Text>
           </View>
         </View>
-
-        {(data?.audiometriValidatorName || data?.audiometriValidatorQr) && (
-          <View
-            style={{ marginTop: 10, alignItems: "flex-end", paddingRight: 40 }}
-          >
-            {data?.audiometriValidatorQr && (
-              <Image
-                src={data.audiometriValidatorQr as string}
-                style={{ width: 80, height: 80, marginBottom: 8 }}
-              />
-            )}
-            {data?.audiometriValidatorName && (
-              <Text style={{ fontSize: 8, fontFamily: "Helvetica-Bold" }}>
-                {data.audiometriValidatorName as string}
-              </Text>
-            )}
-            <Text style={{ fontSize: 5 }}>Validator</Text>
-          </View>
-        )}
       </View>
+
+      {(data?.audiometriValidatorName || data?.audiometriValidatorQr) && (
+        <View style={localStyles.validatorBox}>
+          {data?.audiometriValidatorQr && (
+            <Image
+              src={data.audiometriValidatorQr as string}
+              style={localStyles.validatorQr}
+            />
+          )}
+          {data?.audiometriValidatorName && (
+            <Text style={localStyles.validatorName}>
+              {data.audiometriValidatorName as string}
+            </Text>
+          )}
+          <Text style={localStyles.validatorLabel}>Validator</Text>
+        </View>
+      )}
 
       <ReportFooter />
     </Page>

@@ -65,6 +65,25 @@ const localStyles = StyleSheet.create({
     marginBottom: 15,
     lineHeight: 1.4,
   },
+
+  validatorBox: {
+    position: "absolute",
+    right: 40,
+    bottom: 72,
+    alignItems: "center",
+  },
+  validatorQr: {
+    width: 80,
+    height: 80,
+    marginBottom: 8,
+  },
+  validatorName: {
+    fontSize: 8,
+    fontFamily: "Helvetica-Bold",
+  },
+  validatorLabel: {
+    fontSize: 5,
+  },
 });
 
 export const UsgMammaeDocument: React.FC<UsgMammaeDocumentProps> = ({
@@ -110,26 +129,24 @@ export const UsgMammaeDocument: React.FC<UsgMammaeDocumentProps> = ({
             {data?.usgMammaeKesimpulan ?? "-"}
           </Text>
         </View>
-
-        {(data?.usgMammaeValidatorName || data?.usgMammaeValidatorQr) && (
-          <View
-            style={{ marginTop: 10, alignItems: "flex-end", paddingRight: 40 }}
-          >
-            {data?.usgMammaeValidatorQr && (
-              <Image
-                src={data.usgMammaeValidatorQr}
-                style={{ width: 80, height: 80, marginBottom: 8 }}
-              />
-            )}
-            {data?.usgMammaeValidatorName && (
-              <Text style={{ fontSize: 8, fontFamily: "Helvetica-Bold" }}>
-                {data.usgMammaeValidatorName}
-              </Text>
-            )}
-            <Text style={{ fontSize: 5 }}>Validator</Text>
-          </View>
-        )}
       </View>
+
+      {(data?.usgMammaeValidatorName || data?.usgMammaeValidatorQr) && (
+        <View style={localStyles.validatorBox}>
+          {data?.usgMammaeValidatorQr && (
+            <Image
+              src={data.usgMammaeValidatorQr as string}
+              style={localStyles.validatorQr}
+            />
+          )}
+          {data?.usgMammaeValidatorName && (
+            <Text style={localStyles.validatorName}>
+              {data.usgMammaeValidatorName}
+            </Text>
+          )}
+          <Text style={localStyles.validatorLabel}>Validator</Text>
+        </View>
+      )}
 
       <ReportFooter />
     </Page>

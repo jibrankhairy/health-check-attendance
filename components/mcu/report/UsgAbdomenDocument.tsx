@@ -72,6 +72,25 @@ const localStyles = StyleSheet.create({
   reportValue: {
     width: "75%",
   },
+
+  validatorBox: {
+    position: "absolute",
+    right: 40,
+    bottom: 72,
+    alignItems: "center",
+  },
+  validatorQr: {
+    width: 80,
+    height: 80,
+    marginBottom: 8,
+  },
+  validatorName: {
+    fontSize: 8,
+    fontFamily: "Helvetica-Bold",
+  },
+  validatorLabel: {
+    fontSize: 5,
+  },
 });
 
 export const UsgAbdomenDocument: React.FC<UsgAbdomenDocumentProps> = ({
@@ -150,26 +169,24 @@ export const UsgAbdomenDocument: React.FC<UsgAbdomenDocumentProps> = ({
             </Text>
           </View>
         </View>
-
-        {(data?.usgAbdomenValidatorName || data?.usgAbdomenValidatorQr) && (
-          <View
-            style={{ marginTop: 10, alignItems: "flex-end", paddingRight: 40 }}
-          >
-            {data?.usgAbdomenValidatorQr && (
-              <Image
-                src={data.usgAbdomenValidatorQr}
-                style={{ width: 80, height: 80, marginBottom: 8 }}
-              />
-            )}
-            {data?.usgAbdomenValidatorName && (
-              <Text style={{ fontSize: 8, fontFamily: "Helvetica-Bold" }}>
-                {data.usgAbdomenValidatorName}
-              </Text>
-            )}
-            <Text style={{ fontSize: 5 }}>Validator</Text>
-          </View>
-        )}
       </View>
+
+      {(data?.usgAbdomenValidatorName || data?.usgAbdomenValidatorQr) && (
+        <View style={localStyles.validatorBox}>
+          {data?.usgAbdomenValidatorQr && (
+            <Image
+              src={data.usgAbdomenValidatorQr as string}
+              style={localStyles.validatorQr}
+            />
+          )}
+          {data?.usgAbdomenValidatorName && (
+            <Text style={localStyles.validatorName}>
+              {data.usgAbdomenValidatorName}
+            </Text>
+          )}
+          <Text style={localStyles.validatorLabel}>Validator</Text>
+        </View>
+      )}
 
       <ReportFooter />
     </Page>

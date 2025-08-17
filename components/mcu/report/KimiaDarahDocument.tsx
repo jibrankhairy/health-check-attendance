@@ -183,8 +183,10 @@ const getResultStyle = (
 
   if ((item.ref as QualitativeRef).type === "qualitative") {
     const qRef = item.ref as QualitativeRef;
-    const lower = String(resultValue).toLowerCase();
-    return !qRef.normal.includes(lower) ? (styles as any).resultAbnormal : {};
+    const lower = String(resultValue).toLowerCase().trim();
+    return qRef.normal.map((s) => s.toLowerCase().trim()).includes(lower)
+      ? {}
+      : (styles as any).resultAbnormal;
   }
 
   const num = parseFloat(String(resultValue));
@@ -207,6 +209,27 @@ const getResultStyle = (
 
 type KimiaDarahDocumentProps = {
   data?: KimiaDarahData;
+};
+
+const validatorStyles = {
+  validatorBox: {
+    position: "absolute" as const,
+    right: 40,
+    bottom: 72,
+    alignItems: "center" as const,
+  },
+  validatorQr: {
+    width: 80,
+    height: 80,
+    marginBottom: 8,
+  },
+  validatorName: {
+    fontSize: 8,
+    fontFamily: "Helvetica-Bold",
+  },
+  validatorLabel: {
+    fontSize: 5,
+  },
 };
 
 export const KimiaDarahDocument: React.FC<KimiaDarahDocumentProps> = ({
@@ -297,26 +320,25 @@ export const KimiaDarahDocument: React.FC<KimiaDarahDocumentProps> = ({
           );
         })}
       </View>
-
-      {(data?.kimiaDarahValidatorName || data?.kimiaDarahValidatorQr) && (
-        <View
-          style={{ marginTop: 10, alignItems: "flex-end", paddingRight: 40 }}
-        >
-          {data?.kimiaDarahValidatorQr && (
-            <Image
-              src={data.kimiaDarahValidatorQr as string}
-              style={{ width: 80, height: 80, marginBottom: 8 }}
-            />
-          )}
-          {data?.kimiaDarahValidatorName && (
-            <Text style={{ fontSize: 8, fontFamily: "Helvetica-Bold" }}>
-              {data.kimiaDarahValidatorName}
-            </Text>
-          )}
-          <Text style={{ fontSize: 5 }}>Validator</Text>
-        </View>
-      )}
     </View>
+
+    {(data?.kimiaDarahValidatorName || data?.kimiaDarahValidatorQr) && (
+      <View style={validatorStyles.validatorBox}>
+        {data?.kimiaDarahValidatorQr && (
+          <Image
+            src={data.kimiaDarahValidatorQr as string}
+            style={validatorStyles.validatorQr}
+          />
+        )}
+        {data?.kimiaDarahValidatorName && (
+          <Text style={validatorStyles.validatorName}>
+            {data.kimiaDarahValidatorName}
+          </Text>
+        )}
+        <Text style={validatorStyles.validatorLabel}>Validator</Text>
+      </View>
+    )}
+
     <ReportFooter />
   </Page>
 );

@@ -69,6 +69,25 @@ const localStyles = StyleSheet.create({
   reportValue: {
     width: "70%",
   },
+
+  validatorBox: {
+    position: "absolute",
+    right: 40,
+    bottom: 72,
+    alignItems: "center",
+  },
+  validatorQr: {
+    width: 80,
+    height: 80,
+    marginBottom: 8,
+  },
+  validatorName: {
+    fontSize: 8,
+    fontFamily: "Helvetica-Bold",
+  },
+  validatorLabel: {
+    fontSize: 5,
+  },
 });
 
 export const EkgDocument: React.FC<{ data: EkgData }> = ({ data }) => {
@@ -160,26 +179,24 @@ export const EkgDocument: React.FC<{ data: EkgData }> = ({ data }) => {
             </Text>
           </View>
         </View>
-
-        {(data?.ekgValidatorName || data?.ekgValidatorQr) && (
-          <View
-            style={{ marginTop: 10, alignItems: "flex-end", paddingRight: 40 }}
-          >
-            {data?.ekgValidatorQr && (
-              <Image
-                src={data.ekgValidatorQr as string}
-                style={{ width: 80, height: 80, marginBottom: 8 }}
-              />
-            )}
-            {data?.ekgValidatorName && (
-              <Text style={{ fontSize: 8, fontFamily: "Helvetica-Bold" }}>
-                {data.ekgValidatorName as string}
-              </Text>
-            )}
-            <Text style={{ fontSize: 5 }}>Validator</Text>
-          </View>
-        )}
       </View>
+
+      {(data?.ekgValidatorName || data?.ekgValidatorQr) && (
+        <View style={localStyles.validatorBox}>
+          {data?.ekgValidatorQr && (
+            <Image
+              src={data.ekgValidatorQr as string}
+              style={localStyles.validatorQr}
+            />
+          )}
+          {data?.ekgValidatorName && (
+            <Text style={localStyles.validatorName}>
+              {data.ekgValidatorName as string}
+            </Text>
+          )}
+          <Text style={localStyles.validatorLabel}>Validator</Text>
+        </View>
+      )}
 
       <ReportFooter />
     </Page>

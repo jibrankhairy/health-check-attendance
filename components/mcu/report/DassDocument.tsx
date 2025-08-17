@@ -328,26 +328,24 @@ export const DassDocument: React.FC<{ data: DassData }> = ({ data }) => {
             </View>
           </View>
         </View>
-
-        {(data?.dassFasValidatorName || data?.dassFasValidatorQr) && (
-          <View
-            style={{ marginTop: 10, alignItems: "flex-end", paddingRight: 40 }}
-          >
-            {data?.dassFasValidatorQr && (
-              <Image
-                src={data.dassFasValidatorQr as string}
-                style={{ width: 80, height: 80, marginBottom: 8 }}
-              />
-            )}
-            {data?.dassFasValidatorName && (
-              <Text style={{ fontSize: 10, fontFamily: "Helvetica-Bold" }}>
-                {data.dassFasValidatorName as string}
-              </Text>
-            )}
-            <Text style={{ fontSize: 8 }}>Psikolog / Validator</Text>
-          </View>
-        )}
       </View>
+
+      {(data?.dassFasValidatorName || data?.dassFasValidatorQr) && (
+        <View style={localStyles.validatorBox}>
+          {data?.dassFasValidatorQr && (
+            <Image
+              src={data.dassFasValidatorQr as string}
+              style={localStyles.validatorQr}
+            />
+          )}
+          {data?.dassFasValidatorName && (
+            <Text style={localStyles.validatorName}>
+              {data.dassFasValidatorName as string}
+            </Text>
+          )}
+          <Text style={localStyles.validatorLabel}>Psikolog / Validator</Text>
+        </View>
+      )}
 
       <ReportFooter />
     </Page>
@@ -400,5 +398,24 @@ const localStyles = StyleSheet.create({
     borderRightWidth: 1,
     borderRightColor: "#333",
     fontSize: 9,
+  },
+
+  validatorBox: {
+    position: "absolute",
+    right: 40,
+    bottom: 72,
+    alignItems: "center",
+  },
+  validatorQr: {
+    width: 80,
+    height: 80,
+    marginBottom: 8,
+  },
+  validatorName: {
+    fontSize: 8,
+    fontFamily: "Helvetica-Bold",
+  },
+  validatorLabel: {
+    fontSize: 5,
   },
 });

@@ -99,6 +99,25 @@ const localStyles = StyleSheet.create({
   },
   reportLabel: { width: "30%", fontFamily: "Helvetica-Bold" },
   reportValue: { width: "70%" },
+
+  validatorBox: {
+    position: "absolute",
+    right: 40,
+    bottom: 72,
+    alignItems: "center",
+  },
+  validatorQr: {
+    width: 80,
+    height: 80,
+    marginBottom: 8,
+  },
+  validatorName: {
+    fontSize: 8,
+    fontFamily: "Helvetica-Bold",
+  },
+  validatorLabel: {
+    fontSize: 5,
+  },
 });
 
 function FlowVolumeChart({
@@ -471,26 +490,24 @@ export const SpirometriDocument: React.FC<{ data: SpirometriData }> = ({
             </Text>
           </View>
         </View>
-
-        {(data?.spirometriValidatorName || data?.spirometriValidatorQr) && (
-          <View
-            style={{ marginTop: 10, alignItems: "flex-end", paddingRight: 40 }}
-          >
-            {data?.spirometriValidatorQr && (
-              <Image
-                src={data.spirometriValidatorQr as string}
-                style={{ width: 80, height: 80, marginBottom: 8 }}
-              />
-            )}
-            {data?.spirometriValidatorName && (
-              <Text style={{ fontSize: 8, fontFamily: "Helvetica-Bold" }}>
-                {data.spirometriValidatorName}
-              </Text>
-            )}
-            <Text style={{ fontSize: 5 }}>Validator</Text>
-          </View>
-        )}
       </View>
+
+      {(data?.spirometriValidatorName || data?.spirometriValidatorQr) && (
+        <View style={localStyles.validatorBox}>
+          {data?.spirometriValidatorQr && (
+            <Image
+              src={data.spirometriValidatorQr as string}
+              style={localStyles.validatorQr}
+            />
+          )}
+          {data?.spirometriValidatorName && (
+            <Text style={localStyles.validatorName}>
+              {data.spirometriValidatorName}
+            </Text>
+          )}
+          <Text style={localStyles.validatorLabel}>Validator</Text>
+        </View>
+      )}
 
       <ReportFooter />
     </Page>

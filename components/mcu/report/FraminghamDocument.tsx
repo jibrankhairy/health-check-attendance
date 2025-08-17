@@ -52,6 +52,25 @@ const localStyles = StyleSheet.create({
     fontSize: 10,
     fontFamily: "Helvetica-Bold",
   },
+
+  validatorBox: {
+    position: "absolute",
+    right: 40,
+    bottom: 72,
+    alignItems: "center",
+  },
+  validatorQr: {
+    width: 80,
+    height: 80,
+    marginBottom: 8,
+  },
+  validatorName: {
+    fontSize: 8,
+    fontFamily: "Helvetica-Bold",
+  },
+  validatorLabel: {
+    fontSize: 5,
+  },
 });
 
 const displayValue = (v: unknown): string =>
@@ -135,26 +154,25 @@ export const FraminghamDocument: React.FC<{ data: FraminghamData }> = ({
             </View>
           ))}
         </View>
-
-        {(data?.framinghamValidatorName || data?.framinghamValidatorQr) && (
-          <View
-            style={{ marginTop: 20, alignItems: "flex-end", paddingRight: 40 }}
-          >
-            {data?.framinghamValidatorQr && (
-              <Image
-                src={String(data.framinghamValidatorQr)}
-                style={{ width: 80, height: 80, marginBottom: 8 }}
-              />
-            )}
-            {data?.framinghamValidatorName && (
-              <Text style={{ fontSize: 8, fontFamily: "Helvetica-Bold" }}>
-                {String(data.framinghamValidatorName)}
-              </Text>
-            )}
-            <Text style={{ fontSize: 5 }}>Validator</Text>
-          </View>
-        )}
       </View>
+
+      {(data?.framinghamValidatorName || data?.framinghamValidatorQr) && (
+        <View style={localStyles.validatorBox}>
+          {data?.framinghamValidatorQr && (
+            <Image
+              src={String(data.framinghamValidatorQr)}
+              style={localStyles.validatorQr}
+            />
+          )}
+          {data?.framinghamValidatorName && (
+            <Text style={localStyles.validatorName}>
+              {String(data.framinghamValidatorName)}
+            </Text>
+          )}
+          <Text style={localStyles.validatorLabel}>Validator</Text>
+        </View>
+      )}
+
       <ReportFooter />
     </Page>
   );

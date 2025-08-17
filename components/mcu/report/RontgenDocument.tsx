@@ -53,6 +53,25 @@ const localStyles = StyleSheet.create({
     lineHeight: 1.5,
     fontSize: 10,
   },
+
+  validatorBox: {
+    position: "absolute",
+    right: 40,
+    bottom: 72,
+    alignItems: "center",
+  },
+  validatorQr: {
+    width: 80,
+    height: 80,
+    marginBottom: 8,
+  },
+  validatorName: {
+    fontSize: 8,
+    fontFamily: "Helvetica-Bold",
+  },
+  validatorLabel: {
+    fontSize: 5,
+  },
 });
 
 export const RontgenDocument: React.FC<{ data: RontgenData }> = ({ data }) => {
@@ -79,26 +98,24 @@ export const RontgenDocument: React.FC<{ data: RontgenData }> = ({ data }) => {
             {data?.kesanRontgen ?? "-"}
           </Text>
         </View>
-
-        {(data?.rontgenValidatorName || data?.rontgenValidatorQr) && (
-          <View
-            style={{ marginTop: 10, alignItems: "flex-end", paddingRight: 40 }}
-          >
-            {data?.rontgenValidatorQr && (
-              <Image
-                src={data.rontgenValidatorQr as string}
-                style={{ width: 80, height: 80, marginBottom: 8 }}
-              />
-            )}
-            {data?.rontgenValidatorName && (
-              <Text style={{ fontSize: 8, fontFamily: "Helvetica-Bold" }}>
-                {data.rontgenValidatorName}
-              </Text>
-            )}
-            <Text style={{ fontSize: 5 }}>Validator</Text>
-          </View>
-        )}
       </View>
+
+      {(data?.rontgenValidatorName || data?.rontgenValidatorQr) && (
+        <View style={localStyles.validatorBox}>
+          {data?.rontgenValidatorQr && (
+            <Image
+              src={data.rontgenValidatorQr as string}
+              style={localStyles.validatorQr}
+            />
+          )}
+          {data?.rontgenValidatorName && (
+            <Text style={localStyles.validatorName}>
+              {data.rontgenValidatorName}
+            </Text>
+          )}
+          <Text style={localStyles.validatorLabel}>Validator</Text>
+        </View>
+      )}
 
       <ReportFooter />
     </Page>

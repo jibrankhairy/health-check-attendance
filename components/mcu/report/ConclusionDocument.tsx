@@ -305,8 +305,10 @@ const isAbnormal = (
 
   let range: Range | undefined = item.ref.all;
   const g = String(gender ?? "").toUpperCase();
-  if (item.ref.male && g === "LAKI-LAKI") range = item.ref.male;
-  else if (item.ref.female && g === "PEREMPUAN") range = item.ref.female;
+  if ((item.ref as RefNumeric).male && g === "LAKI-LAKI")
+    range = (item.ref as RefNumeric).male;
+  else if ((item.ref as RefNumeric).female && g === "PEREMPUAN")
+    range = (item.ref as RefNumeric).female;
 
   if (!range) return false;
   const { min, max } = range;
@@ -479,12 +481,7 @@ export const ConclusionDocument: React.FC<{ data: ConclusionData }> = ({
           </Text>
 
           <View style={localStyles.saranRow}>
-            <View
-              style={[
-                localStyles.saranCol,
-                { width: hasSignature ? "68%" : "100%" },
-              ]}
-            >
+            <View style={[localStyles.saranCol, { width: "100%" }]}>
               {saranList.length > 0 ? (
                 saranList.map((saran, idx) => (
                   <Text key={idx} style={localStyles.saranItem}>
@@ -497,26 +494,26 @@ export const ConclusionDocument: React.FC<{ data: ConclusionData }> = ({
                 </Text>
               )}
             </View>
-
-            {hasSignature && (
-              <View style={localStyles.signCol}>
-                {data?.conclusionValidatorQr && (
-                  <Image
-                    src={data.conclusionValidatorQr as string}
-                    style={{ width: 70, height: 70, marginBottom: 3 }}
-                  />
-                )}
-                {data?.conclusionValidatorName && (
-                  <Text style={{ fontSize: 8, fontFamily: "Helvetica-Bold" }}>
-                    {data.conclusionValidatorName as string}
-                  </Text>
-                )}
-                <Text style={{ fontSize: 5 }}>Validator</Text>
-              </View>
-            )}
           </View>
         </View>
       </View>
+
+      {hasSignature && (
+        <View style={localStyles.validatorBox}>
+          {data?.conclusionValidatorQr && (
+            <Image
+              src={data.conclusionValidatorQr as string}
+              style={localStyles.validatorQr}
+            />
+          )}
+          {data?.conclusionValidatorName && (
+            <Text style={localStyles.validatorName}>
+              {data.conclusionValidatorName as string}
+            </Text>
+          )}
+          <Text style={localStyles.validatorLabel}>Validator</Text>
+        </View>
+      )}
 
       <ReportFooter />
     </Page>
@@ -549,8 +546,27 @@ const localStyles = StyleSheet.create({
     fontSize: 9,
   },
   mb1: { marginBottom: 1 },
+
   saranItem: { marginBottom: 3, fontSize: 9 },
   saranRow: { flexDirection: "row", justifyContent: "space-between", gap: 12 },
   saranCol: { paddingRight: 6 },
-  signCol: { width: "30%", alignItems: "flex-end", paddingRight: 6 },
+
+  validatorBox: {
+    position: "absolute",
+    right: 40,
+    bottom: 72,
+    alignItems: "center",
+  },
+  validatorQr: {
+    width: 80,
+    height: 80,
+    marginBottom: 8,
+  },
+  validatorName: {
+    fontSize: 8,
+    fontFamily: "Helvetica-Bold",
+  },
+  validatorLabel: {
+    fontSize: 5,
+  },
 });

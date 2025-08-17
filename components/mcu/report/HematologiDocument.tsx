@@ -214,6 +214,27 @@ const isAbnormal = (
 const displayValue = (v: unknown): string =>
   v === null || v === undefined || String(v) === "" ? "-" : String(v);
 
+const validatorStyles = {
+  validatorBox: {
+    position: "absolute" as const,
+    right: 40,
+    bottom: 72,
+    alignItems: "center" as const,
+  },
+  validatorQr: {
+    width: 80,
+    height: 80,
+    marginBottom: 8,
+  },
+  validatorName: {
+    fontSize: 8,
+    fontFamily: "Helvetica-Bold",
+  },
+  validatorLabel: {
+    fontSize: 5,
+  },
+};
+
 export const HematologiDocument: React.FC<{ data: HematologiData }> = ({
   data,
 }) => {
@@ -285,26 +306,24 @@ export const HematologiDocument: React.FC<{ data: HematologiData }> = ({
             );
           })}
         </View>
-
-        {(data?.hematologiValidatorName || data?.hematologiValidatorQr) && (
-          <View
-            style={{ marginTop: 10, alignItems: "flex-end", paddingRight: 40 }}
-          >
-            {data?.hematologiValidatorQr && (
-              <Image
-                src={String(data.hematologiValidatorQr)}
-                style={{ width: 80, height: 80, marginBottom: 8 }}
-              />
-            )}
-            {data?.hematologiValidatorName && (
-              <Text style={{ fontSize: 8, fontFamily: "Helvetica-Bold" }}>
-                {String(data.hematologiValidatorName)}
-              </Text>
-            )}
-            <Text style={{ fontSize: 5 }}>Validator</Text>
-          </View>
-        )}
       </View>
+
+      {(data?.hematologiValidatorName || data?.hematologiValidatorQr) && (
+        <View style={validatorStyles.validatorBox}>
+          {data?.hematologiValidatorQr && (
+            <Image
+              src={String(data.hematologiValidatorQr)}
+              style={validatorStyles.validatorQr}
+            />
+          )}
+          {data?.hematologiValidatorName && (
+            <Text style={validatorStyles.validatorName}>
+              {String(data.hematologiValidatorName)}
+            </Text>
+          )}
+          <Text style={validatorStyles.validatorLabel}>Validator</Text>
+        </View>
+      )}
 
       <ReportFooter />
     </Page>

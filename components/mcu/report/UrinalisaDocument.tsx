@@ -282,6 +282,27 @@ const isResultAbnormal = (
   return false;
 };
 
+const validatorStyles = {
+  validatorBox: {
+    position: "absolute" as const,
+    right: 40,
+    bottom: 72,
+    alignItems: "center" as const,
+  },
+  validatorQr: {
+    width: 80,
+    height: 80,
+    marginBottom: 3,
+  },
+  validatorName: {
+    fontSize: 8,
+    fontFamily: "Helvetica-Bold",
+  },
+  validatorLabel: {
+    fontSize: 5,
+  },
+};
+
 export const UrinalisaDocument: React.FC<UrinalisaDocumentProps> = ({
   data,
 }) => (
@@ -338,8 +359,8 @@ export const UrinalisaDocument: React.FC<UrinalisaDocumentProps> = ({
             );
           }
 
-          const val = data?.[item.field];
-          const abnormal = isResultAbnormal(item, val);
+          const val = data?.[item.field as keyof UrinalisaData];
+          const abnormal = isResultAbnormal(item as NonHeaderRow, val);
           const isLast = idx === urinalisaDataMap.length - 1;
           const rowStyle = isLast
             ? [styles.tableRow, styles.tableRowLast]
@@ -349,45 +370,43 @@ export const UrinalisaDocument: React.FC<UrinalisaDocumentProps> = ({
           if (abnormal) hasilStyles.push(styles.resultAbnormal);
 
           return (
-            <View style={rowStyle} key={item.field}>
+            <View style={rowStyle} key={(item as NonHeaderRow).field}>
               <Text style={[styles.tableCol, styles.colNo]} />
               <Text style={[styles.tableCol, styles.colJenis]}>
-                {item.label}
+                {(item as NonHeaderRow).label}
               </Text>
               <Text style={hasilStyles}>{val ?? "-"}</Text>
               <Text style={[styles.tableCol, styles.colRujukan]}>
-                {item.refText}
+                {(item as NonHeaderRow).refText}
               </Text>
               <Text
                 style={[styles.tableCol, styles.colSatuan, styles.tableColLast]}
               >
-                {item.unit}
+                {(item as NonHeaderRow).unit}
               </Text>
             </View>
           );
         })}
       </View>
-
-      {/* Signature ala Hematologi: kanan, tanpa "Pemeriksa," & tanpa garis */}
-      {(data?.urinalisaValidatorName || data?.urinalisaValidatorQr) && (
-        <View
-          style={{ marginTop: 10, alignItems: "flex-end", paddingRight: 40 }}
-        >
-          {data?.urinalisaValidatorQr && (
-            <Image
-              src={data.urinalisaValidatorQr}
-              style={{ width: 80, height: 80, marginBottom: 3 }}
-            />
-          )}
-          {data?.urinalisaValidatorName && (
-            <Text style={{ fontSize: 8, fontFamily: "Helvetica-Bold" }}>
-              {data.urinalisaValidatorName}
-            </Text>
-          )}
-          <Text style={{ fontSize: 5 }}>Validator</Text>
-        </View>
-      )}
     </View>
+
+    {(data?.urinalisaValidatorName || data?.urinalisaValidatorQr) && (
+      <View style={validatorStyles.validatorBox}>
+        {data?.urinalisaValidatorQr && (
+          <Image
+            src={data.urinalisaValidatorQr}
+            style={validatorStyles.validatorQr}
+          />
+        )}
+        {data?.urinalisaValidatorName && (
+          <Text style={validatorStyles.validatorName}>
+            {data.urinalisaValidatorName}
+          </Text>
+        )}
+        <Text style={validatorStyles.validatorLabel}>Validator</Text>
+      </View>
+    )}
+
     <ReportFooter />
   </Page>
 );
