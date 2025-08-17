@@ -284,48 +284,48 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
     }
   };
 
-  const buildKartuKontrolItems = (patient: PatientData): string[] => {
-    const baseItems = [
-      "POS PEMERIKSAAN FISIK",
-      "POS PEMERIKSAAN LAB",
-      "POS PEMERIKSAAN URIN",
-      "POS PEMERIKSAAN RADIOLOGI",
-    ];
+  // const buildKartuKontrolItems = (patient: PatientData): string[] => {
+  //   const baseItems = [
+  //     "POS PEMERIKSAAN FISIK",
+  //     "POS PEMERIKSAAN LAB",
+  //     "POS PEMERIKSAAN URIN",
+  //     "POS PEMERIKSAAN RADIOLOGI",
+  //   ];
 
-    const pkgArr: string[] = Array.isArray(patient.mcuPackage)
-      ? (patient.mcuPackage as string[])
-      : typeof patient.mcuPackage === "string"
-      ? (patient.mcuPackage as string)
-          .split(",")
-          .map((s) => s.trim())
-          .filter(Boolean)
-      : [];
+  //   const pkgArr: string[] = Array.isArray(patient.mcuPackage)
+  //     ? (patient.mcuPackage as string[])
+  //     : typeof patient.mcuPackage === "string"
+  //     ? (patient.mcuPackage as string)
+  //         .split(",")
+  //         .map((s) => s.trim())
+  //         .filter(Boolean)
+  //     : [];
 
-    const norm = pkgArr.map((s) => s.toLowerCase());
+  //   const norm = pkgArr.map((s) => s.toLowerCase());
 
-    const addIf = (cond: boolean, label: string) => {
-      if (cond && !baseItems.includes(label)) baseItems.push(label);
-    };
+  //   const addIf = (cond: boolean, label: string) => {
+  //     if (cond && !baseItems.includes(label)) baseItems.push(label);
+  //   };
 
-    addIf(
-      norm.some((s) => s.includes("ekg")),
-      "POS PEMERIKSAAN EKG"
-    );
-    addIf(
-      norm.some((s) => s.includes("audiometri") || s.includes("audiometry")),
-      "POS PEMERIKSAAN AUDIOMETRI"
-    );
-    addIf(
-      norm.some((s) => s.includes("spirometri") || s.includes("spirometry")),
-      "POS PEMERIKSAAN SPIROMETRI"
-    );
-    addIf(
-      norm.some((s) => s.includes("treadmill")),
-      "POS PEMERIKSAAN TREADMILL"
-    );
+  //   addIf(
+  //     norm.some((s) => s.includes("ekg")),
+  //     "POS PEMERIKSAAN EKG"
+  //   );
+  //   addIf(
+  //     norm.some((s) => s.includes("audiometri") || s.includes("audiometry")),
+  //     "POS PEMERIKSAAN AUDIOMETRI"
+  //   );
+  //   addIf(
+  //     norm.some((s) => s.includes("spirometri") || s.includes("spirometry")),
+  //     "POS PEMERIKSAAN SPIROMETRI"
+  //   );
+  //   addIf(
+  //     norm.some((s) => s.includes("treadmill")),
+  //     "POS PEMERIKSAAN TREADMILL"
+  //   );
 
-    return baseItems;
-  };
+  //   return baseItems;
+  // };
 
   const handlePrintKartuKontrol = (patient: PatientData) => {
     if (!patient.qrCode) {
@@ -345,7 +345,6 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
       : [];
     const packageText = pkg.join(", ").toUpperCase();
 
-    // Pos dasar + tambahan sesuai paket
     const baseItems = [
       "POS PEMERIKSAAN FISIK",
       "POS PEMERIKSAAN LAB",
@@ -494,7 +493,10 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
       </head>
       <body>
         <div class="page">
-          <div class="header">${esc(company)}</div>
+          <div class="header">
+            <div class="title">KARTU KONTROL PESERTA MCU</div>
+            <div class="company">${esc(company)}</div>
+          </div>
 
           <div class="top">
             <div class="ident">
