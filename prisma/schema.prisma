@@ -1,5 +1,5 @@
 // This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// learn more about it in thedocs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
@@ -41,30 +41,29 @@ model Role {
 }
 
 model Patient {
-  id          Int         @id @default(autoincrement())
-  nik         String      @unique
-  patientId   String      @unique
-  fullName    String
-  email       String?
-  dob         DateTime
-  age         Int
-  gender      String
-  position    String
-  division    String
-  status      String
-  location    String
-  address     String?     @db.Text
-  phoneNumber String?
-  qrCode      String      @db.Text
-  mcuPackage  Json
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  company     Company     @relation(fields: [companyId], references: [id])
-  companyId   String
-  photoUrl    String?  @db.Text
-  mcuResults  McuResult[]
-
-  lastProgress String?    @default("MENUNGGU")
+  id           Int         @id @default(autoincrement())
+  nik          String      @unique
+  patientId    String      @unique
+  fullName     String
+  email        String?
+  dob          DateTime
+  age          Int
+  gender       String
+  position     String
+  division     String
+  status       String
+  location     String
+  address      String?     @db.Text
+  phoneNumber  String?
+  qrCode       String      @db.Text
+  mcuPackage   Json
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  company      Company     @relation(fields: [companyId], references: [id])
+  companyId    String
+  photoUrl     String?     @db.Text
+  mcuResults   McuResult[]
+  lastProgress String?     @default("MENUNGGU")
 }
 
 enum ProgressStatus {
@@ -74,215 +73,231 @@ enum ProgressStatus {
 }
 
 model Checkpoint {
-  id        Int      @id @default(autoincrement())
-  name      String   @unique 
-  slug      String   @unique 
-  createdAt DateTime @default(now())
-
+  id         Int           @id @default(autoincrement())
+  name       String        @unique
+  slug       String        @unique
+  createdAt  DateTime      @default(now())
   progresses McuProgress[]
 }
 
 model McuProgress {
-  id           String         @id @default(cuid())
-  status       ProgressStatus @default(PENDING)
-  petugasName  String?
-  completedAt  DateTime?
-  notes        String?        @db.Text
-
-  mcuResult    McuResult @relation(fields: [mcuResultId], references: [id], onDelete: Cascade)
-  mcuResultId  String
-
-  checkpoint   Checkpoint @relation(fields: [checkpointId], references: [id])
+  id          String         @id @default(cuid())
+  status      ProgressStatus @default(PENDING)
+  petugasName String?
+  completedAt DateTime?
+  notes       String?        @db.Text
+  mcuResult   McuResult      @relation(fields: [mcuResultId], references: [id], onDelete: Cascade)
+  mcuResultId String
+  checkpoint  Checkpoint     @relation(fields: [checkpointId], references: [id])
   checkpointId Int
 
-  @@unique([mcuResultId, checkpointId]) 
+  @@unique([mcuResultId, checkpointId])
 }
 
-
-
 model McuResult {
-  id                   String    @id @default(cuid())
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
-  status               String    @default("IN_PROGRESS")
-
-  fileUrl              String?   @db.Text
-
-  patient              Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  id                   String      @id @default(cuid())
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+  status               String      @default("IN_PROGRESS")
+  fileUrl              String?     @db.Text
+  patient              Patient     @relation(fields: [patientId], references: [id], onDelete: Cascade)
   patientId            Int
-
-  progress McuProgress[]
-
-  healthHistoryAnswers  Json?
-  dassTestAnswers       Json?
-  fasTestAnswers        Json?
-  formSubmittedAt       DateTime?
-  pemeriksaanFisikForm  Json?
-  timeCheckIn           String?
+  progress             McuProgress[]
+  healthHistoryAnswers Json?
+  dassTestAnswers      Json?
+  fasTestAnswers       Json?
+  formSubmittedAt      DateTime?
+  pemeriksaanFisikForm Json?
+  timeCheckIn          String?
 
   // --- Pemeriksaan Fisik ---
   beratBadan           Float?
   tinggiBadan          Float?
-  bmi                  String?   @db.Text
-  lingkarPerut         String?   @db.Text
-  tekananDarah         String?   @db.Text
-  nadi                 String?   @db.Text
-  suhu                 String?   @db.Text
-  pernafasan           String?   @db.Text
-  fisikKondisiUmum     String?   @db.Text
-  fisikKesadaran       String?   @db.Text
-  fisikKulit           String?   @db.Text
-  fisikKepalaLeher     String?   @db.Text
+  bmi                  String?     @db.Text
+  lingkarPerut         String?     @db.Text
+  tekananDarah         String?     @db.Text
+  nadi                 String?     @db.Text
+  suhu                 String?     @db.Text
+  pernafasan           String?     @db.Text
+  fisikKondisiUmum     String?     @db.Text
+  fisikKesadaran       String?     @db.Text
+  fisikKulit           String?     @db.Text
+  fisikKepalaLeher     String?     @db.Text
 
   // --- Mata ---
-  visusOd              String?   @db.Text
-  visusOs              String?   @db.Text
-  butaWarna            String?   @db.Text
-  kacamata             String?   @db.Text
-  kacamataOd           String?   @db.Text
-  kacamataOs           String?   @db.Text
-  lapangPandang        String?   @db.Text
-  fisikMataLainnya     String?   @db.Text
+  visusOd              String?     @db.Text
+  visusOs              String?     @db.Text
+  butaWarna            String?     @db.Text
+  kacamata             String?     @db.Text
+  kacamataOd           String?     @db.Text
+  kacamataOs           String?     @db.Text
+  lapangPandang        String?     @db.Text
+  fisikMataLainnya     String?     @db.Text
 
   // --- THT & Pendengaran ---
-  fisikTelinga         String?   @db.Text
-  fisikHidung          String?   @db.Text
-  fisikTenggorokan     String?   @db.Text
+  fisikTelinga         String?     @db.Text
+  fisikHidung          String?     @db.Text
+  fisikTenggorokan     String?     @db.Text
 
   // --- Sistem Lainnya (Fisik) ---
-  fisikKardiovaskular  String?   @db.Text
-  fisikPernafasan      String?   @db.Text
-  fisikPencernaan      String?   @db.Text
-  fisikEkstremitas     String?   @db.Text
-
-  examinationStartedAt  DateTime?
+  fisikKardiovaskular  String?     @db.Text
+  fisikPernafasan      String?     @db.Text
+  fisikPencernaan      String?     @db.Text
+  fisikEkstremitas     String?     @db.Text
+  examinationStartedAt DateTime?
 
   // --- Hematologi ---
-  hemoglobin           String?   @db.Text
-  leukosit             String?   @db.Text
-  trombosit            String?   @db.Text
-  hematokrit           String?   @db.Text
-  eritrosit            String?   @db.Text
-  led                  String?   @db.Text
-  mcv                  String?   @db.Text
-  mch                  String?   @db.Text
-  mchc                 String?   @db.Text
-  rdw                  String?   @db.Text
-  mpv                  String?   @db.Text
-  pdw                  String?   @db.Text
-  hitungJenisEosinofil String?   @db.Text
-  hitungJenisBasofil   String?   @db.Text
-  hitungJenisNeutrofilStab String?   @db.Text
-  hitungJenisNeutrofilSegmen String?   @db.Text
-  hitungJenisLimfosit  String?   @db.Text
-  hitungJenisMonosit   String?   @db.Text
+  hemoglobin                 String? @db.Text
+  leukosit                   String? @db.Text
+  trombosit                  String? @db.Text
+  hematokrit                 String? @db.Text
+  eritrosit                  String? @db.Text
+  led                        String? @db.Text
+  mcv                        String? @db.Text
+  mch                        String? @db.Text
+  mchc                       String? @db.Text
+  rdw                        String? @db.Text
+  mpv                        String? @db.Text
+  pdw                        String? @db.Text
+  hitungJenisEosinofil       String? @db.Text
+  hitungJenisBasofil         String? @db.Text
+  hitungJenisNeutrofilStab   String? @db.Text
+  hitungJenisNeutrofilSegmen String? @db.Text
+  hitungJenisLimfosit        String? @db.Text
+  hitungJenisMonosit         String? @db.Text
 
   // --- Kimia Darah ---
-  gulaDarahPuasa       String?   @db.Text
-  gulaDarah2JamPP      String?   @db.Text
-  sgot                 String?   @db.Text
-  sgpt                 String?   @db.Text
-  asamUrat             String?   @db.Text
-  kolesterolTotal      String?   @db.Text
-  trigliserida         String?   @db.Text
-  ureum                String?   @db.Text
-  kreatinin            String?   @db.Text
-  hdl                  String?   @db.Text
-  ldl                  String?   @db.Text
-  hbsag                String?   @db.Text
-  bilirubinTotal       String?   @db.Text
-  bilirubinDirect      String?   @db.Text
-  alkaliPhosphatase    String?   @db.Text
-
-  timbalDarah          String?   @db.Text
-  arsenikUrin          String?   @db.Text
+  gulaDarahPuasa    String? @db.Text
+  gulaDarah2JamPP   String? @db.Text
+  sgot              String? @db.Text
+  sgpt              String? @db.Text
+  asamUrat          String? @db.Text
+  kolesterolTotal   String? @db.Text
+  trigliserida      String? @db.Text
+  ureum             String? @db.Text
+  kreatinin         String? @db.Text
+  hdl               String? @db.Text
+  ldl               String? @db.Text
+  hbsag             String? @db.Text
+  bilirubinTotal    String? @db.Text
+  bilirubinDirect   String? @db.Text
+  alkaliPhosphatase String? @db.Text
+  timbalDarah       String? @db.Text
+  arsenikUrin       String? @db.Text
 
   // --- Urinalisa ---
-  urinWarna            String?   @db.Text
-  urinKejernihan        String?   @db.Text
-  urinBau              String?   @db.Text
-  urinPh               String?   @db.Text
-  urinBeratJenis       String?   @db.Text
-  urinProtein          String?   @db.Text
-  urinGlukosa          String?   @db.Text
-  urinBilirubin        String?   @db.Text
-  urinUrobilinogen     String?   @db.Text
-  urinKeton            String?   @db.Text
-  urinNitrit           String?   @db.Text
-  urinLeukositEsterase String?   @db.Text
-  urinBlood            String?   @db.Text
-  urinSedimenEritrosit String?   @db.Text
-  urinSedimenLeukosit  String?   @db.Text
-  urinSedimenEpitel    String?   @db.Text
-  urinCaOxalat         String?   @db.Text
-  urinUridAcid         String?   @db.Text
-  urinGranulaCast      String?   @db.Text
+  urinWarna              String? @db.Text
+  urinKejernihan         String? @db.Text
+  urinBau                String? @db.Text
+  urinPh                 String? @db.Text
+  urinBeratJenis         String? @db.Text
+  urinProtein            String? @db.Text
+  urinGlukosa            String? @db.Text
+  urinBilirubin          String? @db.Text
+  urinUrobilinogen       String? @db.Text
+  urinKeton              String? @db.Text
+  urinNitrit             String? @db.Text
+  urinLeukositEsterase   String? @db.Text
+  urinBlood              String? @db.Text
+  urinSedimenEritrosit   String? @db.Text
+  urinSedimenLeukosit    String? @db.Text
+  urinSedimenEpitel      String? @db.Text
+  urinCaOxalat           String? @db.Text
+  urinUridAcid           String? @db.Text
+  urinGranulaCast        String? @db.Text
 
   // --- Penunjang Medis ---
-  rontgenImage         String?   @db.Text
-  kesanRontgen         String?   @db.Text
-  kesanUsgAbdomen      String?   @db.Text
-  kesanUsgMammae       String?   @db.Text
+  rontgenImage      String? @db.Text
+  kesanRontgen      String? @db.Text
+  kesanUsgAbdomen   String? @db.Text
+  kesanUsgMammae    String? @db.Text
 
   // --- EKG ---
-  ekgImage             String?   @db.Text
-  ekgRhythm            String?   @db.Text
-  ekgQrsRate           String?   @db.Text
-  ekgAxis              String?   @db.Text
-  ekgPWave             String?   @db.Text
-  ekgPrInterval        String?   @db.Text
-  ekgQrsDuration       String?   @db.Text
-  ekgQWave             String?   @db.Text
-  ekgTWave             String?   @db.Text
-  ekgStChanges         String?   @db.Text
-  ekgOthers            String?   @db.Text
-  ekgConclusion        String?   @db.Text
-  ekgAdvice            String?   @db.Text
+  ekgImage         String? @db.Text
+  ekgRhythm        String? @db.Text
+  ekgQrsRate       String? @db.Text
+  ekgAxis          String? @db.Text
+  ekgPWave         String? @db.Text
+  ekgPrInterval    String? @db.Text
+  ekgQrsDuration   String? @db.Text
+  ekgQWave         String? @db.Text
+  ekgTWave         String? @db.Text
+  ekgStChanges     String? @db.Text
+  ekgOthers        String? @db.Text
+  ekgConclusion    String? @db.Text
+  ekgAdvice        String? @db.Text
 
   // --- Audiometri ---
-  audioAcKanan250      Int?
-  audioAcKanan500      Int?
-  audioAcKanan1000     Int?
-  audioAcKanan2000     Int?
-  audioAcKanan3000     Int?
-  audioAcKanan4000     Int?
-  audioAcKanan6000     Int?
-  audioAcKanan8000     Int?
-  audioAcKiri250       Int?
-  audioAcKiri500       Int?
-  audioAcKiri1000      Int?
-  audioAcKiri2000      Int?
-  audioAcKiri3000      Int?
-  audioAcKiri4000      Int?
-  audioAcKiri6000      Int?
-  audioAcKiri8000      Int?
-  audioBcKanan250      Int?
-  audioBcKanan500      Int?
-  audioBcKanan1000     Int?
-  audioBcKanan2000     Int?
-  audioBcKanan3000     Int?
-  audioBcKanan4000     Int?
-  audioBcKanan6000     Int?
-  audioBcKanan8000     Int?
-  audioBcKiri250       Int?
-  audioBcKiri500       Int?
-  audioBcKiri1000      Int?
-  audioBcKiri2000      Int?
-  audioBcKiri3000      Int?
-  audioBcKiri4000      Int?
-  audioBcKiri6000      Int?
-  audioBcKiri8000      Int?
-  audiometriKesimpulanTelingaKanan String? @db.Text
-  audiometriKesimpulanTelingaKiri  String? @db.Text
-  audiometriKesimpulanUmum         String? @db.Text
-  audiometriSaran                  String? @db.Text
+  audioAcKanan250                    Int?
+  audioAcKanan500                    Int?
+  audioAcKanan1000                   Int?
+  audioAcKanan2000                   Int?
+  audioAcKanan3000                   Int?
+  audioAcKanan4000                   Int?
+  audioAcKanan6000                   Int?
+  audioAcKanan8000                   Int?
+  audioAcKiri250                     Int?
+  audioAcKiri500                     Int?
+  audioAcKiri1000                    Int?
+  audioAcKiri2000                    Int?
+  audioAcKiri3000                    Int?
+  audioAcKiri4000                    Int?
+  audioAcKiri6000                    Int?
+  audioAcKiri8000                    Int?
+  audioBcKanan250                    Int?
+  audioBcKanan500                    Int?
+  audioBcKanan1000                   Int?
+  audioBcKanan2000                   Int?
+  audioBcKanan3000                   Int?
+  audioBcKanan4000                   Int?
+  audioBcKanan6000                   Int?
+  audioBcKanan8000                   Int?
+  audioBcKiri250                     Int?
+  audioBcKiri500                     Int?
+  audioBcKiri1000                    Int?
+  audioBcKiri2000                    Int?
+  audioBcKiri3000                    Int?
+  audioBcKiri4000                    Int?
+  audioBcKiri6000                    Int?
+  audioBcKiri8000                    Int?
+  audiometriKesimpulanTelingaKanan   String? @db.Text
+  audiometriKesimpulanTelingaKiri    String? @db.Text
+  audiometriKesimpulanUmum           String? @db.Text
+  audiometriSaran                    String? @db.Text
 
   // --- Spirometri ---
-  spirometriFvc        String?   @db.Text
-  spirometriFev1       String?   @db.Text
-  spirometriFev1Fvc    String?   @db.Text
-  kesimpulanSpirometri String?   @db.Text
+  spirometriFvc                     Float? 
+  spirometriFvcPred                 Float? // Diubah dari String?
+  spirometriFvcPost                 Float? // Diubah dari String?
+  spirometriFev1                    Float? // Diubah dari String?
+  spirometriFev1Pred                Float? // Diubah dari String?
+  spirometriFev1Post                Float? // Diubah dari String?
+  spirometriFev1Fvc                 Float? // Diubah dari String?
+  spirometriFev1FvcPred             Float? // Diubah dari String?
+  spirometriFev6                    Float? // Diubah dari String?
+  spirometriFev6Pred                Float? // Diubah dari String?
+  spirometriPef                     Float? // Diubah dari String?
+  spirometriPefPred                 Float? // Diubah dari String?
+  spirometriPefPost                 Float? // Diubah dari String?
+  spirometriFef2575                 Float? // Diubah dari String?
+  spirometriFef2575Pred             Float? // Diubah dari String?
+  spirometriFef25                   Float? // Diubah dari String?
+  spirometriFef25Pred               Float? // Diubah dari String?
+  spirometriFef25Post               Float? // Diubah dari String?
+  spirometriFef50                   Float? // Diubah dari String?
+  spirometriFef50Pred               Float? // Diubah dari String?
+  spirometriFef50Post               Float? // Diubah dari String?
+  spirometriFef75                   Float? // Diubah dari String?
+  spirometriFef75Pred               Float? // Diubah dari String?
+  spirometriFef75Post               Float? // Diubah dari String?
+  spirometriPostBdNote              String? @db.Text
+  spirometriQualityAccept           String? @db.Text
+  spirometriQualityRepeat           String? @db.Text
+  spirometriEffortCount             String? @db.Text
+  spirometriImage                   String? @db.Text
+  kesimpulanSpirometri              String? @db.Text
 
+  // --- Framingham ---
   framinghamGender                  String?
   framinghamAge                     String?
   framinghamTotalCholesterol        String?
@@ -295,61 +310,60 @@ model McuResult {
   framinghamVascularAge             String?
 
   // --- USG Abdomen ---
-  usgAbdomenImage1     String?   @db.Text
-  usgAbdomenImage2     String?   @db.Text
-  usgAbdomenImage3     String?   @db.Text
-  usgAbdomenImage4     String?   @db.Text
-  usgAbdomenImage5     String?   @db.Text
-  usgAbdomenImage6     String?   @db.Text
-  usgAbdomenHepar      String?   @db.Text
-  usgAbdomenGallBladder String?   @db.Text
-  usgAbdomenLien       String?   @db.Text
-  usgAbdomenPancreas   String?   @db.Text
-  usgAbdomenGinjalDekstra String?   @db.Text
-  usgAbdomenGinjalSinistra String?   @db.Text
-  usgAbdomenKesimpulan String?   @db.Text
+  usgAbdomenImage1        String? @db.Text
+  usgAbdomenImage2        String? @db.Text
+  usgAbdomenImage3        String? @db.Text
+  usgAbdomenImage4        String? @db.Text
+  usgAbdomenImage5        String? @db.Text
+  usgAbdomenImage6        String? @db.Text
+  usgAbdomenHepar         String? @db.Text
+  usgAbdomenGallBladder   String? @db.Text
+  usgAbdomenLien          String? @db.Text
+  usgAbdomenPancreas      String? @db.Text
+  usgAbdomenGinjalDekstra String? @db.Text
+  usgAbdomenGinjalSinistra String? @db.Text
+  usgAbdomenKesimpulan    String? @db.Text
 
   // --- USG Mammae ---
-  usgMammaeImage1      String?   @db.Text
-  usgMammaeImage2      String?   @db.Text
-  usgMammaeImage3      String?   @db.Text
-  usgMammaeImage4      String?   @db.Text
-  usgMammaeImage5      String?   @db.Text
-  usgMammaeImage6      String?   @db.Text
-  usgMammaeLaporan     String?   @db.Text
-  usgMammaeKesimpulan  String?   @db.Text
-
-  kesimpulanTesPsikologi String?   @db.Text
+  usgMammaeImage1     String? @db.Text
+  usgMammaeImage2     String? @db.Text
+  usgMammaeImage3     String? @db.Text
+  usgMammaeImage4     String? @db.Text
+  usgMammaeImage5     String? @db.Text
+  usgMammaeImage6     String? @db.Text
+  usgMammaeLaporan    String? @db.Text
+  usgMammaeKesimpulan String? @db.Text
+  kesimpulanTesPsikologi String? @db.Text
 
   // --- Kesimpulan Akhir ---
-  kesimpulan           String?   @db.Text
-  saran                String?   @db.Text
+  kesimpulan String? @db.Text
+  saran      String? @db.Text
 
   // --- Tanda Tangan Validator untuk setiap seksi ---
-  hematologiValidatorName     String?
-  hematologiValidatorQr       String? @db.Text
-  kimiaDarahValidatorName     String?
-  kimiaDarahValidatorQr       String? @db.Text
-  biomonitoringValidatorName  String?
-  biomonitoringValidatorQr    String? @db.Text
-  urinalisaValidatorName      String?
-  urinalisaValidatorQr        String? @db.Text
-  audiometriValidatorName     String?
-  audiometriValidatorQr       String? @db.Text
-  spirometriValidatorName     String?
-  spirometriValidatorQr       String? @db.Text
-  usgAbdomenValidatorName     String?
-  usgAbdomenValidatorQr       String? @db.Text
-  usgMammaeValidatorName      String?
-  usgMammaeValidatorQr        String? @db.Text
-  ekgValidatorName            String?
-  ekgValidatorQr              String? @db.Text
-  rontgenValidatorName        String?
-  rontgenValidatorQr          String? @db.Text
-  conclusionValidatorName     String?
-  conclusionValidatorQr       String? @db.Text
-  dassFasValidatorName        String?
-  dassFasValidatorQr          String? @db.Text
-  framinghamValidatorName     String?
-  framinghamValidatorQr       String? @db.Text
+  hematologiValidatorName    String?
+  hematologiValidatorQr      String? @db.Text
+  kimiaDarahValidatorName    String?
+  kimiaDarahValidatorQr      String? @db.Text
+  biomonitoringValidatorName String?
+  biomonitoringValidatorQr   String? @db.Text
+  urinalisaValidatorName     String?
+  urinalisaValidatorQr       String? @db.Text
+  audiometriValidatorName    String?
+  audiometriValidatorQr      String? @db.Text
+  spirometriValidatorName    String?
+  spirometriValidatorQr      String? @db.Text
+  usgAbdomenValidatorName    String?
+  usgAbdomenValidatorQr      String? @db.Text
+  usgMammaeValidatorName     String?
+  usgMammaeValidatorQr       String? @db.Text
+  ekgValidatorName           String?
+  ekgValidatorQr             String? @db.Text
+  rontgenValidatorName       String?
+  rontgenValidatorQr         String? @db.Text
+  conclusionValidatorName    String?
+  conclusionValidatorQr      String? @db.Text
+  dassFasValidatorName       String?
+  dassFasValidatorQr         String? @db.Text
+  framinghamValidatorName    String?
+  framinghamValidatorQr      String? @db.Text
 }

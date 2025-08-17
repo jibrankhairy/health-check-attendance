@@ -47,19 +47,45 @@ function mapExcelToPrisma(row: any): { [key: string]: any } {
     "audioBcKiri8000",
   ]);
 
-  const floatFields = new Set(["beratBadan", "tinggiBadan"]);
+  // ---> TAMBAHKAN FIELD SPIROMETRI DI floatFields
+  const floatFields = new Set([
+    "beratBadan",
+    "tinggiBadan",
+    "spirometriFvc",
+    "spirometriFvcPred",
+    "spirometriFvcPost",
+    "spirometriFev1",
+    "spirometriFev1Pred",
+    "spirometriFev1Post",
+    "spirometriFev1Fvc",
+    "spirometriFev1FvcPred",
+    "spirometriFev6",
+    "spirometriFev6Pred",
+    "spirometriPef",
+    "spirometriPefPred",
+    "spirometriPefPost",
+    "spirometriFef2575",
+    "spirometriFef2575Pred",
+    "spirometriFef25",
+    "spirometriFef25Pred",
+    "spirometriFef25Post",
+    "spirometriFef50",
+    "spirometriFef50Pred",
+    "spirometriFef50Post",
+    "spirometriFef75",
+    "spirometriFef75Pred",
+    "spirometriFef75Post",
+  ]);
 
   for (const key of allKeys) {
     if (key === "nik" || key === "nama_lengkap") continue;
-
     let value = row[key];
-
     if (value !== null && value !== undefined && value !== "") {
       if (integerFields.has(key)) {
         const num = parseInt(value, 10);
         mappedData[key] = isNaN(num) ? null : num;
       } else if (floatFields.has(key)) {
-        const num = parseFloat(value);
+        const num = parseFloat(String(value).replace(",", ".")); // Ganti koma jadi titik
         mappedData[key] = isNaN(num) ? null : num;
       } else {
         mappedData[key] = String(value);
@@ -70,6 +96,7 @@ function mapExcelToPrisma(row: any): { [key: string]: any } {
   return mappedData;
 }
 
+// ... sisa file (fungsi POST) tetap sama, tidak perlu diubah
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
@@ -115,7 +142,6 @@ export async function POST(request: Request) {
     const validatorMap: { [key: string]: string } = {
       hematologiValidatorName: "hematologiValidatorQr",
       kimiaDarahValidatorName: "kimiaDarahValidatorQr",
-      // ---> TAMBAHKAN MAPPING VALIDATOR DI SINI
       biomonitoringValidatorName: "biomonitoringValidatorQr",
       urinalisaValidatorName: "urinalisaValidatorQr",
       audiometriValidatorName: "audiometriValidatorQr",
@@ -165,9 +191,7 @@ export async function POST(request: Request) {
           if (dataToUpdate[nameField]) {
             const qrField = validatorMap[nameField];
             const validatorName = dataToUpdate[nameField];
-
             const qrCodeDataUrl = await QRCode.toDataURL(validatorName);
-
             dataToUpdate[qrField] = qrCodeDataUrl;
           }
         }
