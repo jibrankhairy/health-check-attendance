@@ -5,25 +5,30 @@ import { Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
 import { ReportHeader, ReportFooter } from "./ReportLayout";
 import { styles as globalStyles } from "./reportStyles";
 
+const cm = (n: number) => n * 28.3465;
+
+const PHOTO_W = cm(3.4);
+const PHOTO_H = cm(4.5);
+
 const localStyles = StyleSheet.create({
   bodyContent: {
     flexGrow: 1,
   },
   photoContainer: {
-    marginTop: 20,
-    alignItems: 'center',
-    marginBottom: 5,
+    marginTop: 14,
+    alignItems: "center",
+    marginBottom: 6,
   },
   photo: {
-    width: 113, // sekitar 3x4 cm
-    height: 151, // sekitar 3x4 cm
-    objectFit: 'cover',
-    border: '1px solid #EEE'
+    width: PHOTO_W,
+    height: PHOTO_H,
+    objectFit: "cover",
+    border: "0.75pt solid #E5E7EB",
   },
   coverHeader: {
     textAlign: "center",
-    marginTop: 16,
-    marginBottom: 24,
+    marginTop: 12,
+    marginBottom: 20,
     fontFamily: "Helvetica-Bold",
     fontSize: 16,
   },
@@ -52,7 +57,7 @@ const localStyles = StyleSheet.create({
     fontSize: 12,
     fontFamily: "Helvetica-Bold",
     textDecoration: "underline",
-    marginTop: 26,
+    marginTop: 22,
     marginBottom: 8,
   },
   listWrap: { marginTop: 6 },
@@ -77,11 +82,9 @@ type ReportData = {
     mcuPackage?: string[];
     photoUrl?: string;
   };
-  // <-- PERUBAHAN: Ganti field tanggal & jam manual dengan satu field otomatis
-  examinationStartedAt?: string | Date; 
+  examinationStartedAt?: string | Date;
 };
 
-// Fungsi helper baru untuk format tanggal dan jam
 const formatDate = (dateInput?: string | Date) => {
   if (!dateInput) return "N/A";
   const d = new Date(dateInput);
@@ -100,7 +103,6 @@ const formatTime = (dateInput?: string | Date) => {
   const mm = String(d.getMinutes()).padStart(2, "0");
   return `${hh}:${mm}`;
 };
-
 
 function buildAttachedList(data: ReportData) {
   const raw = data?.patient?.mcuPackage || [];
@@ -160,16 +162,12 @@ export const CoverPageDocument = ({ data }: { data: ReportData }) => {
       <ReportHeader />
 
       <View style={localStyles.bodyContent}>
-        
         {data.patient.photoUrl && (
           <View style={localStyles.photoContainer}>
-            <Image
-              style={localStyles.photo}
-              src={data.patient.photoUrl}
-            />
+            <Image style={localStyles.photo} src={data.patient.photoUrl} />
           </View>
         )}
-        
+
         <Text style={localStyles.coverHeader}>
           IDENTITAS PESERTA PEMERIKSAAN KESEHATAN
         </Text>
@@ -199,7 +197,6 @@ export const CoverPageDocument = ({ data }: { data: ReportData }) => {
             </Text>
           </View>
 
-          {/* <-- PERUBAHAN: Gunakan data 'examinationStartedAt' --> */}
           <View style={localStyles.row}>
             <Text style={localStyles.label}>TANGGAL PEMERIKSAAN</Text>
             <Text style={localStyles.colon}>:</Text>
@@ -211,7 +208,9 @@ export const CoverPageDocument = ({ data }: { data: ReportData }) => {
           <View style={localStyles.row}>
             <Text style={localStyles.label}>JAM PEMERIKSAAN</Text>
             <Text style={localStyles.colon}>:</Text>
-            <Text style={localStyles.value}>{formatTime(data.examinationStartedAt)}</Text>
+            <Text style={localStyles.value}>
+              {formatTime(data.examinationStartedAt)}
+            </Text>
           </View>
 
           <View style={localStyles.row}>

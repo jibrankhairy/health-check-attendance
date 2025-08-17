@@ -3,7 +3,6 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// Helper konversi angka
 function toNullableInt(v: unknown) {
   if (v === null || v === undefined || v === "") return null;
   const n = parseInt(String(v), 10);
@@ -64,15 +63,12 @@ export async function PUT(req: NextRequest, { params }: any) {
       );
     }
 
-    // Buang field yang tidak boleh di-update langsung
     const { patient, id, createdAt, updatedAt, ...updateData } = body ?? {};
 
-    // saran: array -> string (sesuai schema String?)
     if (Array.isArray(updateData.saran)) {
       updateData.saran = JSON.stringify(updateData.saran);
     }
 
-    // Daftar field numerik (sesuai schema)
     const intFields = [
       "audioAcKanan250",
       "audioAcKanan500",
@@ -137,7 +133,6 @@ export async function PUT(req: NextRequest, { params }: any) {
       "spirometriFef75Post",
     ];
 
-    // Konversi angka
     for (const k of intFields) {
       if (k in updateData) updateData[k] = toNullableInt(updateData[k]);
     }
@@ -145,12 +140,10 @@ export async function PUT(req: NextRequest, { params }: any) {
       if (k in updateData) updateData[k] = toNullableFloat(updateData[k]);
     }
 
-    // Bersihkan nilai undefined agar tidak mengganggu update
     Object.keys(updateData).forEach((k) => {
       if (updateData[k] === undefined) delete updateData[k];
     });
 
-    // tandai selesai & isi fileUrl jika kosong
     const dataToUpdate: any = {
       ...updateData,
       status: "COMPLETED",
@@ -169,7 +162,6 @@ export async function PUT(req: NextRequest, { params }: any) {
   } catch (error: any) {
     console.error("Update MCU Report Error:", error);
 
-    // Prisma validation error
     if (error?.code === "P2009") {
       return NextResponse.json(
         {
