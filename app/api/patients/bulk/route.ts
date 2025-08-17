@@ -4,7 +4,7 @@ import nodemailer from "nodemailer";
 import QRCode from "qrcode";
 
 export const runtime = "nodejs";
-export const maxDuration = 30;
+export const maxDuration = 60;
 
 const prisma = new PrismaClient();
 
