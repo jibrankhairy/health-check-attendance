@@ -658,6 +658,7 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                 <TableRow>
                   <TableHead className="w-[50px] text-center">No.</TableHead>
                   <TableHead>ID Pasien</TableHead>
+                  <TableHead>NIK</TableHead>
                   <TableHead>Nama Lengkap</TableHead>
                   <TableHead>Divisi</TableHead>
                   <TableHead>Tgl. Registrasi</TableHead>
@@ -669,7 +670,7 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="h-24 text-center">
+                    <TableCell colSpan={9} className="h-24 text-center">
                       <div className="flex justify-center items-center">
                         <Loader2 className="mr-2 h-6 w-6 animate-spin" /> Memuat
                         data...
@@ -684,6 +685,9 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary">{patient.patientId}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <span className="font-mono">{patient.nik}</span>
                       </TableCell>
                       <TableCell className="font-medium">
                         {patient.fullName}
@@ -878,7 +882,7 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={8} className="h-24 text-center">
+                    <TableCell colSpan={9} className="h-24 text-center">
                       {searchQuery
                         ? "Pasien tidak ditemukan."
                         : "Belum ada data pasien."}
@@ -916,6 +920,10 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                     </DropdownMenu>
                   </CardHeader>
                   <CardContent className="text-sm text-muted-foreground space-y-2 pt-2">
+                    <div className="flex items-center">
+                      <IdCard className="mr-2 h-4 w-4" />
+                      <span>NIK: {patient.nik}</span>
+                    </div>
                     <div className="flex items-center">
                       <Briefcase className="mr-2 h-4 w-4" />
                       <span>{patient.division}</span>

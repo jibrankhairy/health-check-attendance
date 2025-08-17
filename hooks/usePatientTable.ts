@@ -191,7 +191,6 @@ export const usePatientTable = (companyId: string) => {
           }),
         });
 
-        // Ambil text dulu untuk hindari error "unexpected JSON" saat server timeout/truncated
         const text = await res.text();
         let data: any = {};
         try {
@@ -201,7 +200,7 @@ export const usePatientTable = (companyId: string) => {
           toast.loading(
             `Batch ${i + 1}/${
               chunks.length
-            } timeout. Melanjutkan batch berikutnya...`,
+            } melewati batas waktu. Lanjut ke batch berikutnya...`,
             { id: toastId }
           );
           continue;
@@ -226,19 +225,21 @@ export const usePatientTable = (companyId: string) => {
           );
         }
 
-        // jeda kecil antar batch (mengurangi risiko timeout & load DB)
         await new Promise((r) => setTimeout(r, 150));
       }
 
-      const summary =
-        `Selesai.\n` +
-        `✔️ Berhasil: ${totalCreated}\n` +
-        (totalSkipped ? `⚠️ Dilewati (NIK duplikat): ${totalSkipped}\n` : "") +
-        (totalFailedBatches
-          ? `❌ Batch gagal: ${totalFailedBatches} (silakan impor ulang batch yang gagal).`
-          : "");
+      const summary = [
+        "Ringkasan impor",
+        "----------------",
+        `Total data        : ${parsedPatients.length}`,
+        `Berhasil dibuat   : ${totalCreated}`,
+        `Dilewati (duplikat): ${totalSkipped}`,
+        ...(totalFailedBatches
+          ? [`Batch gagal       : ${totalFailedBatches}`]
+          : []),
+      ].join("\n");
 
-      toast.success(summary, { id: toastId, duration: 6000 });
+      toast.success(summary, { id: toastId, duration: 7000 });
       fetchPatients();
     } catch (err: any) {
       toast.error(
