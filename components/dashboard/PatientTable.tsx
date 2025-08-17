@@ -116,7 +116,6 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
   const [takingPhotoFor, setTakingPhotoFor] = useState<PatientData | null>(
     null
   );
-  const [downloadingAllResults, setDownloadingAllResults] = useState(false);
 
   const {
     loading,
@@ -153,54 +152,6 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
     handleSendQrEmail,
     setParsedPatients,
   } = usePatientTable(companyId);
-
-  const handleDownloadAllResults = async () => {
-    setDownloadingAllResults(true);
-    try {
-      const patientIdsToDownload = filteredPatients
-        .filter(
-          (patient) =>
-            patient.mcuResults &&
-            patient.mcuResults.length > 0 &&
-            patient.mcuResults[0].fileUrl
-        )
-        .map((patient) => patient.id.toString());
-
-      if (patientIdsToDownload.length === 0) {
-        toast.info("Tidak ada laporan MCU yang tersedia untuk diunduh.");
-        setDownloadingAllResults(false);
-        return;
-      }
-
-      const response = await fetch(
-        `/api/mcu/download-all?companyId=${companyId}&patientIds=${patientIdsToDownload.join(
-          ","
-        )}`
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Gagal mengunduh semua hasil.");
-      }
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "hasil_mcu_lengkap.zip";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-
-      toast.success("Semua laporan PDF berhasil diunduh dalam ZIP!");
-    } catch (error: any) {
-      console.error("Error downloading all results:", error);
-      toast.error(error.message || "Terjadi kesalahan saat mengunduh.");
-    } finally {
-      setDownloadingAllResults(false);
-    }
-  };
 
   const handlePrintQr = (patient: PatientData) => {
     const printWindow = window.open("", "_blank");
@@ -656,27 +607,7 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handleDownloadAllResults}
-                    disabled={loading || filteredPatients.length === 0}
-                    className="md:w-auto md:px-4"
-                  >
-                    <Download className="h-4 w-4" />
-                    <span className="hidden md:inline ml-2">
-                      Unduh Semua Hasil
-                    </span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent className="md:hidden">
-                  <p>Unduh Semua Hasil MCU</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+
             <Dialog
               open={isDialogOpen}
               onOpenChange={(open) => {
