@@ -139,7 +139,7 @@ export const DassDocument: React.FC<{ data: DassData }> = ({ data }) => {
       <View style={globalStyles.body}>
         <Text style={localStyles.title}>Laporan Hasil Pemeriksaan</Text>
         <Text style={localStyles.subTitle}>
-          Depression Anxiety Stress (DASS)
+          Depression Anxiety Stress (DASS-21)
         </Text>
 
         <View style={localStyles.section}>
@@ -176,50 +176,65 @@ export const DassDocument: React.FC<{ data: DassData }> = ({ data }) => {
           </Text>
           <View style={localStyles.table}>
             <View style={localStyles.tableRow}>
-              <Text style={[localStyles.tableColHeader, { width: "70%" }]}>
+              <Text style={[localStyles.tableColHeader, { width: "50%" }]}>
                 Trait
               </Text>
-              <Text style={[localStyles.tableColHeader, { width: "30%" }]}>
+              <Text style={[localStyles.tableColHeader, { width: "25%" }]}>
                 Score
               </Text>
+              <Text style={[localStyles.tableColHeader, { width: "25%" }]}>
+                Kategori
+              </Text>
             </View>
+
             <View style={localStyles.tableRow}>
               <Text
                 style={[
                   localStyles.tableCol,
-                  { width: "70%", textAlign: "left" },
+                  { width: "50%", textAlign: "left" },
                 ]}
               >
                 Depression
               </Text>
-              <Text style={[localStyles.tableCol, { width: "30%" }]}>
+              <Text style={[localStyles.tableCol, { width: "25%" }]}>
                 {results.depression.score}
               </Text>
+              <Text style={[localStyles.tableCol, { width: "25%" }]}>
+                {results.depression.severity}
+              </Text>
             </View>
+
             <View style={localStyles.tableRow}>
               <Text
                 style={[
                   localStyles.tableCol,
-                  { width: "70%", textAlign: "left" },
+                  { width: "50%", textAlign: "left" },
                 ]}
               >
                 Anxiety
               </Text>
-              <Text style={[localStyles.tableCol, { width: "30%" }]}>
+              <Text style={[localStyles.tableCol, { width: "25%" }]}>
                 {results.anxiety.score}
               </Text>
+              <Text style={[localStyles.tableCol, { width: "25%" }]}>
+                {results.anxiety.severity}
+              </Text>
             </View>
+
             <View style={localStyles.tableRow}>
               <Text
                 style={[
                   localStyles.tableCol,
-                  { width: "70%", textAlign: "left" },
+                  { width: "50%", textAlign: "left" },
                 ]}
               >
                 Stress
               </Text>
-              <Text style={[localStyles.tableCol, { width: "30%" }]}>
+              <Text style={[localStyles.tableCol, { width: "25%" }]}>
                 {results.stress.score}
+              </Text>
+              <Text style={[localStyles.tableCol, { width: "25%" }]}>
+                {results.stress.severity}
               </Text>
             </View>
           </View>
@@ -399,23 +414,13 @@ const localStyles = StyleSheet.create({
     borderRightColor: "#333",
     fontSize: 9,
   },
-
   validatorBox: {
     position: "absolute",
     right: 40,
     bottom: 72,
     alignItems: "center",
   },
-  validatorQr: {
-    width: 80,
-    height: 80,
-    marginBottom: 8,
-  },
-  validatorName: {
-    fontSize: 8,
-    fontFamily: "Helvetica-Bold",
-  },
-  validatorLabel: {
-    fontSize: 5,
-  },
+  validatorQr: { width: 80, height: 80, marginBottom: 8 },
+  validatorName: { fontSize: 8, fontFamily: "Helvetica-Bold" },
+  validatorLabel: { fontSize: 5 },
 });

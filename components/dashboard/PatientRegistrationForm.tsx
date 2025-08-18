@@ -79,7 +79,6 @@ export const PatientRegistrationForm = (props: PatientFormProps) => {
         onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-4 max-h-[80vh] overflow-y-auto p-1 pr-2 md:pr-4"
       >
-        {/* Data Diri */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -172,7 +171,6 @@ export const PatientRegistrationForm = (props: PatientFormProps) => {
           />
         </div>
 
-        {/* Data Pekerjaan */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -257,7 +255,6 @@ export const PatientRegistrationForm = (props: PatientFormProps) => {
 
         <Separator />
 
-        {/* Paket MCU */}
         <FormField
           control={form.control}
           name="selectedPackage"

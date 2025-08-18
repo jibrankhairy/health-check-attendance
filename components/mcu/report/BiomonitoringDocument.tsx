@@ -160,17 +160,19 @@ export const BiomonitoringDocument: React.FC<{ data: BiomonitoringData }> = ({
 
         <View style={{ marginTop: 15 }}>
           <Text style={[styles.sectionTitle, { fontSize: 9, marginBottom: 5 }]}>
-            Catatan:
+            Keterangan:
           </Text>
           <Text style={{ fontSize: 8, lineHeight: 1.4, textAlign: "justify" }}>
             Pemeriksaan Biomonitoring bertujuan untuk mengukur kadar zat kimia
             tertentu dalam tubuh.{" "}
             <Text style={styles.resultAbnormal}>Timbal (Pb)</Text> dalam darah
             mengindikasikan tingkat paparan terkini terhadap logam berat yang
-            dapat memengaruhi sistem saraf dan organ lainnya.{" "}
-            <Text style={styles.resultAbnormal}>Arsenik (As)</Text> dalam urin
-            menunjukkan paparan terkini terhadap metaloid yang juga berpotensi
-            toksik bagi tubuh.
+            dapat memengaruhi sistem saraf dan organ lainnya. Pemeriksaan{" "}
+            <Text style={styles.resultAbnormal}>Arsenik (As)</Text> mengukur
+            kadar arsenik dalam darah untuk mendeteksi paparan yang sangat baru
+            atau akut. Pemeriksaan ini penting dalam kasus keracunan mendadak,
+            karena arsenik cepat berpindah dari aliran darah ke organ lain dan
+            diekskresikan.
           </Text>
         </View>
       </View>

@@ -24,6 +24,12 @@ type AudiometriData = {
   patient?: Maybe<Patient>;
   audiometriValidatorName?: string | null;
   audiometriValidatorQr?: string | null;
+
+  audiometriKesimpulanTelingaKanan?: string | null;
+  audiometriKesimpulanTelingaKiri?: string | null;
+  audiometriKesimpulanUmum?: string | null;
+  audiometriSaran?: string | null;
+
   kesimpulanAudiometri?: string | null;
 } & Record<string, unknown>;
 
@@ -287,6 +293,21 @@ function AudiogramSvg({
   );
 }
 
+function parseLegacyKesimpulan(s?: string | null) {
+  const lines = (s || "").split("\n").map((x) => x.trim());
+  const pick = (prefix: string) =>
+    lines
+      .find((l) => l.toLowerCase().startsWith(prefix))
+      ?.split(":")[1]
+      ?.trim() || undefined;
+  return {
+    kanan: pick("telinga kanan"),
+    kiri: pick("telinga kiri"),
+    umum: pick("kesimpulan"),
+    saran: pick("saran"),
+  };
+}
+
 export const AudiometriDocument: React.FC<{ data: AudiometriData }> = ({
   data,
 }) => {
@@ -295,35 +316,17 @@ export const AudiometriDocument: React.FC<{ data: AudiometriData }> = ({
   const acKiri = FREQS.map((f) => toNum(data?.[`audioAcKiri${f}`]));
   const bcKiri = FREQS.map((f) => toNum(data?.[`audioBcKiri${f}`]));
 
-  const kesimpulanLines: string[] = (
-    (data?.kesimpulanAudiometri as string | null | undefined) || ""
-  )
-    .split("\n")
-    .map((s) => s.trim());
+  const legacy = parseLegacyKesimpulan(data?.kesimpulanAudiometri);
 
   const telingaKanan =
-    kesimpulanLines
-      .find((l: string) => l.toLowerCase().startsWith("telinga kanan"))
-      ?.split(":")[1]
-      ?.trim() || "-";
+    data?.audiometriKesimpulanTelingaKanan ?? legacy.kanan ?? "-";
 
   const telingaKiri =
-    kesimpulanLines
-      .find((l: string) => l.toLowerCase().startsWith("telinga kiri"))
-      ?.split(":")[1]
-      ?.trim() || "-";
+    data?.audiometriKesimpulanTelingaKiri ?? legacy.kiri ?? "-";
 
-  const kesimpulan =
-    kesimpulanLines
-      .find((l: string) => l.toLowerCase().startsWith("kesimpulan"))
-      ?.split(":")[1]
-      ?.trim() || "-";
+  const kesimpulan = data?.audiometriKesimpulanUmum ?? legacy.umum ?? "-";
 
-  const saran =
-    kesimpulanLines
-      .find((l: string) => l.toLowerCase().startsWith("saran"))
-      ?.split(":")[1]
-      ?.trim() || "-";
+  const saran = data?.audiometriSaran ?? legacy.saran ?? "-";
 
   return (
     <Page size="A4" style={globalStyles.page}>

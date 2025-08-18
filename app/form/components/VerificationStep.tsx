@@ -68,7 +68,7 @@ export const VerificationStep = ({
         <div className="text-center">
           <h2 className="text-xl font-semibold">Verifikasi Data Peserta</h2>
           <p className="text-sm text-gray-500 mt-1">
-            Silakan masukkan NIK atau No. ID MCU Anda, lalu klik "Cari Data".
+            Silakan masukkan NIK atau No. ID MCU Anda, lalu klik "Verifikasi".
           </p>
         </div>
         <div className="space-y-4">
