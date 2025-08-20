@@ -117,14 +117,14 @@ export async function POST(request: Request) {
 
       <p style="margin:16px 0 8px">Sebelum datang, mohon mengisi kuesioner pra-MCU melalui tautan berikut:</p>
       <p>
-        <a href="https://mitralab.deltaindonesialab.com/form" target="_blank" rel="noopener noreferrer"
+        <a href="https://mcu.mitralab.my.id/form" target="_blank" rel="noopener noreferrer"
            style="display:inline-block; background:#01449D; color:#fff; text-decoration:none; padding:10px 16px; border-radius:6px; font-weight:600">
           Isi Kuesioner Pra-MCU
         </a>
       </p>
       <p style="font-size:12px; color:#555; margin-top:8px">
         Jika tombol tidak dapat diklik, salin dan tempel alamat ini di browser Anda:<br/>
-        <span>https://mitralab.deltaindonesialab.com/form</span>
+        <span>https://mcu.mitralab.my.id/form</span>
       </p>
 
       <p>Silakan tunjukkan QR Code di bawah ini kepada petugas saat tiba di lokasi.</p>
