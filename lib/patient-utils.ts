@@ -59,22 +59,29 @@ export const parseExcelFile = (file: File): Promise<any[]> => {
             }
           }
 
-          const addOnColumns = [
-            "EKG",
-            "Treadmill",
-            "Audiometry",
-            "Spirometry",
-            "Panel Hepatitis",
-            "Biomonitoring",
+          const addOnDefinitions = [
+            { id: "EKG", excelVariations: ["EKG"] },
+            { id: "Treadmill", excelVariations: ["Treadmill"] },
+            { id: "Audiometry", excelVariations: ["Audiometry", "Audiometri"] },
+            { id: "Spirometry", excelVariations: ["Spirometry", "Spirometri"] },
+            {
+              id: "Panel Hepatitis",
+              excelVariations: ["Panel Hepatitis", "Panel Hepatitits"],
+            },
+            { id: "Biomonitoring", excelVariations: ["Biomonitoring"] },
           ];
-          addOnColumns.forEach((addOnName) => {
-            const excelAddOnName =
-              addOnName === "Panel Hepatitis" ? "Panel Hepatitis" : addOnName;
-            if (
-              row[excelAddOnName] &&
-              String(row[excelAddOnName]).trim() !== ""
-            ) {
-              mcuPackage.push(addOnName);
+
+          addOnDefinitions.forEach((addOn) => {
+            for (const excelColumnName of addOn.excelVariations) {
+              if (
+                row[excelColumnName] &&
+                String(row[excelColumnName]).trim() !== ""
+              ) {
+                if (!mcuPackage.includes(addOn.id)) {
+                  mcuPackage.push(addOn.id);
+                }
+                break;
+              }
             }
           });
 
