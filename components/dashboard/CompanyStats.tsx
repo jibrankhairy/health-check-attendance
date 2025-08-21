@@ -12,9 +12,9 @@ import {
   Tooltip,
   Cell,
   CartesianGrid,
+  Legend,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users } from "lucide-react";
 
 type StatData = {
   totalPatients: number;
@@ -22,6 +22,13 @@ type StatData = {
   packageDistribution: { name: string; total: number }[];
   registrationByDate: { name: string; total: number }[];
   progressDistribution: { name: string; total: number }[];
+  dassDistribution: {
+    name: string;
+    Depresi: number;
+    Cemas: number;
+    Stres: number;
+  }[];
+  healthIssuesDistribution: { name: string; total: number }[];
 };
 
 const COLORS = {
@@ -31,16 +38,12 @@ const COLORS = {
   rose: "#F43F5E",
   indigo: "#9062F5",
   blueDark: "#280C6C",
+  dassDepression: "#EF4444",
+  dassAnxiety: "#F59E0B",
+  dassStress: "#8B5CF6",
+  healthIssue: "#10B981",
 };
 const GENDER_COLORS = [COLORS.blue.base, COLORS.blue.light];
-const PROGRESS_COLORS = [
-  "#01449D",
-  "#4A90E2",
-  "#14B8A6",
-  "#A0C3ED",
-  "#9062F5",
-  "#F59E0B",
-];
 
 const CustomLegend = ({ payload }: any) => (
   <ul className="flex flex-col space-y-2 mt-4">
@@ -95,58 +98,10 @@ export const CompanyStats = ({ companyId }: { companyId: string }) => {
 
   return (
     <div className="p-4 md:p-8 space-y-6">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">
-            Total Pasien di Perusahaan Ini
-          </CardTitle>
-          <Users className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.totalPatients}</div>
-        </CardContent>
-      </Card>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Registrasi Pasien (7 Hari Terakhir)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={stats.registrationByDate}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis
-                  dataKey="name"
-                  stroke="#888888"
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis
-                  stroke="#888888"
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                  allowDecimals={false}
-                />
-                <Tooltip
-                  cursor={{ fill: COLORS.blue.lighter, opacity: 0.3 }}
-                  contentStyle={{ borderRadius: "8px" }}
-                />
-                <Bar
-                  dataKey="total"
-                  fill={COLORS.blueDark}
-                  radius={[4, 4, 0, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Distribusi Gender</CardTitle>
+            <CardTitle>Total Pasien & Gender</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col md:flex-row items-center gap-6">
             <div className="w-full md:w-1/2 h-[250px] relative">
@@ -194,7 +149,143 @@ export const CompanyStats = ({ companyId }: { companyId: string }) => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Distribusi Paket MCU</CardTitle>
+            <CardTitle>Registrasi Pasien (7 Hari)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={stats.registrationByDate}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis
+                  dataKey="name"
+                  stroke="#888888"
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis
+                  stroke="#888888"
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                  allowDecimals={false}
+                />
+                <Tooltip
+                  cursor={{ fill: COLORS.blue.lighter, opacity: 0.3 }}
+                  contentStyle={{ borderRadius: "8px" }}
+                />
+                <Bar
+                  dataKey="total"
+                  fill={COLORS.blueDark}
+                  radius={[4, 4, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Hasil Tes Psikologis</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={350}>
+              <BarChart
+                data={stats.dassDistribution}
+                margin={{ top: 5, right: 20, left: -10, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis
+                  dataKey="name"
+                  stroke="#888888"
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis
+                  stroke="#888888"
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                  allowDecimals={false}
+                />
+                <Tooltip
+                  cursor={{ fill: "#f3f4f6" }}
+                  contentStyle={{ borderRadius: "8px" }}
+                />
+                <Legend wrapperStyle={{ paddingTop: "20px" }} />
+                <Bar
+                  dataKey="Depresi"
+                  fill={COLORS.dassDepression}
+                  radius={[4, 4, 0, 0]}
+                />
+                <Bar
+                  dataKey="Cemas"
+                  fill={COLORS.dassAnxiety}
+                  radius={[4, 4, 0, 0]}
+                />
+                <Bar
+                  dataKey="Stres"
+                  fill={COLORS.dassStress}
+                  radius={[4, 4, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Risiko Kesehatan Umum</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {stats.healthIssuesDistribution &&
+            stats.healthIssuesDistribution.length > 0 ? (
+              <ResponsiveContainer width="100%" height={350}>
+                <BarChart
+                  data={stats.healthIssuesDistribution}
+                  layout="vertical"
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                  <XAxis
+                    type="number"
+                    stroke="#888888"
+                    fontSize={12}
+                    allowDecimals={false}
+                  />
+                  <YAxis
+                    type="category"
+                    dataKey="name"
+                    stroke="#888888"
+                    fontSize={12}
+                    width={110}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <Tooltip
+                    cursor={{ fill: "#f3f4f6" }}
+                    contentStyle={{ borderRadius: "8px" }}
+                  />
+                  <Bar
+                    dataKey="total"
+                    name="Jumlah Pasien"
+                    fill={COLORS.healthIssue}
+                    radius={[0, 4, 4, 0]}
+                    barSize={20}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-[350px] text-center text-gray-500">
+                Tidak ada risiko kesehatan abnormal yang tercatat.
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Paket MCU</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -226,7 +317,7 @@ export const CompanyStats = ({ companyId }: { companyId: string }) => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Progres Pemeriksaan</CardTitle>
+            <CardTitle>Progres Pemeriksaan Pasien</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -239,9 +330,9 @@ export const CompanyStats = ({ companyId }: { companyId: string }) => {
                   tickLine={false}
                   axisLine={false}
                   interval={0}
-                  angle={-30}
+                  angle={-45}
                   textAnchor="end"
-                  height={70}
+                  height={80}
                 />
                 <YAxis
                   stroke="#888888"
@@ -254,14 +345,11 @@ export const CompanyStats = ({ companyId }: { companyId: string }) => {
                   cursor={{ fill: COLORS.indigo, opacity: 0.1 }}
                   contentStyle={{ borderRadius: "8px" }}
                 />
-                <Bar dataKey="total" radius={[4, 4, 0, 0]}>
-                  {stats.progressDistribution.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={PROGRESS_COLORS[index % PROGRESS_COLORS.length]}
-                    />
-                  ))}
-                </Bar>
+                <Bar
+                  dataKey="total"
+                  fill={COLORS.indigo}
+                  radius={[4, 4, 0, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
