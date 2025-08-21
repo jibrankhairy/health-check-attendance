@@ -51,8 +51,8 @@ const slugToExaminationMap: { [key: string]: string[] } = {
   ],
   pemeriksaan_urin: ["Urinalisa lengkap"],
   pemeriksaan_radiologi: ["Radiologi thoraks", "USG Whole Abdomen"],
-  pemeriksaan_audiometry: ["Audiometri"],
-  pemeriksaan_spirometry: ["Spirometri"],
+  pemeriksaan_audiometry: ["Audiometry"],
+  pemeriksaan_spirometry: ["Spirometry"],
   pemeriksaan_ekg: ["EKG"],
   pemeriksaan_treadmill: ["Treadmill"],
 };

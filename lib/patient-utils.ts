@@ -69,7 +69,7 @@ export const parseExcelFile = (file: File): Promise<any[]> => {
           ];
           addOnColumns.forEach((addOnName) => {
             const excelAddOnName =
-              addOnName === "Panel Hepatitis" ? "Panel Hepatitits" : addOnName;
+              addOnName === "Panel Hepatitis" ? "Panel Hepatitis" : addOnName;
             if (
               row[excelAddOnName] &&
               String(row[excelAddOnName]).trim() !== ""

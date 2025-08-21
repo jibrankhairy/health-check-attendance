@@ -98,18 +98,18 @@ const EKG_FIELDS = [
   "ekgConclusion",
   "ekgAdvice",
 ];
-const AUDIOMETRI_FIELDS = [
-  "audiometriKesimpulanTelingaKanan",
-  "audiometriKesimpulanTelingaKiri",
-  "audiometriKesimpulanUmum",
-  "audiometriSaran",
+const AUDIOMETRY_FIELDS = [
+  "audiometryKesimpulanTelingaKanan",
+  "audiometryKesimpulanTelingaKiri",
+  "audiometryKesimpulanUmum",
+  "audiometrySaran",
   "audioAcKanan250",
 ];
-const SPIROMETRI_FIELDS = [
-  "spirometriFvc",
-  "spirometriFev1",
-  "spirometriFev1Fvc",
-  "kesimpulanSpirometri",
+const SPIROMETRY_FIELDS = [
+  "spirometryFvc",
+  "spirometryFev1",
+  "spirometryFev1Fvc",
+  "kesimpulanSpirometry",
 ];
 const USG_ABDOMEN_FIELDS = [
   "usgAbdomenHepar",
@@ -204,13 +204,13 @@ export const FullReportDocument: React.FC<FullReportDocumentProps> = ({
     (hasItem("mcu eksekutif") || hasItem("ekg") || hasItem("treadmill")) &&
     sectionHasData(d, EKG_FIELDS);
 
-  const showAudiometri =
-    (hasItem("mcu eksekutif") || hasItem("audiometri")) &&
-    sectionHasData(d, AUDIOMETRI_FIELDS);
+  const showAudiometry =
+    (hasItem("mcu eksekutif") || hasItem("audiometry")) &&
+    sectionHasData(d, AUDIOMETRY_FIELDS);
 
-  const showSpirometri =
-    (hasItem("mcu eksekutif") || hasItem("spirometri")) &&
-    sectionHasData(d, SPIROMETRI_FIELDS);
+  const showSpirometry =
+    (hasItem("mcu eksekutif") || hasItem("spirometry")) &&
+    sectionHasData(d, SPIROMETRY_FIELDS);
 
   const showUsgAbdomen =
     (hasItem("mcu eksekutif") || hasItem("usg whole abdomen")) &&
@@ -246,8 +246,8 @@ export const FullReportDocument: React.FC<FullReportDocumentProps> = ({
   >["data"];
   type RontgenData = React.ComponentProps<typeof RontgenDocument>["data"];
   type EkgData = React.ComponentProps<typeof EkgDocument>["data"];
-  type AudiometriData = React.ComponentProps<typeof AudiometriDocument>["data"];
-  type SpirometriData = React.ComponentProps<typeof SpirometriDocument>["data"];
+  type AudiometryData = React.ComponentProps<typeof AudiometriDocument>["data"];
+  type SpirometryData = React.ComponentProps<typeof SpirometriDocument>["data"];
   type UsgAbdomenData = React.ComponentProps<typeof UsgAbdomenDocument>["data"];
   type UsgMammaeData = React.ComponentProps<typeof UsgMammaeDocument>["data"];
   type ConclusionData = React.ComponentProps<typeof ConclusionDocument>["data"];
@@ -280,8 +280,8 @@ export const FullReportDocument: React.FC<FullReportDocumentProps> = ({
 
       {showRontgen && <RontgenDocument data={data as RontgenData} />}
       {showEkg && <EkgDocument data={data as EkgData} />}
-      {showAudiometri && <AudiometriDocument data={data as AudiometriData} />}
-      {showSpirometri && <SpirometriDocument data={data as SpirometriData} />}
+      {showAudiometry && <AudiometriDocument data={data as AudiometryData} />}
+      {showSpirometry && <SpirometriDocument data={data as SpirometryData} />}
       {showUsgAbdomen && <UsgAbdomenDocument data={data as UsgAbdomenData} />}
       {showUsgMammae && <UsgMammaeDocument data={data as UsgMammaeData} />}
       {showFramingham && <FraminghamDocument data={data as FraminghamData} />}

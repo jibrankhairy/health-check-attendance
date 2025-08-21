@@ -20,26 +20,26 @@ import { styles as globalStyles } from "./reportStyles";
 
 type Maybe<T> = T | null | undefined;
 
-type SpirometriData = {
+type SpirometryData = {
   patient?: Maybe<Patient>;
 
-  spirometriFvc?: number | string | null;
-  spirometriFev1?: number | string | null;
-  spirometriFev6?: number | string | null;
-  spirometriFev1Fvc?: number | string | null;
+  spirometryFvc?: number | string | null;
+  spirometryFev1?: number | string | null;
+  spirometryFev6?: number | string | null;
+  spirometryFev1Fvc?: number | string | null;
 
-  spirometriPef?: number | string | null;
-  spirometriPEF?: number | string | null;
+  spirometryPef?: number | string | null;
+  spirometryPEF?: number | string | null;
   PEF?: number | string | null;
 
-  spirometriFef25?: number | string | null;
-  spirometriFef50?: number | string | null;
-  spirometriFef75?: number | string | null;
+  spirometryFef25?: number | string | null;
+  spirometryFef50?: number | string | null;
+  spirometryFef75?: number | string | null;
 
-  kesimpulanSpirometri?: string | null;
+  kesimpulanSpirometry?: string | null;
 
-  spirometriValidatorName?: string | null;
-  spirometriValidatorQr?: string | null;
+  spirometryValidatorName?: string | null;
+  spirometryValidatorQr?: string | null;
 };
 
 // Chart sizes
@@ -413,26 +413,26 @@ function VolumeTimeChart({
   );
 }
 
-export const SpirometriDocument: React.FC<{ data: SpirometriData }> = ({
+export const SpirometriDocument: React.FC<{ data: SpirometryData }> = ({
   data,
 }) => {
-  const FVC = clampNum(data?.spirometriFvc, 0);
+  const FVC = clampNum(data?.spirometryFvc, 0);
   const FEV1 =
-    data?.spirometriFev1 != null ? clampNum(data.spirometriFev1) : null;
+    data?.spirometryFev1 != null ? clampNum(data.spirometryFev1) : null;
   const FEV6 =
-    data?.spirometriFev6 != null ? clampNum(data.spirometriFev6) : null;
-  const FEV1FVC = data?.spirometriFev1Fvc;
+    data?.spirometryFev6 != null ? clampNum(data.spirometryFev6) : null;
+  const FEV1FVC = data?.spirometryFev1Fvc;
 
   const PEF = clampNum(
-    data?.spirometriPef ?? data?.spirometriPEF ?? data?.PEF,
+    data?.spirometryPef ?? data?.spirometryPEF ?? data?.PEF,
     0
   );
   const FEF25 =
-    data?.spirometriFef25 != null ? clampNum(data.spirometriFef25) : null;
+    data?.spirometryFef25 != null ? clampNum(data.spirometryFef25) : null;
   const FEF50 =
-    data?.spirometriFef50 != null ? clampNum(data.spirometriFef50) : null;
+    data?.spirometryFef50 != null ? clampNum(data.spirometryFef50) : null;
   const FEF75 =
-    data?.spirometriFef75 != null ? clampNum(data.spirometriFef75) : null;
+    data?.spirometryFef75 != null ? clampNum(data.spirometryFef75) : null;
 
   return (
     <Page size="A4" style={globalStyles.page}>
@@ -440,7 +440,7 @@ export const SpirometriDocument: React.FC<{ data: SpirometriData }> = ({
       <PatientInfo patient={data?.patient} />
 
       <View style={globalStyles.body}>
-        <Text style={localStyles.headerText}>HASIL PEMERIKSAAN SPIROMETRI</Text>
+        <Text style={localStyles.headerText}>HASIL PEMERIKSAAN SPIROMETRY</Text>
 
         <View style={localStyles.chartsRow}>
           <FlowVolumeChart
@@ -457,13 +457,13 @@ export const SpirometriDocument: React.FC<{ data: SpirometriData }> = ({
           <View style={localStyles.reportRow}>
             <Text style={localStyles.reportLabel}>FVC (L)</Text>
             <Text style={localStyles.reportValue}>
-              : {data?.spirometriFvc ?? "-"}
+              : {data?.spirometryFvc ?? "-"}
             </Text>
           </View>
           <View style={localStyles.reportRow}>
             <Text style={localStyles.reportLabel}>FEV1 (L)</Text>
             <Text style={localStyles.reportValue}>
-              : {data?.spirometriFev1 ?? "-"}
+              : {data?.spirometryFev1 ?? "-"}
             </Text>
           </View>
           <View style={localStyles.reportRow}>
@@ -473,36 +473,36 @@ export const SpirometriDocument: React.FC<{ data: SpirometriData }> = ({
           <View style={localStyles.reportRow}>
             <Text style={localStyles.reportLabel}>PEF (L/s)</Text>
             <Text style={localStyles.reportValue}>
-              : {data?.spirometriPef ?? data?.spirometriPEF ?? data?.PEF ?? "-"}
+              : {data?.spirometryPef ?? data?.spirometryPEF ?? data?.PEF ?? "-"}
             </Text>
           </View>
           <View style={localStyles.reportRow}>
             <Text style={localStyles.reportLabel}>FEF25/50/75 (L/s)</Text>
             <Text style={localStyles.reportValue}>
-              : {data?.spirometriFef25 ?? "-"}/{data?.spirometriFef50 ?? "-"}/
-              {data?.spirometriFef75 ?? "-"}
+              : {data?.spirometryFef25 ?? "-"}/{data?.spirometryFef50 ?? "-"}/
+              {data?.spirometryFef75 ?? "-"}
             </Text>
           </View>
           <View style={[localStyles.reportRow, { marginTop: 10 }]}>
             <Text style={localStyles.reportLabel}>Kesimpulan</Text>
             <Text style={localStyles.reportValue}>
-              : {data?.kesimpulanSpirometri ?? "-"}
+              : {data?.kesimpulanSpirometry ?? "-"}
             </Text>
           </View>
         </View>
       </View>
 
-      {(data?.spirometriValidatorName || data?.spirometriValidatorQr) && (
+      {(data?.spirometryValidatorName || data?.spirometryValidatorQr) && (
         <View style={localStyles.validatorBox}>
-          {data?.spirometriValidatorQr && (
+          {data?.spirometryValidatorQr && (
             <Image
-              src={data.spirometriValidatorQr as string}
+              src={data.spirometryValidatorQr as string}
               style={localStyles.validatorQr}
             />
           )}
-          {data?.spirometriValidatorName && (
+          {data?.spirometryValidatorName && (
             <Text style={localStyles.validatorName}>
-              {data.spirometriValidatorName}
+              {data.spirometryValidatorName}
             </Text>
           )}
           <Text style={localStyles.validatorLabel}>Validator</Text>

@@ -70,24 +70,24 @@ export const AudiometriSpirometriForm = ({
   const spiroChartValues = useWatch({
     control,
     name: [
-      "spirometriFvc",
-      "spirometriFvcPred",
-      "spirometriFvcPost",
-      "spirometriFev1",
-      "spirometriFev1Pred",
-      "spirometriFev1Post",
-      "spirometriPef",
-      "spirometriPefPred",
-      "spirometriPefPost",
-      "spirometriFef25",
-      "spirometriFef25Pred",
-      "spirometriFef25Post",
-      "spirometriFef50",
-      "spirometriFef50Pred",
-      "spirometriFef50Post",
-      "spirometriFef75",
-      "spirometriFef75Pred",
-      "spirometriFef75Post",
+      "spirometryFvc",
+      "spirometryFvcPred",
+      "spirometryFvcPost",
+      "spirometryFev1",
+      "spirometryFev1Pred",
+      "spirometryFev1Post",
+      "spirometryPef",
+      "spirometryPefPred",
+      "spirometryPefPost",
+      "spirometryFef25",
+      "spirometryFef25Pred",
+      "spirometryFef25Post",
+      "spirometryFef50",
+      "spirometryFef50Pred",
+      "spirometryFef50Post",
+      "spirometryFef75",
+      "spirometryFef75Pred",
+      "spirometryFef75Post",
     ],
   });
 
@@ -209,15 +209,15 @@ export const AudiometriSpirometriForm = ({
       <CardHeader>
         <CardTitle>Pemeriksaan Khusus</CardTitle>
         <CardDescription>
-          Input hasil audiometri dan spirometri.
+          Input hasil audiometry dan spirometry.
         </CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-10">
-        {itemsToCheck.has("Audiometri") && (
+        {itemsToCheck.has("Audiometry") && (
           <div>
             <h3 className="font-semibold mb-4 border-b pb-2">
-              Audiometri - Test Audiogram
+              Audiometry - Test Audiogram
             </h3>
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
               <div>
@@ -327,7 +327,7 @@ export const AudiometriSpirometriForm = ({
                   <Input
                     id="audio-kanan"
                     placeholder="Normal / Tuli Konduktif / etc."
-                    {...register("audiometriKesimpulanTelingaKanan")}
+                    {...register("audiometryKesimpulanTelingaKanan")}
                   />
                 </div>
                 <div className="space-y-2">
@@ -335,7 +335,7 @@ export const AudiometriSpirometriForm = ({
                   <Input
                     id="audio-kiri"
                     placeholder="Normal / Tuli Sensorineural / dll."
-                    {...register("audiometriKesimpulanTelingaKiri")}
+                    {...register("audiometryKesimpulanTelingaKiri")}
                   />
                 </div>
               </div>
@@ -343,8 +343,8 @@ export const AudiometriSpirometriForm = ({
                 <Label htmlFor="audio-kesimpulan">Kesimpulan</Label>
                 <Textarea
                   id="audio-kesimpulan"
-                  placeholder="Tuliskan kesimpulan umum dari hasil pemeriksaan audiometri..."
-                  {...register("audiometriKesimpulanUmum")}
+                  placeholder="Tuliskan kesimpulan umum dari hasil pemeriksaan audiometry..."
+                  {...register("audiometryKesimpulanUmum")}
                 />
               </div>
               <div className="space-y-2">
@@ -352,22 +352,22 @@ export const AudiometriSpirometriForm = ({
                 <Textarea
                   id="audio-saran"
                   placeholder="Tuliskan saran yang diperlukan (jika ada)..."
-                  {...register("audiometriSaran")}
+                  {...register("audiometrySaran")}
                 />
               </div>
             </div>
 
             <SignatureField
-              nameFieldName="audiometriValidatorName"
-              qrFieldName="audiometriValidatorQr"
-              label="Nama Pemeriksa Audiometri"
+              nameFieldName="audiometryValidatorName"
+              qrFieldName="audiometryValidatorQr"
+              label="Nama Pemeriksa Audiometry"
             />
           </div>
         )}
 
-        {itemsToCheck.has("Spirometri") && (
+        {itemsToCheck.has("Spirometry") && (
           <div>
-            <h3 className="font-semibold mb-4 border-b pb-2">Spirometri</h3>
+            <h3 className="font-semibold mb-4 border-b pb-2">Spirometry</h3>
             <div className="mb-8 grid grid-cols-1 lg:grid-cols-2 gap-6 p-4 border rounded-lg bg-slate-50/50">
               <FlowVolumeChart data={spiroDataForChart} />
               <VolumeTimeChart data={spiroDataForChart} />
@@ -382,56 +382,56 @@ export const AudiometriSpirometriForm = ({
               </div>
               <SpiroRow
                 label="FVC"
-                actualName="spirometriFvc"
-                predictedName="spirometriFvcPred"
+                actualName="spirometryFvc"
+                predictedName="spirometryFvcPred"
                 unit="L"
               />
               <SpiroRow
                 label="FEV1"
-                actualName="spirometriFev1"
-                predictedName="spirometriFev1Pred"
+                actualName="spirometryFev1"
+                predictedName="spirometryFev1Pred"
                 unit="L"
               />
               <SpiroRow
                 label="FEV1/FVC"
-                actualName="spirometriFev1Fvc"
-                predictedName="spirometriFev1FvcPred"
+                actualName="spirometryFev1Fvc"
+                predictedName="spirometryFev1FvcPred"
                 unit="%"
               />
               <SpiroRow
                 label="FEV6"
-                actualName="spirometriFev6"
-                predictedName="spirometriFev6Pred"
+                actualName="spirometryFev6"
+                predictedName="spirometryFev6Pred"
                 unit="L"
               />
               <SpiroRow
                 label="PEF"
-                actualName="spirometriPef"
-                predictedName="spirometriPefPred"
+                actualName="spirometryPef"
+                predictedName="spirometryPefPred"
                 unit="L/s"
               />
               <SpiroRow
                 label="FEF25–75"
-                actualName="spirometriFef2575"
-                predictedName="spirometriFef2575Pred"
+                actualName="spirometryFef2575"
+                predictedName="spirometryFef2575Pred"
                 unit="L/s"
               />
               <SpiroRow
                 label="FEF25"
-                actualName="spirometriFef25"
-                predictedName="spirometriFef25Pred"
+                actualName="spirometryFef25"
+                predictedName="spirometryFef25Pred"
                 unit="L/s"
               />
               <SpiroRow
                 label="FEF50"
-                actualName="spirometriFef50"
-                predictedName="spirometriFef50Pred"
+                actualName="spirometryFef50"
+                predictedName="spirometryFef50Pred"
                 unit="L/s"
               />
               <SpiroRow
                 label="FEF75"
-                actualName="spirometriFef75"
-                predictedName="spirometriFef75Pred"
+                actualName="spirometryFef75"
+                predictedName="spirometryFef75Pred"
                 unit="L/s"
               />
             </div>
@@ -458,14 +458,14 @@ export const AudiometriSpirometriForm = ({
                     <div className="space-y-3 rounded-md border p-3">
                       <SpiroRow
                         label="FVC Post"
-                        actualName="spirometriFvcPost"
-                        predictedName="spirometriFvcPred"
+                        actualName="spirometryFvcPost"
+                        predictedName="spirometryFvcPred"
                         unit="L"
                       />
                       <SpiroRow
                         label="FEV1 Post"
-                        actualName="spirometriFev1Post"
-                        predictedName="spirometriFev1Pred"
+                        actualName="spirometryFev1Post"
+                        predictedName="spirometryFev1Pred"
                         unit="L"
                       />
                     </div>
@@ -490,7 +490,7 @@ export const AudiometriSpirometriForm = ({
                         <Input
                           className="mt-1"
                           placeholder="Reversibilitas, dll."
-                          {...register("spirometriPostBdNote")}
+                          {...register("spirometryPostBdNote")}
                         />
                       </div>
                     </div>
@@ -503,14 +503,14 @@ export const AudiometriSpirometriForm = ({
                 <Label>Quality – Acceptability</Label>
                 <Input
                   placeholder="Baik / Cukup / Kurang"
-                  {...register("spirometriQualityAccept")}
+                  {...register("spirometryQualityAccept")}
                 />
               </div>
               <div className="space-y-2">
                 <Label>Quality – Repeatability</Label>
                 <Input
                   placeholder="Memenuhi / Tidak"
-                  {...register("spirometriQualityRepeat")}
+                  {...register("spirometryQualityRepeat")}
                 />
               </div>
               <div className="space-y-2">
@@ -518,28 +518,28 @@ export const AudiometriSpirometriForm = ({
                 <Input
                   type="number"
                   inputMode="numeric"
-                  {...register("spirometriEffortCount")}
+                  {...register("spirometryEffortCount")}
                 />
               </div>
             </div>
             <div className="mt-6 space-y-2">
-              <Label>Kesimpulan Spirometri</Label>
+              <Label>Kesimpulan Spirometry</Label>
               <Textarea
-                {...register("kesimpulanSpirometri")}
+                {...register("kesimpulanSpirometry")}
                 placeholder="Tuliskan kesimpulan hasil pemeriksaan..."
               />
             </div>
             <div className="mt-4 space-y-2">
-              <Label>Upload Gambar Grafik Spirometri (opsional)</Label>
-              <Input type="file" {...register("spirometriImage")} />
+              <Label>Upload Gambar Grafik Spirometry (opsional)</Label>
+              <Input type="file" {...register("spirometryImage")} />
               <p className="text-xs text-muted-foreground">
                 FV loop & VT curve dari alat (jika ada).
               </p>
             </div>
             <SignatureField
-              nameFieldName="spirometriValidatorName"
-              qrFieldName="spirometriValidatorQr"
-              label="Nama Pemeriksa Spirometri"
+              nameFieldName="spirometryValidatorName"
+              qrFieldName="spirometryValidatorQr"
+              label="Nama Pemeriksa Spirometry"
             />
           </div>
         )}

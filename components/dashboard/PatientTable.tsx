@@ -312,11 +312,11 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
     );
     addIf(
       norm.some((s) => s.includes("audiometri") || s.includes("audiometry")),
-      "POS PEMERIKSAAN AUDIOMETRI"
+      "POS PEMERIKSAAN AUDIOMETRY"
     );
     addIf(
       norm.some((s) => s.includes("spirometri") || s.includes("spirometry")),
-      "POS PEMERIKSAAN SPIROMETRI"
+      "POS PEMERIKSAAN SPIROMETRY"
     );
     addIf(
       norm.some((s) => s.includes("treadmill")),

@@ -227,7 +227,7 @@ model McuResult {
   ekgConclusion    String? @db.Text
   ekgAdvice        String? @db.Text
 
-  // --- Audiometri ---
+  // --- Audiometry ---
   audioAcKanan250                    Int?
   audioAcKanan500                    Int?
   audioAcKanan1000                   Int?
@@ -260,42 +260,42 @@ model McuResult {
   audioBcKiri4000                    Int?
   audioBcKiri6000                    Int?
   audioBcKiri8000                    Int?
-  audiometriKesimpulanTelingaKanan   String? @db.Text
-  audiometriKesimpulanTelingaKiri    String? @db.Text
-  audiometriKesimpulanUmum           String? @db.Text
-  audiometriSaran                    String? @db.Text
+  audiometryKesimpulanTelingaKanan   String? @db.Text
+  audiometryKesimpulanTelingaKiri    String? @db.Text
+  audiometryKesimpulanUmum           String? @db.Text
+  audiometrySaran                    String? @db.Text
 
-  // --- Spirometri ---
-  spirometriFvc                     Float? 
-  spirometriFvcPred                 Float? // Diubah dari String?
-  spirometriFvcPost                 Float? // Diubah dari String?
-  spirometriFev1                    Float? // Diubah dari String?
-  spirometriFev1Pred                Float? // Diubah dari String?
-  spirometriFev1Post                Float? // Diubah dari String?
-  spirometriFev1Fvc                 Float? // Diubah dari String?
-  spirometriFev1FvcPred             Float? // Diubah dari String?
-  spirometriFev6                    Float? // Diubah dari String?
-  spirometriFev6Pred                Float? // Diubah dari String?
-  spirometriPef                     Float? // Diubah dari String?
-  spirometriPefPred                 Float? // Diubah dari String?
-  spirometriPefPost                 Float? // Diubah dari String?
-  spirometriFef2575                 Float? // Diubah dari String?
-  spirometriFef2575Pred             Float? // Diubah dari String?
-  spirometriFef25                   Float? // Diubah dari String?
-  spirometriFef25Pred               Float? // Diubah dari String?
-  spirometriFef25Post               Float? // Diubah dari String?
-  spirometriFef50                   Float? // Diubah dari String?
-  spirometriFef50Pred               Float? // Diubah dari String?
-  spirometriFef50Post               Float? // Diubah dari String?
-  spirometriFef75                   Float? // Diubah dari String?
-  spirometriFef75Pred               Float? // Diubah dari String?
-  spirometriFef75Post               Float? // Diubah dari String?
-  spirometriPostBdNote              String? @db.Text
-  spirometriQualityAccept           String? @db.Text
-  spirometriQualityRepeat           String? @db.Text
-  spirometriEffortCount             String? @db.Text
-  spirometriImage                   String? @db.Text
-  kesimpulanSpirometri              String? @db.Text
+  // --- Spirometry ---
+  spirometryFvc                     Float? 
+  spirometryFvcPred                 Float? // Diubah dari String?
+  spirometryFvcPost                 Float? // Diubah dari String?
+  spirometryFev1                    Float? // Diubah dari String?
+  spirometryFev1Pred                Float? // Diubah dari String?
+  spirometryFev1Post                Float? // Diubah dari String?
+  spirometryFev1Fvc                 Float? // Diubah dari String?
+  spirometryFev1FvcPred             Float? // Diubah dari String?
+  spirometryFev6                    Float? // Diubah dari String?
+  spirometryFev6Pred                Float? // Diubah dari String?
+  spirometryPef                     Float? // Diubah dari String?
+  spirometryPefPred                 Float? // Diubah dari String?
+  spirometryPefPost                 Float? // Diubah dari String?
+  spirometryFef2575                 Float? // Diubah dari String?
+  spirometryFef2575Pred             Float? // Diubah dari String?
+  spirometryFef25                   Float? // Diubah dari String?
+  spirometryFef25Pred               Float? // Diubah dari String?
+  spirometryFef25Post               Float? // Diubah dari String?
+  spirometryFef50                   Float? // Diubah dari String?
+  spirometryFef50Pred               Float? // Diubah dari String?
+  spirometryFef50Post               Float? // Diubah dari String?
+  spirometryFef75                   Float? // Diubah dari String?
+  spirometryFef75Pred               Float? // Diubah dari String?
+  spirometryFef75Post               Float? // Diubah dari String?
+  spirometryPostBdNote              String? @db.Text
+  spirometryQualityAccept           String? @db.Text
+  spirometryQualityRepeat           String? @db.Text
+  spirometryEffortCount             String? @db.Text
+  spirometryImage                   String? @db.Text
+  kesimpulanSpirometry              String? @db.Text
 
   // --- Framingham ---
   framinghamGender                  String?
@@ -348,10 +348,10 @@ model McuResult {
   biomonitoringValidatorQr   String? @db.Text
   urinalisaValidatorName     String?
   urinalisaValidatorQr       String? @db.Text
-  audiometriValidatorName    String?
-  audiometriValidatorQr      String? @db.Text
-  spirometriValidatorName    String?
-  spirometriValidatorQr      String? @db.Text
+  audiometryValidatorName    String?
+  audiometryValidatorQr      String? @db.Text
+  spirometryValidatorName    String?
+  spirometryValidatorQr      String? @db.Text
   usgAbdomenValidatorName    String?
   usgAbdomenValidatorQr      String? @db.Text
   usgMammaeValidatorName     String?

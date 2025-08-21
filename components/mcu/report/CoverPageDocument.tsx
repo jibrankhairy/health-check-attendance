@@ -116,8 +116,8 @@ function buildAttachedList(data: ReportData) {
 
   const showRontgen = showHematologi || has("radiologi thoraks");
   const showEkg = has("mcu eksekutif") || has("ekg") || has("treadmill");
-  const showAudiometri = has("mcu eksekutif") || has("audiometri");
-  const showSpirometri = has("mcu eksekutif") || has("spirometri");
+  const showAudiometry = has("mcu eksekutif") || has("audiometry");
+  const showSpirometry = has("mcu eksekutif") || has("spirometry");
   const showUsgAbdomen = has("mcu eksekutif") || has("usg whole abdomen");
   const showUsgMammae = has("mcu eksekutif") || has("usg mammae");
 
@@ -141,8 +141,8 @@ function buildAttachedList(data: ReportData) {
   const penunjangItems: string[] = [];
   if (showRontgen) penunjangItems.push("HASIL PEMERIKSAAN RONTGEN");
   if (showEkg) penunjangItems.push("HASIL PEMERIKSAAN EKG");
-  if (showAudiometri) penunjangItems.push("HASIL PEMERIKSAAN AUDIOMETRI");
-  if (showSpirometri) penunjangItems.push("HASIL PEMERIKSAAN SPIROMETRI");
+  if (showAudiometry) penunjangItems.push("HASIL PEMERIKSAAN AUDIOMETRY");
+  if (showSpirometry) penunjangItems.push("HASIL PEMERIKSAAN SPIROMETRY");
   if (showUsgMammae) penunjangItems.push("HASIL PEMERIKSAAN USG MAMMAE");
   if (showUsgAbdomen) penunjangItems.push("HASIL PEMERIKSAAN USG ABDOMEN");
   if (penunjangItems.length) {

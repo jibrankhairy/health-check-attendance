@@ -116,14 +116,14 @@ const formSchema = z.object({
   audioBcKiri4000: z.coerce.number().optional().nullable(),
   audioBcKiri6000: z.coerce.number().optional().nullable(),
   audioBcKiri8000: z.coerce.number().optional().nullable(),
-  audiometriKesimpulanTelingaKanan: z.string().optional().nullable(),
-  audiometriKesimpulanTelingaKiri: z.string().optional().nullable(),
-  audiometriKesimpulanUmum: z.string().optional().nullable(),
-  audiometriSaran: z.string().optional().nullable(),
-  spirometriFvc: z.coerce.string().optional().nullable(),
-  spirometriFev1: z.coerce.string().optional().nullable(),
-  spirometriFev1Fvc: z.coerce.string().optional().nullable(),
-  kesimpulanSpirometri: z.string().optional().nullable(),
+  audiometryKesimpulanTelingaKanan: z.string().optional().nullable(),
+  audiometryKesimpulanTelingaKiri: z.string().optional().nullable(),
+  audiometryKesimpulanUmum: z.string().optional().nullable(),
+  audiometrySaran: z.string().optional().nullable(),
+  spirometryFvc: z.coerce.string().optional().nullable(),
+  spirometryFev1: z.coerce.string().optional().nullable(),
+  spirometryFev1Fvc: z.coerce.string().optional().nullable(),
+  kesimpulanSpirometry: z.string().optional().nullable(),
   usgAbdomenImage1: z.string().optional().nullable(),
   usgAbdomenImage2: z.string().optional().nullable(),
   usgAbdomenImage3: z.string().optional().nullable(),
@@ -172,10 +172,10 @@ const formSchema = z.object({
   biomonitoringValidatorQr: z.string().optional().nullable(),
   urinalisaValidatorName: z.string().optional().nullable(),
   urinalisaValidatorQr: z.string().optional().nullable(),
-  audiometriValidatorName: z.string().optional().nullable(),
-  audiometriValidatorQr: z.string().optional().nullable(),
-  spirometriValidatorName: z.string().optional().nullable(),
-  spirometriValidatorQr: z.string().optional().nullable(),
+  audiometryValidatorName: z.string().optional().nullable(),
+  audiometryValidatorQr: z.string().optional().nullable(),
+  spirometryValidatorName: z.string().optional().nullable(),
+  spirometryValidatorQr: z.string().optional().nullable(),
   usgAbdomenValidatorName: z.string().optional().nullable(),
   usgAbdomenValidatorQr: z.string().optional().nullable(),
   usgMammaeValidatorName: z.string().optional().nullable(),
@@ -382,7 +382,7 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
   const showUrinalisa =
     hasItem("mcu regular") || hasItem("mcu eksekutif") || hasItem("mcu akhir");
   const showAudioSpiro =
-    hasItem("mcu eksekutif") || hasItem("audiometri") || hasItem("spirometri");
+    hasItem("mcu eksekutif") || hasItem("audiometry") || hasItem("spirometry");
   const showUsgAbdomen =
     hasItem("mcu eksekutif") || hasItem("usg whole abdomen");
   const showUsgMammae = hasItem("mcu eksekutif") || hasItem("usg mammae");
@@ -398,8 +398,8 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
 
   const itemsToCheck = new Set<string>(initialData.patient.mcuPackage || []);
   if (hasItem("mcu eksekutif")) {
-    itemsToCheck.add("Audiometri");
-    itemsToCheck.add("Spirometri");
+    itemsToCheck.add("Audiometry");
+    itemsToCheck.add("Spirometry");
   }
 
   return (

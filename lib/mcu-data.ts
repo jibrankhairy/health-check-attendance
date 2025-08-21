@@ -14,8 +14,8 @@ export const regularPackageItems = [
 
 export const executivePackageItems = [
   ...regularPackageItems,
-  "Audiometri",
-  "Spirometri",
+  "Audiometry",
+  "Spirometry",
   "EKG",
   "Treadmill",
   "Panel Hepatitis",
@@ -38,8 +38,8 @@ export const mcuPackages = [
 ];
 
 export const addOnItems = [
-  { id: "Audiometri", label: "Audiometri" },
-  { id: "Spirometri", label: "Spirometri" },
+  { id: "Audiometry", label: "Audiometry" },
+  { id: "Spirometry", label: "Spirometry" },
   { id: "EKG", label: "EKG" },
   { id: "Treadmill", label: "Treadmill" },
   { id: "Biomonitoring (Pb, Fe, As)", label: "Biomonitoring (Pb, Fe, As)" },

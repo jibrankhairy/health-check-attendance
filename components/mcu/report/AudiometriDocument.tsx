@@ -22,15 +22,15 @@ type Maybe<T> = T | null | undefined;
 
 type AudiometriData = {
   patient?: Maybe<Patient>;
-  audiometriValidatorName?: string | null;
-  audiometriValidatorQr?: string | null;
+  audiometryValidatorName?: string | null;
+  audiometryValidatorQr?: string | null;
 
-  audiometriKesimpulanTelingaKanan?: string | null;
-  audiometriKesimpulanTelingaKiri?: string | null;
-  audiometriKesimpulanUmum?: string | null;
-  audiometriSaran?: string | null;
+  audiometryKesimpulanTelingaKanan?: string | null;
+  audiometryKesimpulanTelingaKiri?: string | null;
+  audiometryKesimpulanUmum?: string | null;
+  audiometrySaran?: string | null;
 
-  kesimpulanAudiometri?: string | null;
+  kesimpulanAudiometry?: string | null;
 } & Record<string, unknown>;
 
 const FREQS = ["250", "500", "1000", "2000", "3000", "4000", "6000", "8000"];
@@ -316,17 +316,17 @@ export const AudiometriDocument: React.FC<{ data: AudiometriData }> = ({
   const acKiri = FREQS.map((f) => toNum(data?.[`audioAcKiri${f}`]));
   const bcKiri = FREQS.map((f) => toNum(data?.[`audioBcKiri${f}`]));
 
-  const legacy = parseLegacyKesimpulan(data?.kesimpulanAudiometri);
+  const legacy = parseLegacyKesimpulan(data?.kesimpulanAudiometry);
 
   const telingaKanan =
-    data?.audiometriKesimpulanTelingaKanan ?? legacy.kanan ?? "-";
+    data?.audiometryKesimpulanTelingaKanan ?? legacy.kanan ?? "-";
 
   const telingaKiri =
-    data?.audiometriKesimpulanTelingaKiri ?? legacy.kiri ?? "-";
+    data?.audiometryKesimpulanTelingaKiri ?? legacy.kiri ?? "-";
 
-  const kesimpulan = data?.audiometriKesimpulanUmum ?? legacy.umum ?? "-";
+  const kesimpulan = data?.audiometryKesimpulanUmum ?? legacy.umum ?? "-";
 
-  const saran = data?.audiometriSaran ?? legacy.saran ?? "-";
+  const saran = data?.audiometrySaran ?? legacy.saran ?? "-";
 
   return (
     <Page size="A4" style={globalStyles.page}>
@@ -336,7 +336,7 @@ export const AudiometriDocument: React.FC<{ data: AudiometriData }> = ({
       <View style={localStyles.chartsRow as any} />
 
       <View style={globalStyles.body}>
-        <Text style={localStyles.header}>HASIL PEMERIKSAAN AUDIOMETRI</Text>
+        <Text style={localStyles.header}>HASIL PEMERIKSAAN AUDIOMETRY</Text>
 
         <View style={localStyles.chartsRow}>
           <AudiogramSvg
@@ -446,17 +446,17 @@ export const AudiometriDocument: React.FC<{ data: AudiometriData }> = ({
         </View>
       </View>
 
-      {(data?.audiometriValidatorName || data?.audiometriValidatorQr) && (
+      {(data?.audiometryValidatorName || data?.audiometryValidatorQr) && (
         <View style={localStyles.validatorBox}>
-          {data?.audiometriValidatorQr && (
+          {data?.audiometryValidatorQr && (
             <Image
-              src={data.audiometriValidatorQr as string}
+              src={data.audiometryValidatorQr as string}
               style={localStyles.validatorQr}
             />
           )}
-          {data?.audiometriValidatorName && (
+          {data?.audiometryValidatorName && (
             <Text style={localStyles.validatorName}>
-              {data.audiometriValidatorName as string}
+              {data.audiometryValidatorName as string}
             </Text>
           )}
           <Text style={localStyles.validatorLabel}>Validator</Text>
