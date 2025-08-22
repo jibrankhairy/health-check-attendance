@@ -98,19 +98,21 @@ export default function LoginPage() {
   return (
     <div className="bg-white font-sans text-gray-900">
       <div className="flex min-h-screen">
-        <div className="flex flex-1 flex-col justify-between items-center p-6 lg:p-10">
-          <div className="w-full text-left">
+        <div className="flex flex-1 flex-col justify-center lg:justify-between items-center p-6 lg:p-10 gap-8 lg:gap-0">
+          <div className="w-full text-center lg:text-left">
             <img
               src="/images/logo-klinik.png"
               alt="Logo Klinik"
-              className="h-12 w-auto cursor-pointer"
+              className="h-10 lg:h-12 w-auto cursor-pointer inline-block lg:inline"
             />
           </div>
 
           <div className="w-full max-w-sm">
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold tracking-tight">Welcome</h2>
-              <p className="text-gray-500 mt-2 whitespace-nowrap">
+              <h2 className="text-2xl lg:text-3xl font-bold tracking-tight">
+                Welcome
+              </h2>
+              <p className="text-gray-500 mt-2">
                 Enter your email and password to access your account.
               </p>
             </div>
@@ -184,15 +186,6 @@ export default function LoginPage() {
                     Remember Me
                   </label>
                 </div>
-                {/* <div className="text-sm">
-                  <a
-                    href="#"
-                    className="font-medium hover:underline"
-                    style={{ color: "#01449D" }}
-                  >
-                    Forgot Your Password?
-                  </a>
-                </div> */}
               </div>
 
               <div>
@@ -206,16 +199,6 @@ export default function LoginPage() {
                 </button>
               </div>
             </form>
-            {/* <p className="mt-8 text-center text-sm text-gray-500">
-              Don't Have An Account?{" "}
-              <a
-                href="#"
-                className="font-medium hover:underline"
-                style={{ color: "#01449D" }}
-              >
-                Register Now.
-              </a>
-            </p> */}
           </div>
 
           <div className="w-full text-center lg:text-left">
