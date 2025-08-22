@@ -45,7 +45,6 @@ function mapExcelToPrisma(row: any): { [key: string]: any } {
     "audioBcKiri8000",
   ]);
 
-  // ---> TAMBAHKAN FIELD SPIROMETRY DI floatFields
   const floatFields = new Set([
     "beratBadan",
     "tinggiBadan",
@@ -90,7 +89,13 @@ function mapExcelToPrisma(row: any): { [key: string]: any } {
       }
     }
   }
-  mappedData.status = "COMPLETED";
+
+  if (mappedData.kesimpulan && String(mappedData.kesimpulan).trim() !== "") {
+    mappedData.status = "COMPLETED";
+  } else {
+    mappedData.status = "IN_PROGRESS";
+  }
+
   return mappedData;
 }
 
@@ -191,6 +196,10 @@ export async function POST(request: Request) {
             const qrCodeDataUrl = await QRCode.toDataURL(validatorName);
             dataToUpdate[qrField] = qrCodeDataUrl;
           }
+        }
+
+        if (dataToUpdate.status === "COMPLETED") {
+          dataToUpdate.fileUrl = `/dashboard/reports/view/${mcuResult.id}`;
         }
 
         await prisma.mcuResult.update({
