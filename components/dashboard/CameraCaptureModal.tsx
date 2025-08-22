@@ -11,7 +11,13 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Camera, RefreshCcw, Loader2, UploadCloud } from "lucide-react";
+import {
+  Camera,
+  RefreshCcw,
+  Loader2,
+  UploadCloud,
+  SwitchCamera,
+} from "lucide-react";
 
 type Props = {
   isOpen: boolean;
@@ -31,14 +37,58 @@ export const CameraCaptureModal = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const startCamera = useCallback(async () => {
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+  const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  useEffect(() => {
+    const getDevices = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: 1280, height: 720 },
-        });
+        await navigator.mediaDevices.getUserMedia({ video: true });
+        const allDevices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = allDevices.filter(
+          (device) => device.kind === "videoinput"
+        );
+        setDevices(videoDevices);
+
+        if (videoDevices.length > 0) {
+          const rearCamera =
+            videoDevices.find((d) => d.label.toLowerCase().includes("back")) ||
+            videoDevices[0];
+          setSelectedDeviceId(rearCamera.deviceId);
+        }
+      } catch (err) {
+        console.error("Error enumerating devices:", err);
+        toast.error("Tidak bisa mendapatkan daftar kamera.");
+      }
+    };
+    if (isOpen) {
+      getDevices();
+    }
+  }, [isOpen]);
+
+  const startCamera = useCallback(async () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+    }
+
+    if (
+      navigator.mediaDevices &&
+      navigator.mediaDevices.getUserMedia &&
+      selectedDeviceId
+    ) {
+      try {
+        const constraints = {
+          video: {
+            deviceId: { exact: selectedDeviceId },
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+          },
+        };
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
+          streamRef.current = stream;
         }
       } catch (err) {
         console.error("Error accessing camera:", err);
@@ -46,13 +96,13 @@ export const CameraCaptureModal = ({
         onClose();
       }
     }
-  }, [onClose]);
+  }, [selectedDeviceId, onClose]);
 
+  // 3. Hentikan stream kamera saat ini
   const stopCamera = useCallback(() => {
-    if (videoRef.current && videoRef.current.srcObject) {
-      const stream = videoRef.current.srcObject as MediaStream;
-      stream.getTracks().forEach((track) => track.stop());
-      videoRef.current.srcObject = null;
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
     }
   }, []);
 
@@ -63,8 +113,17 @@ export const CameraCaptureModal = ({
     } else {
       stopCamera();
     }
-    return () => stopCamera();
-  }, [isOpen, startCamera, stopCamera]);
+  }, [isOpen, selectedDeviceId]);
+
+  const handleSwitchCamera = () => {
+    if (devices.length > 1) {
+      const currentIndex = devices.findIndex(
+        (d) => d.deviceId === selectedDeviceId
+      );
+      const nextIndex = (currentIndex + 1) % devices.length;
+      setSelectedDeviceId(devices[nextIndex].deviceId);
+    }
+  };
 
   const handleTakePhoto = () => {
     if (videoRef.current && canvasRef.current) {
@@ -73,13 +132,23 @@ export const CameraCaptureModal = ({
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       const context = canvas.getContext("2d");
+      const isFrontCamera = devices
+        .find((d) => d.deviceId === selectedDeviceId)
+        ?.label.toLowerCase()
+        .includes("front");
+      if (isFrontCamera) {
+        context?.translate(canvas.width, 0);
+        context?.scale(-1, 1);
+      }
       context?.drawImage(video, 0, 0, canvas.width, canvas.height);
       setCapturedImage(canvas.toDataURL("image/jpeg"));
+      stopCamera();
     }
   };
 
   const handleRetake = () => {
     setCapturedImage(null);
+    startCamera();
   };
 
   const handleSavePhoto = async () => {
@@ -90,7 +159,6 @@ export const CameraCaptureModal = ({
     const blob = await response.blob();
 
     const formData = new FormData();
-
     formData.append("photo", blob, "capture.jpg");
 
     try {
@@ -142,12 +210,27 @@ export const CameraCaptureModal = ({
               autoPlay
               playsInline
               className="w-full h-full"
+              style={{
+                transform: devices
+                  .find((d) => d.deviceId === selectedDeviceId)
+                  ?.label.toLowerCase()
+                  .includes("front")
+                  ? "scaleX(-1)"
+                  : "scaleX(1)",
+              }}
             />
           )}
           <canvas ref={canvasRef} className="hidden" />
         </div>
 
         <DialogFooter className="flex-col sm:flex-row sm:justify-between gap-2">
+          {!capturedImage && devices.length > 1 && (
+            <Button variant="secondary" onClick={handleSwitchCamera}>
+              <SwitchCamera className="mr-2 h-4 w-4" />
+              Ganti Kamera
+            </Button>
+          )}
+
           {capturedImage ? (
             <>
               <Button
