@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -49,9 +49,23 @@ export const usePatientForm = ({
   onPatientAdded,
   patientToEdit,
 }: UsePatientFormProps) => {
-  const form = useForm<PatientFormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
+  const initialValues = useMemo(() => {
+    if (patientToEdit) {
+      const mainPackage = mcuPackages.find((p) =>
+        (patientToEdit.mcuPackage as string[]).includes(p.id)
+      );
+      const addOns = (patientToEdit.mcuPackage as string[]).filter(
+        (item) => item !== mainPackage?.id
+      );
+      return {
+        ...patientToEdit,
+        dob: new Date(patientToEdit.dob).toISOString().split("T")[0],
+        email: patientToEdit.email || "",
+        selectedPackage: mainPackage?.id || "",
+        addOns: addOns || [],
+      };
+    }
+    return {
       patientId: `MCU-${Math.floor(1000 + Math.random() * 9000)}`,
       nik: "",
       fullName: "",
@@ -65,27 +79,13 @@ export const usePatientForm = ({
       location: "",
       selectedPackage: "",
       addOns: [],
-    },
+    };
+  }, [patientToEdit]);
+
+  const form = useForm<PatientFormValues>({
+    resolver: zodResolver(formSchema),
+    values: initialValues,
   });
-
-  useEffect(() => {
-    if (patientToEdit) {
-      const mainPackage = mcuPackages.find((p) =>
-        (patientToEdit.mcuPackage as string[]).includes(p.id)
-      );
-      const addOns = (patientToEdit.mcuPackage as string[]).filter(
-        (item) => item !== mainPackage?.id
-      );
-
-      form.reset({
-        ...patientToEdit,
-        email: patientToEdit.email || "",
-        dob: new Date(patientToEdit.dob).toISOString().split("T")[0],
-        selectedPackage: mainPackage?.id || "",
-        addOns: addOns,
-      });
-    }
-  }, [patientToEdit, form]);
 
   const handleDobChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const dob = e.target.value;
@@ -98,16 +98,16 @@ export const usePatientForm = ({
       if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
         age--;
       }
-      form.setValue("age", age >= 0 ? age : 0);
+      form.setValue("age", age >= 0 ? age : 0, { shouldValidate: true });
     } else {
-      form.setValue("age", 0);
+      form.setValue("age", 0, { shouldValidate: true });
     }
   };
 
   const onSubmit: SubmitHandler<PatientFormValues> = async (data) => {
     const isEditMode = !!patientToEdit;
     const url = isEditMode
-      ? `/api/patients/${patientToEdit.id}`
+      ? `/api/patients/${patientToEdit!.id}`
       : "/api/patients";
     const method = isEditMode ? "PUT" : "POST";
 

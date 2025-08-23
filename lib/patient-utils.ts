@@ -85,6 +85,15 @@ export const parseExcelFile = (file: File): Promise<any[]> => {
             }
           });
 
+          const genderFromExcel = String(row["Gender"] || "")
+            .trim()
+            .toLowerCase();
+
+          let finalGender = "Laki-laki";
+          if (genderFromExcel === "perempuan" || genderFromExcel === "female") {
+            finalGender = "Perempuan";
+          }
+
           return {
             nik: String(nik),
             fullName: String(name),
@@ -95,7 +104,7 @@ export const parseExcelFile = (file: File): Promise<any[]> => {
             division: String(row["Division"]),
             status: String(row["Status"]),
             location: String(row["Location"]),
-            gender: String(row["Gender"]),
+            gender: finalGender,
             mcuPackage: mcuPackage,
           };
         });

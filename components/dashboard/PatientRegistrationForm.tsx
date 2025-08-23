@@ -74,7 +74,7 @@ export const PatientRegistrationForm = (props: PatientFormProps) => {
   const { patientToEdit } = props;
 
   return (
-    <Form {...form}>
+    <Form {...form} key={patientToEdit?.id || "new-patient"}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-4 max-h-[80vh] overflow-y-auto p-1 pr-2 md:pr-4"
@@ -181,7 +181,6 @@ export const PatientRegistrationForm = (props: PatientFormProps) => {
                 <Select
                   onValueChange={field.onChange}
                   value={field.value || ""}
-                  defaultValue={field.value || ""}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -189,8 +188,8 @@ export const PatientRegistrationForm = (props: PatientFormProps) => {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="Male">Laki-laki</SelectItem>
-                    <SelectItem value="Female">Perempuan</SelectItem>
+                    <SelectItem value="Laki-laki">Laki-laki</SelectItem>
+                    <SelectItem value="Perempuan">Perempuan</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
