@@ -1,7 +1,6 @@
 // components/mcu/forms/EkgForm.tsx
 "use client";
 
-import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 import {
   Card,
@@ -13,38 +12,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import { UploadCloud, X } from "lucide-react";
 import { SignatureField } from "./SignatureField";
+import { ImageUploadField } from "./ImageUploadField"; // Pakai komponen yang sama
 
 export const EkgForm = () => {
-  const { register, setValue, watch } = useFormContext();
-  const [isUploading, setIsUploading] = useState(false);
-  const ekgImage = watch("ekgImage");
-
-  const handleFileUpload = async (file: File) => {
-    if (!file) return;
-    setIsUploading(true);
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-      const result = await response.json();
-      if (!response.ok)
-        throw new Error(result.error || "Gagal mengunggah gambar.");
-      setValue("ekgImage", result.url);
-      toast.success("Gambar EKG berhasil diunggah.");
-    } catch (error: any) {
-      toast.error(error.message);
-    } finally {
-      setIsUploading(false);
-    }
-  };
+  const { register } = useFormContext();
 
   return (
     <Card>
@@ -55,54 +27,17 @@ export const EkgForm = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-8">
+        {/* === UPLOAD GAMBAR (DIUBAH) === */}
         <div>
           <Label className="mb-4 block">Gambar Hasil EKG</Label>
-          <div className="relative aspect-[2/1] w-full max-w-2xl">
-            <Input
-              id="ekg-upload"
-              type="file"
-              className="hidden"
-              accept="image/png, image/jpeg"
-              onChange={(e) =>
-                e.target.files && handleFileUpload(e.target.files[0])
-              }
-              disabled={isUploading}
-            />
-            <Label
-              htmlFor="ekg-upload"
-              className="flex flex-col items-center justify-center w-full h-full border-2 border-dashed rounded-lg cursor-pointer hover:bg-gray-50"
-            >
-              {ekgImage ? (
-                <img
-                  src={ekgImage}
-                  alt="Hasil EKG"
-                  className="object-contain w-full h-full rounded-lg"
-                />
-              ) : (
-                <div className="flex flex-col items-center justify-center text-gray-500">
-                  {isUploading ? (
-                    <p>Uploading...</p>
-                  ) : (
-                    <>
-                      <UploadCloud className="w-10 h-10 mb-2" />
-                      <p>Pilih Gambar</p>
-                    </>
-                  )}
-                </div>
-              )}
-            </Label>
-            {ekgImage && (
-              <Button
-                variant="destructive"
-                size="icon"
-                className="absolute top-2 right-2 h-7 w-7"
-                onClick={() => setValue("ekgImage", null)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            )}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <ImageUploadField name="ekgImage1" label="Gambar 1" />
+            <ImageUploadField name="ekgImage2" label="Gambar 2" />
+            <ImageUploadField name="ekgImage3" label="Gambar 3" />
           </div>
         </div>
+
+        {/* === HASIL BACAAN === */}
         <div>
           <h3 className="font-semibold mb-4 border-b pb-2">Hasil Bacaan EKG</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -204,6 +139,7 @@ export const EkgForm = () => {
             </div>
           </div>
         </div>
+
         <SignatureField
           nameFieldName="ekgValidatorName"
           qrFieldName="ekgValidatorQr"

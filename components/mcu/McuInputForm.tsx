@@ -17,6 +17,7 @@ import { AudiometriSpirometriForm } from "./forms/AudiometriSpirometriForm";
 import { UsgAbdomenForm } from "./forms/UsgAbdomenForm";
 import { UsgMammaeForm } from "./forms/UsgMammaeForm";
 import { EkgForm } from "./forms/EkgForm";
+import { TreadmillForm } from "./forms/TreadmillForm"; // <-- IMPORT BARU
 import { RontgenForm } from "./forms/RontgenForm";
 import { PsikologiForm } from "./forms/PsikologiForm";
 import { ConclusionForm } from "./forms/ConclusionForm";
@@ -42,7 +43,6 @@ const formSchema = z.object({
   hitungJenisLimfosit: z.string().optional().nullable(),
   hitungJenisMonosit: z.string().optional().nullable(),
 
-  // Kimia Darah fields
   gulaDarahPuasa: z.string().optional().nullable(),
   gulaDarah2JamPP: z.string().optional().nullable(),
   hbsag: z.string().optional().nullable(),
@@ -62,7 +62,6 @@ const formSchema = z.object({
   timbalDarah: z.string().optional().nullable(),
   arsenikUrin: z.string().optional().nullable(),
 
-  // Urinalisa fields
   urinWarna: z.string().optional().nullable(),
   urinKejernihan: z.string().optional().nullable(),
   urinBau: z.string().optional().nullable(),
@@ -83,7 +82,6 @@ const formSchema = z.object({
   urinUridAcid: z.string().optional().nullable(),
   urinGranulaCast: z.string().optional().nullable(),
 
-  // ... a bunch of other fields ...
   audioAcKanan250: z.coerce.number().optional().nullable(),
   audioAcKanan500: z.coerce.number().optional().nullable(),
   audioAcKanan1000: z.coerce.number().optional().nullable(),
@@ -145,7 +143,9 @@ const formSchema = z.object({
   usgMammaeImage6: z.string().optional().nullable(),
   usgMammaeLaporan: z.string().optional().nullable(),
   usgMammaeKesimpulan: z.string().optional().nullable(),
-  ekgImage: z.string().optional().nullable(),
+  ekgImage1: z.string().optional().nullable(),
+  ekgImage2: z.string().optional().nullable(),
+  ekgImage3: z.string().optional().nullable(),
   ekgRhythm: z.string().optional().nullable(),
   ekgQrsRate: z.string().optional().nullable(),
   ekgAxis: z.string().optional().nullable(),
@@ -158,12 +158,25 @@ const formSchema = z.object({
   ekgOthers: z.string().optional().nullable(),
   ekgConclusion: z.string().optional().nullable(),
   ekgAdvice: z.string().optional().nullable(),
+
+  // <-- SKEMA BARU DITAMBAHKAN DI SINI
+  treadmillImage1: z.string().optional().nullable(),
+  treadmillImage2: z.string().optional().nullable(),
+  treadmillImage3: z.string().optional().nullable(),
+  treadmillLamaLatihan: z.string().optional().nullable(),
+  treadmillKlasifikasiKebugaran: z.string().optional().nullable(),
+  treadmillKerjaFisik: z.string().optional().nullable(),
+  treadmillKelasFungsional: z.string().optional().nullable(),
+  treadmillHasilTest: z.string().optional().nullable(),
+  treadmillSaran: z.string().optional().nullable(),
+  treadmillValidatorName: z.string().optional().nullable(),
+  treadmillValidatorQr: z.string().optional().nullable(),
+
   rontgenImage: z.string().optional().nullable(),
   kesanRontgen: z.string().optional().nullable(),
   kesimpulan: z.string().optional().nullable(),
   saran: z.array(z.string()).optional(),
 
-  // Validator fields
   hematologiValidatorName: z.string().optional().nullable(),
   hematologiValidatorQr: z.string().optional().nullable(),
   kimiaDarahValidatorName: z.string().optional().nullable(),
@@ -189,7 +202,6 @@ const formSchema = z.object({
   dassFasValidatorName: z.string().optional().nullable(),
   dassFasValidatorQr: z.string().optional().nullable(),
 
-  // Framingham fields
   framinghamGender: z.string().optional().nullable(),
   framinghamAge: z.string().optional().nullable(),
   framinghamTotalCholesterol: z.string().optional().nullable(),
@@ -388,6 +400,7 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
   const showUsgMammae = hasItem("mcu eksekutif") || hasItem("usg mammae");
   const showEkg =
     hasItem("mcu eksekutif") || hasItem("ekg") || hasItem("treadmill");
+  const showTreadmill = hasItem("mcu reguler") || hasItem("mcu eksekutif") || hasItem("mcu akhir") || hasItem("treadmill"); // <-- LOGIC BARU
   const showRontgen =
     hasItem("mcu regular") ||
     hasItem("mcu eksekutif") ||
@@ -435,14 +448,10 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
         </div>
 
         <PsikologiForm />
-
         {showFramingham && <FraminghamForm />}
-
         {showHematologi && <HematologiForm />}
         {showKimiaDarah && <KimiaDarahForm />}
-
         {showBiomonitoring && <BiomonitoringForm />}
-
         {showUrinalisa && <UrinalisaForm />}
         {showAudioSpiro && (
           <AudiometriSpirometriForm itemsToCheck={itemsToCheck} />
@@ -450,6 +459,7 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
         {showUsgAbdomen && <UsgAbdomenForm />}
         {showUsgMammae && <UsgMammaeForm />}
         {showEkg && <EkgForm />}
+        {showTreadmill && <TreadmillForm />} {/* <-- PEMANGGILAN KOMPONEN BARU */}
         {showRontgen && <RontgenForm />}
 
         <ConclusionForm />

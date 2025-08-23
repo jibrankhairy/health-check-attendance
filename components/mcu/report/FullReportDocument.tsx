@@ -16,6 +16,7 @@ import { KimiaDarahDocument } from "./KimiaDarahDocument";
 import { BiomonitoringDocument } from "./BiomonitoringDocument";
 import { RontgenDocument } from "./RontgenDocument";
 import { EkgDocument } from "./EkgDocument";
+import { TreadmillDocument } from "./TreadmillDocument"; // <-- TAMBAHAN
 import { AudiometriDocument } from "./AudiometriDocument";
 import { SpirometriDocument } from "./SpirometriDocument";
 import { UsgAbdomenDocument } from "./UsgAbdomenDocument";
@@ -84,7 +85,7 @@ const URINALISA_FIELDS = [
 ];
 const RONTGEN_FIELDS = ["kesanRontgen", "rontgenImage"];
 const EKG_FIELDS = [
-  "ekgImage",
+  "ekgImage1",
   "ekgRhythm",
   "ekgQrsRate",
   "ekgAxis",
@@ -98,6 +99,13 @@ const EKG_FIELDS = [
   "ekgConclusion",
   "ekgAdvice",
 ];
+// --- TAMBAHAN ---
+const TREADMILL_FIELDS = [
+  "treadmillImage1",
+  "treadmillLamaLatihan",
+  "treadmillHasilTest",
+];
+// --- END TAMBAHAN ---
 const AUDIOMETRY_FIELDS = [
   "audiometryKesimpulanTelingaKanan",
   "audiometryKesimpulanTelingaKiri",
@@ -204,6 +212,11 @@ export const FullReportDocument: React.FC<FullReportDocumentProps> = ({
     (hasItem("mcu eksekutif") || hasItem("ekg") || hasItem("treadmill")) &&
     sectionHasData(d, EKG_FIELDS);
 
+  // --- TAMBAHAN ---
+  const showTreadmill =
+    hasItem("treadmill") && sectionHasData(d, TREADMILL_FIELDS);
+  // --- END TAMBAHAN ---
+
   const showAudiometry =
     (hasItem("mcu eksekutif") || hasItem("audiometry")) &&
     sectionHasData(d, AUDIOMETRY_FIELDS);
@@ -246,6 +259,7 @@ export const FullReportDocument: React.FC<FullReportDocumentProps> = ({
   >["data"];
   type RontgenData = React.ComponentProps<typeof RontgenDocument>["data"];
   type EkgData = React.ComponentProps<typeof EkgDocument>["data"];
+  type TreadmillData = React.ComponentProps<typeof TreadmillDocument>["data"]; // <-- TAMBAHAN
   type AudiometryData = React.ComponentProps<typeof AudiometriDocument>["data"];
   type SpirometryData = React.ComponentProps<typeof SpirometriDocument>["data"];
   type UsgAbdomenData = React.ComponentProps<typeof UsgAbdomenDocument>["data"];
@@ -280,6 +294,9 @@ export const FullReportDocument: React.FC<FullReportDocumentProps> = ({
 
       {showRontgen && <RontgenDocument data={data as RontgenData} />}
       {showEkg && <EkgDocument data={data as EkgData} />}
+      {/* --- TAMBAHAN --- */}
+      {showTreadmill && <TreadmillDocument data={data as TreadmillData} />}
+      {/* --- END TAMBAHAN --- */}
       {showAudiometry && <AudiometriDocument data={data as AudiometryData} />}
       {showSpirometry && <SpirometriDocument data={data as SpirometryData} />}
       {showUsgAbdomen && <UsgAbdomenDocument data={data as UsgAbdomenData} />}

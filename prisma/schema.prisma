@@ -95,76 +95,76 @@ model McuProgress {
 }
 
 model McuResult {
-  id                   String      @id @default(cuid())
-  createdAt            DateTime    @default(now())
-  updatedAt            DateTime    @updatedAt
-  status               String      @default("IN_PROGRESS")
-  fileUrl              String?     @db.Text
-  patient              Patient     @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  patientId            Int
-  progress             McuProgress[]
-  healthHistoryAnswers Json?
-  dassTestAnswers      Json?
-  fasTestAnswers       Json?
-  formSubmittedAt      DateTime?
-  pemeriksaanFisikForm Json?
-  timeCheckIn          String?
+  id                     String       @id @default(cuid())
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
+  status                 String       @default("IN_PROGRESS")
+  fileUrl                String?      @db.Text
+  patient                Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patientId              Int
+  progress               McuProgress[]
+  healthHistoryAnswers   Json?
+  dassTestAnswers        Json?
+  fasTestAnswers         Json?
+  formSubmittedAt        DateTime?
+  pemeriksaanFisikForm   Json?
+  timeCheckIn            String?
 
   // --- Pemeriksaan Fisik ---
-  beratBadan           Float?
-  tinggiBadan          Float?
-  bmi                  String?     @db.Text
-  lingkarPerut         String?     @db.Text
-  tekananDarah         String?     @db.Text
-  nadi                 String?     @db.Text
-  suhu                 String?     @db.Text
-  pernafasan           String?     @db.Text
-  fisikKondisiUmum     String?     @db.Text
-  fisikKesadaran       String?     @db.Text
-  fisikKulit           String?     @db.Text
-  fisikKepalaLeher     String?     @db.Text
+  beratBadan             Float?
+  tinggiBadan            Float?
+  bmi                    String?      @db.Text
+  lingkarPerut           String?      @db.Text
+  tekananDarah           String?      @db.Text
+  nadi                   String?      @db.Text
+  suhu                   String?      @db.Text
+  pernafasan             String?      @db.Text
+  fisikKondisiUmum       String?      @db.Text
+  fisikKesadaran         String?      @db.Text
+  fisikKulit             String?      @db.Text
+  fisikKepalaLeher       String?      @db.Text
 
   // --- Mata ---
-  visusOd              String?     @db.Text
-  visusOs              String?     @db.Text
-  butaWarna            String?     @db.Text
-  kacamata             String?     @db.Text
-  kacamataOd           String?     @db.Text
-  kacamataOs           String?     @db.Text
-  lapangPandang        String?     @db.Text
-  fisikMataLainnya     String?     @db.Text
+  visusOd                String?      @db.Text
+  visusOs                String?      @db.Text
+  butaWarna              String?      @db.Text
+  kacamata               String?      @db.Text
+  kacamataOd             String?      @db.Text
+  kacamataOs             String?      @db.Text
+  lapangPandang          String?      @db.Text
+  fisikMataLainnya       String?      @db.Text
 
   // --- THT & Pendengaran ---
-  fisikTelinga         String?     @db.Text
-  fisikHidung          String?     @db.Text
-  fisikTenggorokan     String?     @db.Text
+  fisikTelinga           String?      @db.Text
+  fisikHidung            String?      @db.Text
+  fisikTenggorokan       String?      @db.Text
 
   // --- Sistem Lainnya (Fisik) ---
-  fisikKardiovaskular  String?     @db.Text
-  fisikPernafasan      String?     @db.Text
-  fisikPencernaan      String?     @db.Text
-  fisikEkstremitas     String?     @db.Text
-  examinationStartedAt DateTime?
+  fisikKardiovaskular    String?      @db.Text
+  fisikPernafasan        String?      @db.Text
+  fisikPencernaan        String?      @db.Text
+  fisikEkstremitas       String?      @db.Text
+  examinationStartedAt   DateTime?
 
   // --- Hematologi ---
-  hemoglobin                 String? @db.Text
-  leukosit                   String? @db.Text
-  trombosit                  String? @db.Text
-  hematokrit                 String? @db.Text
-  eritrosit                  String? @db.Text
-  led                        String? @db.Text
-  mcv                        String? @db.Text
-  mch                        String? @db.Text
-  mchc                       String? @db.Text
-  rdw                        String? @db.Text
-  mpv                        String? @db.Text
-  pdw                        String? @db.Text
-  hitungJenisEosinofil       String? @db.Text
-  hitungJenisBasofil         String? @db.Text
-  hitungJenisNeutrofilStab   String? @db.Text
+  hemoglobin               String? @db.Text
+  leukosit                 String? @db.Text
+  trombosit                String? @db.Text
+  hematokrit               String? @db.Text
+  eritrosit                String? @db.Text
+  led                      String? @db.Text
+  mcv                      String? @db.Text
+  mch                      String? @db.Text
+  mchc                     String? @db.Text
+  rdw                      String? @db.Text
+  mpv                      String? @db.Text
+  pdw                      String? @db.Text
+  hitungJenisEosinofil     String? @db.Text
+  hitungJenisBasofil       String? @db.Text
+  hitungJenisNeutrofilStab String? @db.Text
   hitungJenisNeutrofilSegmen String? @db.Text
-  hitungJenisLimfosit        String? @db.Text
-  hitungJenisMonosit         String? @db.Text
+  hitungJenisLimfosit      String? @db.Text
+  hitungJenisMonosit       String? @db.Text
 
   // --- Kimia Darah ---
   gulaDarahPuasa    String? @db.Text
@@ -213,7 +213,9 @@ model McuResult {
   kesanUsgMammae    String? @db.Text
 
   // --- EKG ---
-  ekgImage         String? @db.Text
+  ekgImage1        String? @db.Text
+  ekgImage2        String? @db.Text
+  ekgImage3        String? @db.Text
   ekgRhythm        String? @db.Text
   ekgQrsRate       String? @db.Text
   ekgAxis          String? @db.Text
@@ -227,75 +229,86 @@ model McuResult {
   ekgConclusion    String? @db.Text
   ekgAdvice        String? @db.Text
 
+  // --- Treadmill ---
+  treadmillImage1               String? @db.Text
+  treadmillImage2               String? @db.Text
+  treadmillImage3               String? @db.Text
+  treadmillLamaLatihan          String? @db.Text
+  treadmillKlasifikasiKebugaran String? @db.Text
+  treadmillKerjaFisik           String? @db.Text
+  treadmillKelasFungsional      String? @db.Text
+  treadmillHasilTest            String? @db.Text
+  treadmillSaran                String? @db.Text
+
   // --- Audiometry ---
-  audioAcKanan250                    Int?
-  audioAcKanan500                    Int?
-  audioAcKanan1000                   Int?
-  audioAcKanan2000                   Int?
-  audioAcKanan3000                   Int?
-  audioAcKanan4000                   Int?
-  audioAcKanan6000                   Int?
-  audioAcKanan8000                   Int?
-  audioAcKiri250                     Int?
-  audioAcKiri500                     Int?
-  audioAcKiri1000                    Int?
-  audioAcKiri2000                    Int?
-  audioAcKiri3000                    Int?
-  audioAcKiri4000                    Int?
-  audioAcKiri6000                    Int?
-  audioAcKiri8000                    Int?
-  audioBcKanan250                    Int?
-  audioBcKanan500                    Int?
-  audioBcKanan1000                   Int?
-  audioBcKanan2000                   Int?
-  audioBcKanan3000                   Int?
-  audioBcKanan4000                   Int?
-  audioBcKanan6000                   Int?
-  audioBcKanan8000                   Int?
-  audioBcKiri250                     Int?
-  audioBcKiri500                     Int?
-  audioBcKiri1000                    Int?
-  audioBcKiri2000                    Int?
-  audioBcKiri3000                    Int?
-  audioBcKiri4000                    Int?
-  audioBcKiri6000                    Int?
-  audioBcKiri8000                    Int?
-  audiometryKesimpulanTelingaKanan   String? @db.Text
-  audiometryKesimpulanTelingaKiri    String? @db.Text
-  audiometryKesimpulanUmum           String? @db.Text
-  audiometrySaran                    String? @db.Text
+  audioAcKanan250                 Int?
+  audioAcKanan500                 Int?
+  audioAcKanan1000                Int?
+  audioAcKanan2000                Int?
+  audioAcKanan3000                Int?
+  audioAcKanan4000                Int?
+  audioAcKanan6000                Int?
+  audioAcKanan8000                Int?
+  audioAcKiri250                  Int?
+  audioAcKiri500                  Int?
+  audioAcKiri1000                 Int?
+  audioAcKiri2000                 Int?
+  audioAcKiri3000                 Int?
+  audioAcKiri4000                 Int?
+  audioAcKiri6000                 Int?
+  audioAcKiri8000                 Int?
+  audioBcKanan250                 Int?
+  audioBcKanan500                 Int?
+  audioBcKanan1000                Int?
+  audioBcKanan2000                Int?
+  audioBcKanan3000                Int?
+  audioBcKanan4000                Int?
+  audioBcKanan6000                Int?
+  audioBcKanan8000                Int?
+  audioBcKiri250                  Int?
+  audioBcKiri500                  Int?
+  audioBcKiri1000                 Int?
+  audioBcKiri2000                 Int?
+  audioBcKiri3000                 Int?
+  audioBcKiri4000                 Int?
+  audioBcKiri6000                 Int?
+  audioBcKiri8000                 Int?
+  audiometryKesimpulanTelingaKanan String? @db.Text
+  audiometryKesimpulanTelingaKiri  String? @db.Text
+  audiometryKesimpulanUmum         String? @db.Text
+  audiometrySaran                  String? @db.Text
 
   // --- Spirometry ---
-  spirometryFvc                     Float? 
-  spirometryFvcPred                 Float? // Diubah dari String?
-  spirometryFvcPost                 Float? // Diubah dari String?
-  spirometryFev1                    Float? // Diubah dari String?
-  spirometryFev1Pred                Float? // Diubah dari String?
-  spirometryFev1Post                Float? // Diubah dari String?
-  spirometryFev1Fvc                 Float? // Diubah dari String?
-  spirometryFev1FvcPred             Float? // Diubah dari String?
-  spirometryFev6                    Float? // Diubah dari String?
-  spirometryFev6Pred                Float? // Diubah dari String?
-  spirometryPef                     Float? // Diubah dari String?
-  spirometryPefPred                 Float? // Diubah dari String?
-  spirometryPefPost                 Float? // Diubah dari String?
-  spirometryFef2575                 Float? // Diubah dari String?
-  spirometryFef2575Pred             Float? // Diubah dari String?
-  spirometryFef25                   Float? // Diubah dari String?
-  spirometryFef25Pred               Float? // Diubah dari String?
-  spirometryFef25Post               Float? // Diubah dari String?
-  spirometryFef50                   Float? // Diubah dari String?
-  spirometryFef50Pred               Float? // Diubah dari String?
-  spirometryFef50Post               Float? // Diubah dari String?
-  spirometryFef75                   Float? // Diubah dari String?
-  spirometryFef75Pred               Float? // Diubah dari String?
-  spirometryFef75Post               Float? // Diubah dari String?
-  spirometryPostBdNote              String? @db.Text
-  spirometryQualityAccept           String? @db.Text
-  spirometryQualityRepeat           String? @db.Text
-  spirometryEffortCount             String? @db.Text
-  spirometryImage                   String? @db.Text
-  kesimpulanSpirometry              String? @db.Text
+  spirometryFvc           Float?
+  spirometryFvcPred       Float?
+  spirometryFvcPost       Float?
+  spirometryFev1          Float?
+  spirometryFev1Pred      Float?
+  spirometryFev1Post      Float?
+  spirometryFev1Fvc       Float?
+  spirometryFev1FvcPred   Float?
+  spirometryFev6          Float?
+  spirometryFev6Pred      Float?
+  spirometryPef           Float?
+  spirometryPefPred       Float?
+  spirometryPefPost       Float?
+  spirometryFef2575       Float?
+  spirometryFef2575Pred   Float?
+  spirometryFef25         Float?
+  spirometryFef25Pred     Float?
+  spirometryFef25Post     Float?
+  spirometryFef50         Float?
+  spirometryFef50Pred     Float?
+  spirometryFef50Post     Float?
+  spirometryFef75         Float?
+  spirometryFef75Pred     Float?
+  spirometryFef75Post     Float?
+  spirometryPostBdNote    String? @db.Text
+  spirometryQualityAccept String? @db.Text
+  spirometryQualityRepeat String? @db.Text
+  spirometryEffortCount   String? @db.Text
+  spirometryImage         String? @db.Text
+  kesimpulanSpirometry    String? @db.Text
 
   // --- Framingham ---
   framinghamGender                  String?
@@ -358,6 +371,8 @@ model McuResult {
   usgMammaeValidatorQr       String? @db.Text
   ekgValidatorName           String?
   ekgValidatorQr             String? @db.Text
+  treadmillValidatorName     String? // <-- TAMBAHAN
+  treadmillValidatorQr       String? @db.Text // <-- TAMBAHAN
   rontgenValidatorName       String?
   rontgenValidatorQr         String? @db.Text
   conclusionValidatorName    String?
