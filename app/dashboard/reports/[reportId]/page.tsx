@@ -3,13 +3,15 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { McuInputForm } from "@/components/mcu/McuInputForm";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 interface Patient {
   fullName: string;
   patientId: string;
   mcuPackage: string[];
+  age: number;
+  gender: string;
 }
 
 interface ReportData {
@@ -83,7 +85,12 @@ const InputMcuResultPage = () => {
   }, [reportId]);
 
   if (loading) {
-    return <div className="text-center p-10">Memuat form input...</div>;
+    return (
+      <div className="flex h-screen w-full items-center justify-center text-muted-foreground">
+        <Loader2 className="mr-3 h-6 w-6 animate-spin" />
+        <span>Memuat form input...</span>
+      </div>
+    );
   }
 
   if (error) {

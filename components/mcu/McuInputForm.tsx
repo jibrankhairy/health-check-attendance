@@ -223,6 +223,8 @@ interface McuInputFormProps {
     id: string;
     patient: {
       mcuPackage: string[];
+      age: number;
+      gender: string;
     };
   };
 }
@@ -242,6 +244,10 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
     defaultValues: {
       ...(formValues as Partial<McuFormData>),
       saran: Array.isArray(initialData.saran) ? initialData.saran : [],
+      framinghamAge: initialData.patient.age
+        ? String(initialData.patient.age)
+        : "",
+      framinghamGender: initialData.patient.gender || "",
     },
   });
 

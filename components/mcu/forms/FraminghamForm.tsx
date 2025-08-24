@@ -1,6 +1,6 @@
-// components/mcu/forms/FraminghamForm.tsx
 "use client";
 
+import { useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import {
   Card,
@@ -26,8 +26,13 @@ import {
 } from "@/components/ui/select";
 import { SignatureField } from "./SignatureField";
 
-export const FraminghamForm = () => {
-  const { control } = useFormContext();
+interface FraminghamFormProps {
+  patientAge?: number;
+  patientGender?: string;
+}
+
+export const FraminghamForm = ({}: FraminghamFormProps) => {
+  const { control, setValue } = useFormContext();
 
   return (
     <Card>
@@ -46,10 +51,12 @@ export const FraminghamForm = () => {
               <FormLabel>Usia</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="cth: 55"
+                  placeholder="Otomatis terisi"
                   type="number"
                   {...field}
                   value={field.value || ""}
+                  readOnly
+                  className="bg-gray-100"
                 />
               </FormControl>
               <FormMessage />
@@ -62,15 +69,19 @@ export const FraminghamForm = () => {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Jenis Kelamin</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select
+                onValueChange={field.onChange}
+                value={field.value || ""}
+                disabled
+              >
                 <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih Jenis Kelamin" />
+                  <SelectTrigger className="bg-gray-100">
+                    <SelectValue placeholder="Otomatis terisi" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="LAKI-LAKI">Laki-laki</SelectItem>
-                  <SelectItem value="PEREMPUAN">Perempuan</SelectItem>
+                  <SelectItem value="Laki-laki">Laki-laki</SelectItem>
+                  <SelectItem value="Perempuan">Perempuan</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -137,7 +148,7 @@ export const FraminghamForm = () => {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Merokok</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value || ""}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Pilih Opsi" />
@@ -158,7 +169,7 @@ export const FraminghamForm = () => {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Mengkonsumsi Obat Hipertensi</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value || ""}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Pilih Opsi" />
