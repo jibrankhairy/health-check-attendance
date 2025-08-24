@@ -41,6 +41,23 @@ const EyeOffIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const SpinnerIcon = ({ className }: { className?: string }) => (
+  <svg
+    className={className}
+    xmlns="http://www.w3.org/2000/svg"
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+  </svg>
+);
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -192,10 +209,17 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="flex w-full justify-center rounded-md border border-transparent py-3 px-4 text-sm font-medium text-white shadow-sm hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#01449D] disabled:opacity-50"
+                  className="flex w-full items-center justify-center rounded-md border border-transparent py-3 px-4 text-sm font-medium text-white shadow-sm hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#01449D] disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{ backgroundColor: "#01449D" }}
                 >
-                  {isLoading ? "Logging in..." : "Log In"}
+                  {isLoading ? (
+                    <>
+                      <SpinnerIcon className="animate-spin -ml-1 mr-3 h-5 w-5" />
+                      <span>Logging in...</span>
+                    </>
+                  ) : (
+                    "Log In"
+                  )}
                 </button>
               </div>
             </form>
