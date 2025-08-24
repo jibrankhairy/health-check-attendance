@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import React, { useState, useEffect, useRef } from "react";
 import { useForm, FormProvider, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -227,6 +228,7 @@ interface McuInputFormProps {
 }
 
 export const McuInputForm = ({ initialData }: McuInputFormProps) => {
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { id, patient, ...formValues } = initialData;
@@ -266,21 +268,11 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
         const errorData = await response.json();
         throw new Error(errorData.message || "Gagal menyimpan data.");
       }
-      const updatedData = await response.json();
+
       toast.success("Hasil MCU berhasil disimpan!");
 
-      if (updatedData.saran && typeof updatedData.saran === "string") {
-        try {
-          updatedData.saran = JSON.parse(updatedData.saran);
-        } catch {
-          updatedData.saran = [];
-        }
-      }
-
-      methods.reset({
-        ...(updatedData as Partial<McuFormData>),
-        saran: updatedData.saran || [],
-      });
+      router.push("/dashboard/reports");
+      router.refresh();
     } catch (error) {
       let errorMessage = "Terjadi kesalahan.";
       if (error instanceof Error) {
