@@ -69,6 +69,10 @@ export const parseExcelFile = (file: File): Promise<any[]> => {
               excelVariations: ["Panel Hepatitis", "Panel Hepatitits"],
             },
             { id: "Biomonitoring", excelVariations: ["Biomonitoring"] },
+            {
+              id: "Refraktometri",
+              excelVariations: ["Refraktometri", "Refraktometry"],
+            },
           ];
 
           addOnDefinitions.forEach((addOn) => {

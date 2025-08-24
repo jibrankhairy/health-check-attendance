@@ -48,6 +48,7 @@ async function main() {
     { name: "Pemeriksaan Treadmill", slug: "pemeriksaan_treadmill" },
     { name: "Pemeriksaan Urin", slug: "pemeriksaan_urin" },
     { name: "Pemeriksaan Psikologi", slug: "tes_psikologi" },
+    { name: "Pemeriksaan Refraktometri", slug: "pemeriksaan_refraktometri" },
   ];
 
   for (const cp of checkpointsData) {

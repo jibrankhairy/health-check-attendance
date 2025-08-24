@@ -27,6 +27,13 @@ export const executivePackageItems = [
 
 export const finalPackageItems = [...regularPackageItems];
 
+export const dmcPackageItems = [
+  "Pemeriksaan fisik dan anamnesis oleh dokter MCU",
+  "Hematologi (darah lengkap, golongan darah & rhesus) + HbsAg",
+  "Urinalisa lengkap",
+  "Radiologi thoraks",
+];
+
 export const mcuPackages = [
   { id: "MCU Regular", label: "MCU Regular", details: regularPackageItems },
   {
@@ -35,6 +42,7 @@ export const mcuPackages = [
     details: executivePackageItems,
   },
   { id: "MCU Akhir", label: "MCU Akhir", details: finalPackageItems },
+  { id: "MCU DMC", label: "MCU DMC", details: dmcPackageItems },
 ];
 
 export const addOnItems = [
@@ -44,4 +52,5 @@ export const addOnItems = [
   { id: "Treadmill", label: "Treadmill" },
   { id: "Biomonitoring (Pb, Fe, As)", label: "Biomonitoring (Pb, Fe, As)" },
   { id: "Panel Hepatitis", label: "Panel Hepatitis" },
+  { id: "Refraktometri", label: "Refraktometri" },
 ];
