@@ -151,6 +151,7 @@ export async function POST(request: Request) {
       usgAbdomenValidatorName: "usgAbdomenValidatorQr",
       usgMammaeValidatorName: "usgMammaeValidatorQr",
       ekgValidatorName: "ekgValidatorQr",
+      treadmillValidatorName: "treadmillValidatorQr",
       rontgenValidatorName: "rontgenValidatorQr",
       conclusionValidatorName: "conclusionValidatorQr",
       dassFasValidatorName: "dassFasValidatorQr",

@@ -189,6 +189,15 @@ const templateHeaders = [
   "ekgAdvice",
   "ekgValidatorName",
 
+  // Treadmill
+  "treadmillLamaLatihan",
+  "treadmillKlasifikasiKebugaran",
+  "treadmillKerjaFisik",
+  "treadmillKelasFungsional",
+  "treadmillHasilTest",
+  "treadmillSaran",
+  "treadmillValidatorName",
+
   // Rontgen
   "kesanRontgen",
   "rontgenValidatorName",
