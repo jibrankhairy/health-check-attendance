@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Building, Search, Users, Calendar, Hash } from "lucide-react";
+import { Building, Search, Users, Calendar, Hash, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -44,6 +44,7 @@ export const CompanyTable = ({ onSelectCompany }: CompanyTableProps) => {
 
   useEffect(() => {
     async function fetchCompanies() {
+      setLoading(true);
       try {
         const response = await fetch("/api/companies");
         if (!response.ok) {
@@ -69,10 +70,6 @@ export const CompanyTable = ({ onSelectCompany }: CompanyTableProps) => {
   const currentRows = filteredCompanies.slice(indexOfFirstRow, indexOfLastRow);
   const totalPages = Math.ceil(filteredCompanies.length / rowsPerPage);
 
-  if (loading) {
-    return <div className="p-4 md:p-8">Memuat data perusahaan...</div>;
-  }
-
   return (
     <div className="flex-1 p-4 md:p-8">
       <div className="flex items-center justify-between mb-6">
@@ -90,7 +87,6 @@ export const CompanyTable = ({ onSelectCompany }: CompanyTableProps) => {
         </div>
       </div>
 
-      {/* Tampilan Tabel untuk Desktop */}
       <div className="hidden md:block rounded-lg border bg-white">
         <Table>
           <TableHeader>
@@ -103,7 +99,16 @@ export const CompanyTable = ({ onSelectCompany }: CompanyTableProps) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {currentRows.length > 0 ? (
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={5} className="h-24 text-center">
+                  <div className="flex justify-center items-center">
+                    <Loader2 className="mr-2 h-6 w-6 animate-spin" />
+                    Memuat data perusahaan...
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : currentRows.length > 0 ? (
               currentRows.map((company, index) => (
                 <TableRow
                   key={company.id}
@@ -137,9 +142,12 @@ export const CompanyTable = ({ onSelectCompany }: CompanyTableProps) => {
         </Table>
       </div>
 
-      {/* Tampilan Card untuk Mobile */}
       <div className="md:hidden space-y-4">
-        {currentRows.length > 0 ? (
+        {loading ? (
+          <div className="flex justify-center items-center h-24">
+            <Loader2 className="mr-2 h-6 w-6 animate-spin" /> Memuat...
+          </div>
+        ) : currentRows.length > 0 ? (
           currentRows.map((company) => (
             <Card
               key={company.id}
@@ -180,7 +188,6 @@ export const CompanyTable = ({ onSelectCompany }: CompanyTableProps) => {
         )}
       </div>
 
-      {/* Paginasi */}
       <div className="flex flex-col md:flex-row items-center justify-between mt-4 gap-4">
         <div className="text-sm text-gray-600 order-last md:order-first">
           Menampilkan {Math.min(indexOfFirstRow + 1, filteredCompanies.length)}{" "}

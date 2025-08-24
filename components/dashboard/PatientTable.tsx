@@ -151,6 +151,7 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
     isSendingEmail,
     handleSendQrEmail,
     setParsedPatients,
+    isEditLoading,
   } = usePatientTable(companyId);
 
   const handlePrintQr = (patient: PatientData) => {
@@ -321,6 +322,10 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
     addIf(
       norm.some((s) => s.includes("treadmill")),
       "POS PEMERIKSAAN TREADMILL"
+    );
+    addIf(
+      norm.some((s) => s.includes("refraktometri")),
+      "POS PEMERIKSAAN REFRAKTOMETRI"
     );
 
     const items = baseItems;
@@ -627,25 +632,36 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
               <DialogContent className="sm:max-w-4xl">
                 <DialogHeader>
                   <DialogTitle className="text-2xl">
-                    {editingPatient
+                    {isEditLoading
+                      ? "Memuat Data Pasien..."
+                      : editingPatient
                       ? `Edit Data Pasien - ${editingPatient.fullName}`
                       : `Form Pendaftaran Pasien - ${companyName}`}
                   </DialogTitle>
                   <DialogDescription>
-                    {editingPatient
+                    {isEditLoading
+                      ? "Mohon tunggu sebentar."
+                      : editingPatient
                       ? "Ubah data pasien di bawah ini."
                       : `Pasien ini akan terdaftar di bawah perusahaan ${companyName}.`}
                   </DialogDescription>
                 </DialogHeader>
-                <PatientRegistrationForm
-                  setOpen={setIsDialogOpen}
-                  companyId={companyId}
-                  onPatientAdded={() => {
-                    fetchPatients();
-                    setEditingPatient(null);
-                  }}
-                  patientToEdit={editingPatient}
-                />
+                {isEditLoading ? (
+                  <div className="flex items-center justify-center h-40">
+                    <Loader2 className="animate-spin mr-2 h-6 w-6" /> Memuat
+                    data...
+                  </div>
+                ) : (
+                  <PatientRegistrationForm
+                    setOpen={setIsDialogOpen}
+                    companyId={companyId}
+                    onPatientAdded={() => {
+                      fetchPatients();
+                      setEditingPatient(null);
+                    }}
+                    patientToEdit={editingPatient}
+                  />
+                )}
               </DialogContent>
             </Dialog>
           </div>

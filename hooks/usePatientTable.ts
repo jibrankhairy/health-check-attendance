@@ -15,6 +15,7 @@ export const usePatientTable = (companyId: string) => {
   const [patients, setPatients] = useState<PatientData[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditLoading, setIsEditLoading] = useState(false);
   const [editingPatient, setEditingPatient] = useState<PatientData | null>(
     null
   );
@@ -116,15 +117,20 @@ export const usePatientTable = (companyId: string) => {
   };
 
   const handleEditClick = async (patientId: number) => {
+    setIsEditLoading(true);
+    setIsDialogOpen(true);
+    setEditingPatient(null);
     try {
       const response = await fetch(`/api/patients/${patientId}`);
       if (!response.ok) throw new Error("Gagal mengambil data pasien.");
       const data = await response.json();
       setEditingPatient(data);
-      setIsDialogOpen(true);
     } catch (error) {
       console.error(error);
       toast.error("Gagal memuat data pasien untuk diedit.");
+      setIsDialogOpen(false);
+    } finally {
+      setIsEditLoading(false);
     }
   };
 
@@ -376,5 +382,6 @@ export const usePatientTable = (companyId: string) => {
     handleConfirmImport,
     isSendingEmail,
     handleSendQrEmail,
+    isEditLoading,
   };
 };

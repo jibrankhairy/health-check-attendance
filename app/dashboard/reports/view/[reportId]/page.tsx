@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { PDFViewer, PDFDownloadLink } from "@react-pdf/renderer";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { Download, Loader2, ArrowLeft } from "lucide-react";
 
 import { FullReportDocument } from "@/components/mcu/report/FullReportDocument";
 
@@ -14,10 +14,12 @@ interface Patient {
 
 interface ReportData {
   patient: Patient;
+  [key: string]: any;
 }
 
 const ViewReportPage = () => {
   const params = useParams();
+  const router = useRouter();
   const reportId = params.reportId as string;
 
   const [reportData, setReportData] = useState<ReportData | null>(null);
@@ -47,7 +49,12 @@ const ViewReportPage = () => {
   }, [reportId]);
 
   if (loading) {
-    return <div className="text-center p-10">Memuat dokumen laporan...</div>;
+    return (
+      <div className="flex h-screen w-full items-center justify-center text-muted-foreground">
+        <Loader2 className="mr-3 h-6 w-6 animate-spin" />
+        <span>Memuat dokumen laporan...</span>
+      </div>
+    );
   }
 
   if (error) {
@@ -59,11 +66,20 @@ const ViewReportPage = () => {
   }
 
   return (
-    <div className="flex flex-col h-screen">
-      <div className="p-4 bg-gray-100 border-b flex justify-between items-center">
-        <h1 className="text-lg font-semibold">
-          Laporan MCU: {reportData.patient.fullName}
-        </h1>
+    <div className="flex flex-col h-screen bg-gray-200">
+      <div className="p-4 bg-white border-b flex justify-between items-center shadow-sm">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => router.push("/dashboard/reports")}
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h1 className="text-lg font-semibold text-gray-800">
+            Laporan MCU: {reportData.patient.fullName}
+          </h1>
+        </div>
         <PDFDownloadLink
           document={<FullReportDocument data={reportData} />}
           fileName={`Laporan_MCU_${reportData.patient.fullName.replace(
@@ -73,9 +89,12 @@ const ViewReportPage = () => {
         >
           {({ blob, url, loading, error }) =>
             loading ? (
-              "Menyiapkan dokumen..."
+              <Button disabled>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Menyiapkan...
+              </Button>
             ) : (
-              <Button>
+              <Button className="bg-[#01449D] hover:bg-[#01449D]/90 text-white md:w-auto md:px-4">
                 <Download className="mr-2 h-4 w-4" />
                 Unduh PDF
               </Button>
@@ -83,8 +102,8 @@ const ViewReportPage = () => {
           }
         </PDFDownloadLink>
       </div>
-      <div className="flex-grow">
-        <PDFViewer width="100%" height="100%">
+      <div className="flex-grow p-4">
+        <PDFViewer width="100%" height="100%" className="rounded-lg shadow-lg">
           <FullReportDocument data={reportData} />
         </PDFViewer>
       </div>

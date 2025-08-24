@@ -15,6 +15,7 @@ import {
   Legend,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 
 type StatData = {
   totalPatients: number;
@@ -89,11 +90,19 @@ export const CompanyStats = ({ companyId }: { companyId: string }) => {
 
   if (loading) {
     return (
-      <div className="p-8 text-center">Memuat statistik perusahaan...</div>
+      <div className="flex h-64 w-full items-center justify-center text-muted-foreground">
+        <Loader2 className="mr-3 h-6 w-6 animate-spin" />
+        <span>Memuat statistik perusahaan...</span>
+      </div>
     );
   }
+
   if (!stats) {
-    return <div className="p-8 text-center">Gagal memuat data statistik.</div>;
+    return (
+      <div className="p-8 text-center text-destructive">
+        Gagal memuat data statistik.
+      </div>
+    );
   }
 
   return (

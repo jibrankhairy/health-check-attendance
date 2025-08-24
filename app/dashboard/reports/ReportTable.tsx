@@ -1,27 +1,43 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { Search, Loader2, FileText, FilePenLine, Pencil, AlertCircle, Upload, Download } from "lucide-react";
+import {
+  Search,
+  Loader2,
+  FileText,
+  FilePenLine,
+  Pencil,
+  AlertCircle,
+  Upload,
+  Download,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import Link from "next/link";
 
-// Tipe data untuk Company
 type Company = {
   id: string;
   name: string;
 };
 
-// Tipe data untuk satu baris laporan di tabel
 type ReportRow = {
   id: string;
   updatedAt: string;
@@ -34,7 +50,6 @@ type ReportRow = {
   };
 };
 
-// Tipe data untuk metadata paginasi dari API
 type ApiMeta = {
   page: number;
   pageSize: number;
@@ -42,17 +57,14 @@ type ApiMeta = {
   totalPages: number;
 };
 
-// Tipe data untuk respons API laporan
 type ApiResp = {
   data: ReportRow[];
   meta: ApiMeta;
 };
 
 export const ReportTable = () => {
-  // ====== KONFIGURASI ======
   const useShadcnSelect = true;
 
-  // ====== STATE UNTUK DATA & UI ======
   const [companies, setCompanies] = useState<Company[]>([]);
   const [companyId, setCompanyId] = useState<string | null>(null);
 
@@ -61,15 +73,17 @@ export const ReportTable = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [meta, setMeta] = useState<ApiMeta>({ page: 1, pageSize: 10, total: 0, totalPages: 1 });
+  const [meta, setMeta] = useState<ApiMeta>({
+    page: 1,
+    pageSize: 10,
+    total: 0,
+    totalPages: 1,
+  });
 
-  // ====== STATE UNTUK PROSES IMPOR & EKSPOR ======
   const [isImporting, setIsImporting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-
-  // --- Fungsi untuk mengambil daftar perusahaan ---
   const fetchCompanies = useCallback(async () => {
     try {
       const res = await fetch("/api/mcu/companies", { cache: "no-store" });
@@ -85,9 +99,8 @@ export const ReportTable = () => {
     }
   }, []);
 
-  // --- Fungsi untuk mengambil data laporan ---
   const fetchReports = useCallback(async () => {
-    if (!isImporting) setLoading(true); // Hanya set loading jika bukan dari proses impor
+    if (!isImporting) setLoading(true);
     if (!companyId) {
       setRows([]);
       setMeta({ page: 1, pageSize, total: 0, totalPages: 1 });
@@ -113,11 +126,13 @@ export const ReportTable = () => {
     }
   }, [companyId, page, pageSize, searchQuery, isImporting]);
 
-  // --- Gunakan useEffect untuk memanggil fetch saat komponen dimuat ---
-  useEffect(() => { fetchCompanies(); }, [fetchCompanies]);
-  useEffect(() => { fetchReports(); }, [fetchReports]);
+  useEffect(() => {
+    fetchCompanies();
+  }, [fetchCompanies]);
+  useEffect(() => {
+    fetchReports();
+  }, [fetchReports]);
 
-  // --- Fungsi untuk menangani proses EKSPOR template ---
   const handleExport = async () => {
     if (!companyId) return;
 
@@ -132,10 +147,11 @@ export const ReportTable = () => {
         throw new Error(errorData.message || "Gagal membuat file ekspor.");
       }
 
-      const disposition = res.headers.get('Content-Disposition');
-      const fileNameMatch = disposition && disposition.match(/filename="(.+?)"/);
+      const disposition = res.headers.get("Content-Disposition");
+      const fileNameMatch =
+        disposition && disposition.match(/filename="(.+?)"/);
       const fileName = fileNameMatch ? fileNameMatch[1] : "template-mcu.xlsx";
-      
+
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -146,8 +162,10 @@ export const ReportTable = () => {
       a.remove();
       window.URL.revokeObjectURL(url);
 
-      toast.success("Unduhan Dimulai!", { id: toastId, description: `File ${fileName} sedang diunduh.` });
-
+      toast.success("Unduhan Dimulai!", {
+        id: toastId,
+        description: `File ${fileName} sedang diunduh.`,
+      });
     } catch (e: any) {
       toast.error("Ekspor Gagal!", { id: toastId, description: e.message });
     } finally {
@@ -155,13 +173,12 @@ export const ReportTable = () => {
     }
   };
 
-  // --- Fungsi untuk menangani pemilihan & proses IMPOR file ---
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && companyId) {
       handleImport(file, companyId);
     }
-    if (event.target) event.target.value = ""; // Reset input
+    if (event.target) event.target.value = "";
   };
 
   const handleImport = async (file: File, companyId: string) => {
@@ -186,21 +203,26 @@ export const ReportTable = () => {
         throw new Error(result.message || "Gagal mengimpor data.");
       }
 
-      toast.success("Impor Selesai!", { id: toastId, description: result.message });
-      
+      toast.success("Impor Selesai!", {
+        id: toastId,
+        description: result.message,
+      });
+
       if (result.errors && result.errors.length > 0) {
         toast.warning("Beberapa baris data gagal diimpor.", {
-            description: (
-                <ul className="list-disc list-inside max-h-40 overflow-y-auto">
-                    {result.errors.slice(0, 10).map((e: string, i: number) => <li key={i}>{e}</li>)}
-                    {result.errors.length > 10 && <li>...dan lainnya.</li>}
-                </ul>
-            ),
-            duration: 10000,
-        })
+          description: (
+            <ul className="list-disc list-inside max-h-40 overflow-y-auto">
+              {result.errors.slice(0, 10).map((e: string, i: number) => (
+                <li key={i}>{e}</li>
+              ))}
+              {result.errors.length > 10 && <li>...dan lainnya.</li>}
+            </ul>
+          ),
+          duration: 10000,
+        });
       }
 
-      fetchReports(); // Refresh data di tabel
+      fetchReports();
     } catch (e: any) {
       toast.error("Impor Gagal!", { id: toastId, description: e.message });
     } finally {
@@ -208,8 +230,6 @@ export const ReportTable = () => {
     }
   };
 
-
-  // --- Fungsi untuk me-render isi tabel ---
   const renderTableContent = () => {
     if (loading) {
       return (
@@ -236,14 +256,24 @@ export const ReportTable = () => {
       const indexOfFirstRow = (meta.page - 1) * meta.pageSize;
       return rows.map((report, i) => (
         <TableRow key={report.id}>
-          <TableCell className="font-medium text-center">{indexOfFirstRow + i + 1}</TableCell>
-          <TableCell><Badge variant="secondary">{report.patient.patientId}</Badge></TableCell>
-          <TableCell className="font-semibold">{report.patient.fullName}</TableCell>
+          <TableCell className="font-medium text-center">
+            {indexOfFirstRow + i + 1}
+          </TableCell>
+          <TableCell>
+            <Badge variant="secondary">{report.patient.patientId}</Badge>
+          </TableCell>
+          <TableCell className="font-semibold">
+            {report.patient.fullName}
+          </TableCell>
           <TableCell>{report.patient.company.name}</TableCell>
-          <TableCell>{format(new Date(report.updatedAt), "dd MMM yyyy, HH:mm")}</TableCell>
+          <TableCell>
+            {format(new Date(report.updatedAt), "dd MMM yyyy, HH:mm")}
+          </TableCell>
           <TableCell>
             {report.status === "COMPLETED" ? (
-              <Badge className="bg-green-100 text-green-800 border-green-300">Selesai</Badge>
+              <Badge className="bg-green-100 text-green-800 border-green-300">
+                Selesai
+              </Badge>
             ) : (
               <Badge variant="destructive">Menunggu Input</Badge>
             )}
@@ -253,15 +283,21 @@ export const ReportTable = () => {
               {report.status === "COMPLETED" ? (
                 <>
                   <Link href={`/dashboard/reports/view/${report.id}`} passHref>
-                    <Button variant="outline" size="sm"><FileText className="mr-2 h-4 w-4" /> Lihat</Button>
+                    <Button variant="outline" size="sm">
+                      <FileText className="mr-2 h-4 w-4" /> Lihat
+                    </Button>
                   </Link>
                   <Link href={`/dashboard/reports/${report.id}`} passHref>
-                    <Button variant="secondary" size="sm"><Pencil className="mr-2 h-4 w-4" /> Edit</Button>
+                    <Button variant="secondary" size="sm">
+                      <Pencil className="mr-2 h-4 w-4" /> Edit
+                    </Button>
                   </Link>
                 </>
               ) : (
                 <Link href={`/dashboard/reports/${report.id}`} passHref>
-                  <Button variant="default" size="sm"><FilePenLine className="mr-2 h-4 w-4" /> Input Hasil</Button>
+                  <Button variant="default" size="sm">
+                    <FilePenLine className="mr-2 h-4 w-4" /> Input Hasil
+                  </Button>
                 </Link>
               )}
             </div>
@@ -272,58 +308,101 @@ export const ReportTable = () => {
     return (
       <TableRow>
         <TableCell colSpan={7} className="h-24 text-center text-gray-500">
-          {searchQuery ? "Laporan tidak ditemukan." : "Belum ada data untuk perusahaan ini."}
+          {searchQuery
+            ? "Laporan tidak ditemukan."
+            : "Belum ada data untuk perusahaan ini."}
         </TableCell>
       </TableRow>
     );
   };
 
   const isActionDisabled = !companyId || isImporting || isExporting;
-  const paginationDisabled = !companyId || meta.total === 0 || isImporting || isExporting;
+  const paginationDisabled =
+    !companyId || meta.total === 0 || isImporting || isExporting;
 
   return (
     <div>
-      {/* ====== FILTER BAR ====== */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-sm text-gray-600">Perusahaan:</span>
           <Select
             value={companyId ?? undefined}
-            onValueChange={(v) => { setCompanyId(v); setPage(1); }}
+            onValueChange={(v) => {
+              setCompanyId(v);
+              setPage(1);
+            }}
             disabled={companies.length === 0 || isImporting || isExporting}
           >
-            <SelectTrigger className="w-64"><SelectValue placeholder="Pilih Perusahaan" /></SelectTrigger>
+            <SelectTrigger className="w-64">
+              <SelectValue placeholder="Pilih Perusahaan" />
+            </SelectTrigger>
             <SelectContent>
-              {companies.map((c) => (<SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>))}
+              {companies.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <span className="text-xs text-gray-500">
-            {companies.length > 0 ? `${companies.length} prsh` : (
-              <span className="text-amber-600 flex items-center gap-1"><AlertCircle className="h-3.5 w-3.5" />Kosong</span>
+            {companies.length > 0 ? (
+              `${companies.length} prsh`
+            ) : (
+              <span className="text-amber-600 flex items-center gap-1">
+                <AlertCircle className="h-3.5 w-3.5" />
+                Kosong
+              </span>
             )}
           </span>
           <div className="flex items-center gap-2">
-            <Button variant="outline" disabled={isActionDisabled} onClick={handleExport}>
-              {isExporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+            <Button
+              variant="outline"
+              disabled={isActionDisabled}
+              onClick={handleExport}
+            >
+              {isExporting ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="mr-2 h-4 w-4" />
+              )}
               Export Template
             </Button>
-            <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept=".xlsx,.xls,.csv"/>
-            <Button variant="default" disabled={isActionDisabled} onClick={() => fileInputRef.current?.click()}>
-              {isImporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileSelect}
+              className="hidden"
+              accept=".xlsx,.xls,.csv"
+            />
+            <Button
+              className="bg-[#01449D] hover:bg-[#01449D]/90 text-white md:w-auto md:px-4"
+              disabled={isActionDisabled}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {isImporting ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Upload className="mr-2 h-4 w-4" />
+              )}
               Import Hasil
             </Button>
           </div>
         </div>
         <div className="relative w-full max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input placeholder="Cari nama atau ID pasien…" className="pl-9" value={searchQuery}
-            onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
+          <Input
+            placeholder="Cari nama atau ID pasien…"
+            className="pl-9"
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setPage(1);
+            }}
             disabled={isActionDisabled}
           />
         </div>
       </div>
 
-      {/* ====== TABEL DATA ====== */}
       <div className="rounded-lg border bg-white">
         <Table>
           <TableHeader>
@@ -341,27 +420,62 @@ export const ReportTable = () => {
         </Table>
       </div>
 
-      {/* ====== FOOTER & PAGINASI ====== */}
       <div className="flex flex-col sm:flex-row items-center justify-between mt-4 gap-4">
         <div className="text-sm text-gray-600">
           {companyId ? (
-            <>Menampilkan {meta.total > 0 ? (meta.page - 1) * meta.pageSize + 1 : 0} - {Math.min(meta.page * meta.pageSize, meta.total)} dari {meta.total} laporan</>
-          ) : ("Pilih perusahaan untuk melihat laporan")}
+            <>
+              Menampilkan{" "}
+              {meta.total > 0 ? (meta.page - 1) * meta.pageSize + 1 : 0} -{" "}
+              {Math.min(meta.page * meta.pageSize, meta.total)} dari{" "}
+              {meta.total} laporan
+            </>
+          ) : (
+            "Pilih perusahaan untuk melihat laporan"
+          )}
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <p className="text-sm">Baris:</p>
-            <Select value={`${pageSize}`} onValueChange={(v) => { setPageSize(Number(v)); setPage(1);}} disabled={paginationDisabled}>
-              <SelectTrigger className="h-8 w-[70px]"><SelectValue placeholder={`${pageSize}`} /></SelectTrigger>
+            <Select
+              value={`${pageSize}`}
+              onValueChange={(v) => {
+                setPageSize(Number(v));
+                setPage(1);
+              }}
+              disabled={paginationDisabled}
+            >
+              <SelectTrigger className="h-8 w-[70px]">
+                <SelectValue placeholder={`${pageSize}`} />
+              </SelectTrigger>
               <SelectContent side="top">
-                {[10, 25, 50].map((ps) => (<SelectItem key={ps} value={`${ps}`}>{ps}</SelectItem>))}
+                {[10, 25, 50].map((ps) => (
+                  <SelectItem key={ps} value={`${ps}`}>
+                    {ps}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
-          <div className="text-sm font-medium">Hal {meta.page} dari {meta.totalPages}</div>
+          <div className="text-sm font-medium">
+            Hal {meta.page} dari {meta.totalPages}
+          </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(p - 1, 1))} disabled={paginationDisabled || page <= 1}>Sebelumnya</Button>
-            <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(p + 1, meta.totalPages))} disabled={paginationDisabled || page >= meta.totalPages}>Selanjutnya</Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((p) => Math.max(p - 1, 1))}
+              disabled={paginationDisabled || page <= 1}
+            >
+              Sebelumnya
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((p) => Math.min(p + 1, meta.totalPages))}
+              disabled={paginationDisabled || page >= meta.totalPages}
+            >
+              Selanjutnya
+            </Button>
           </div>
         </div>
       </div>
