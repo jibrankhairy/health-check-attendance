@@ -185,10 +185,10 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
               overflow: hidden;
             }
             .qr {
-              width: 25mm; 
-              height: 25mm;
+              width: 27mm; 
+              height: 27mm;
               display: block;
-              margin: 0 auto 1mm;
+              margin: 0;
               image-rendering: pixelated;
               image-rendering: crisp-edges;
             }
