@@ -185,8 +185,8 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
               overflow: hidden;
             }
             .qr {
-              width: 20mm; 
-              height: 20mm;
+              width: 25mm; 
+              height: 25mm;
               display: block;
               margin: 0 auto 1mm;
               image-rendering: pixelated;
@@ -196,6 +196,7 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
               width: 100%;
               text-align: center;
               line-height: 1.1;
+              margin-bottom: 1mm;
             }
             .info p {
               margin: 0 0 0.6mm 0;
@@ -218,7 +219,6 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
             <div class="info">
               <p>Nama: <span>${patient.fullName}</span></p>
               <p>ID: <span>${patient.patientId}</span></p>
-              <p>NIK: <span>${patient.nik}</span></p>
             </div>
           </div>
 
