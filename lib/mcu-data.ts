@@ -50,7 +50,7 @@ export const addOnItems = [
   { id: "Spirometry", label: "Spirometry" },
   { id: "EKG", label: "EKG" },
   { id: "Treadmill", label: "Treadmill" },
-  { id: "Biomonitoring (Pb, Fe, As)", label: "Biomonitoring (Pb, Fe, As)" },
+  { id: "Biomonitoring", label: "Biomonitoring (Pb, Fe, As)" },
   { id: "Panel Hepatitis", label: "Panel Hepatitis" },
   { id: "Refraktometri", label: "Refraktometri" },
 ];

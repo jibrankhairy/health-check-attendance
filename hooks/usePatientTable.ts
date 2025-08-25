@@ -297,13 +297,15 @@ export const usePatientTable = (companyId: string) => {
 
   const filteredPatients = useMemo(
     () =>
-      patients.filter(
-        (patient) =>
-          patient.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          patient.patientId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (patient.position &&
-            patient.position.toLowerCase().includes(searchQuery.toLowerCase()))
-      ),
+      patients.filter((patient) => {
+        const query = searchQuery.toLowerCase();
+        return (
+          patient.fullName.toLowerCase().includes(query) ||
+          patient.patientId.toLowerCase().includes(query) ||
+          (patient.nik && String(patient.nik).toLowerCase().includes(query)) ||
+          (patient.position && patient.position.toLowerCase().includes(query))
+        );
+      }),
     [patients, searchQuery]
   );
 
