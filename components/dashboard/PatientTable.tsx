@@ -181,12 +181,12 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
               display: flex;
               flex-direction: column;
               align-items: center;
-              justify-content: flex-start;
+              justify-content: center;
               overflow: hidden;
             }
             .qr {
-              width: 18mm;
-              height: 18mm;
+              width: 20mm; 
+              height: 20mm;
               display: block;
               margin: 0 auto 1mm;
               image-rendering: pixelated;
