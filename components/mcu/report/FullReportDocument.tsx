@@ -14,6 +14,7 @@ import { HematologiDocument } from "./HematologiDocument";
 import { UrinalisaDocument } from "./UrinalisaDocument";
 import { KimiaDarahDocument } from "./KimiaDarahDocument";
 import { BiomonitoringDocument } from "./BiomonitoringDocument";
+import { HepatitisPanelDocument } from "./HepatitisPanelDocument";
 import { RontgenDocument } from "./RontgenDocument";
 import { EkgDocument } from "./EkgDocument";
 import { TreadmillDocument } from "./TreadmillDocument";
@@ -62,6 +63,7 @@ const KIMIA_DARAH_FIELDS = [
   "alkaliPhosphatase",
 ];
 const BIOMONITORING_FIELDS = ["timbalDarah", "arsenikUrin"];
+const HEPATITIS_PANEL_FIELDS = ["hbsag", "antiHbs"];
 const URINALISA_FIELDS = [
   "urinWarna",
   "urinKejernihan",
@@ -193,6 +195,8 @@ export const FullReportDocument: React.FC<FullReportDocumentProps> = ({
 
   const showBiomonitoring = sectionHasData(d, BIOMONITORING_FIELDS);
 
+  const showHepatitisPanel = sectionHasData(d, HEPATITIS_PANEL_FIELDS);
+
   const showUrinalisa =
     (hasItem("mcu regular") ||
       hasItem("mcu eksekutif") ||
@@ -253,9 +257,12 @@ export const FullReportDocument: React.FC<FullReportDocumentProps> = ({
   type BiomonitoringData = React.ComponentProps<
     typeof BiomonitoringDocument
   >["data"];
+  type HepatitisPanelData = React.ComponentProps<
+    typeof HepatitisPanelDocument
+  >["data"];
   type RontgenData = React.ComponentProps<typeof RontgenDocument>["data"];
   type EkgData = React.ComponentProps<typeof EkgDocument>["data"];
-  type TreadmillData = React.ComponentProps<typeof TreadmillDocument>["data"]; // <-- TAMBAHAN
+  type TreadmillData = React.ComponentProps<typeof TreadmillDocument>["data"];
   type AudiometryData = React.ComponentProps<typeof AudiometriDocument>["data"];
   type SpirometryData = React.ComponentProps<typeof SpirometriDocument>["data"];
   type UsgAbdomenData = React.ComponentProps<typeof UsgAbdomenDocument>["data"];
@@ -284,6 +291,8 @@ export const FullReportDocument: React.FC<FullReportDocumentProps> = ({
       {showUrinalisa && <UrinalisaDocument data={data as UrinalisaData} />}
       {showKimiaDarah && <KimiaDarahDocument data={data as KimiaDarahData} />}
 
+      {showHepatitisPanel && <HepatitisPanelDocument data={data as HepatitisPanelData} />}
+      
       {showBiomonitoring && (
         <BiomonitoringDocument data={data as BiomonitoringData} />
       )}

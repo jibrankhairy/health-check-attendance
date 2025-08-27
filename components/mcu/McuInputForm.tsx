@@ -14,6 +14,7 @@ import { HematologiForm } from "./forms/HematologiForm";
 import { KimiaDarahForm } from "./forms/KimiaDarahForm";
 import { BiomonitoringForm } from "./forms/BiomonitoringForm";
 import { UrinalisaForm } from "./forms/UrinalisaForm";
+import { HepatitisPanelForm } from "./forms/HepatitisPanelForm";
 import { AudiometriSpirometriForm } from "./forms/AudiometriSpirometriForm";
 import { UsgAbdomenForm } from "./forms/UsgAbdomenForm";
 import { UsgMammaeForm } from "./forms/UsgMammaeForm";
@@ -59,6 +60,8 @@ const formSchema = z.object({
   bilirubinTotal: z.string().optional().nullable(),
   bilirubinDirect: z.string().optional().nullable(),
   alkaliPhosphatase: z.string().optional().nullable(),
+
+  antiHbs: z.string().optional().nullable(),
 
   timbalDarah: z.string().optional().nullable(),
   arsenikUrin: z.string().optional().nullable(),
@@ -185,6 +188,8 @@ const formSchema = z.object({
   biomonitoringValidatorQr: z.string().optional().nullable(),
   urinalisaValidatorName: z.string().optional().nullable(),
   urinalisaValidatorQr: z.string().optional().nullable(),
+  hepatitisValidatorName: z.string().optional().nullable(),
+  hepatitisValidatorQr: z.string().optional().nullable(),
   audiometryValidatorName: z.string().optional().nullable(),
   audiometryValidatorQr: z.string().optional().nullable(),
   spirometryValidatorName: z.string().optional().nullable(),
@@ -388,6 +393,8 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
     hasItem("mcu eksekutif") ||
     hasItem("mcu akhir") ||
     hasItem("biomonitoring");
+  const showHepatitisPanel =
+    hasItem("mcu regular") || hasItem("mcu eksekutif") || hasItem("mcu akhir") || hasItem("panel hepatitis");
   const showUrinalisa =
     hasItem("mcu regular") || hasItem("mcu eksekutif") || hasItem("mcu akhir");
   const showAudioSpiro =
@@ -401,7 +408,7 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
     hasItem("mcu reguler") ||
     hasItem("mcu eksekutif") ||
     hasItem("mcu akhir") ||
-    hasItem("treadmill"); // <-- LOGIC BARU
+    hasItem("treadmill");
   const showRontgen =
     hasItem("mcu regular") ||
     hasItem("mcu eksekutif") ||
@@ -451,6 +458,7 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
         {showFramingham && <FraminghamForm />}
         {showHematologi && <HematologiForm />}
         {showKimiaDarah && <KimiaDarahForm />}
+        {showHepatitisPanel && <HepatitisPanelForm />}
         {showBiomonitoring && <BiomonitoringForm />}
         {showUrinalisa && <UrinalisaForm />}
         {showAudioSpiro && (

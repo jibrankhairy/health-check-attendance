@@ -1,3 +1,5 @@
+// app/api/mcu/reports/import/route.ts
+
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import * as XLSX from "xlsx";
@@ -144,6 +146,7 @@ export async function POST(request: Request) {
     const validatorMap: { [key: string]: string } = {
       hematologiValidatorName: "hematologiValidatorQr",
       kimiaDarahValidatorName: "kimiaDarahValidatorQr",
+      hepatitisValidatorName: "hepatitisValidatorQr", // <-- TAMBAHAN
       biomonitoringValidatorName: "biomonitoringValidatorQr",
       urinalisaValidatorName: "urinalisaValidatorQr",
       audiometryValidatorName: "audiometryValidatorQr",

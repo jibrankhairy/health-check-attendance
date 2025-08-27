@@ -1,3 +1,5 @@
+// app/api/mcu/reports/export/route.ts
+
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import * as XLSX from "xlsx";
@@ -37,6 +39,7 @@ const templateHeaders = [
   "gulaDarahPuasa",
   "gulaDarah2JamPP",
   "hbsag",
+  "antiHbs", // <-- TAMBAHAN
   "sgot",
   "sgpt",
   "ureum",
@@ -50,6 +53,7 @@ const templateHeaders = [
   "bilirubinDirect",
   "alkaliPhosphatase",
   "kimiaDarahValidatorName",
+  "hepatitisValidatorName", // <-- TAMBAHAN
 
   "timbalDarah",
   "arsenikUrin",
