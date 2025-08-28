@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from "next/server";
-import { PrismaClient, Prisma } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { format, subDays, startOfDay } from "date-fns";
 
 const prisma = new PrismaClient();
@@ -152,21 +152,39 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
           }
         }
 
-        if (Number(result.kolesterolTotal) > 200)
+        if (
+          result.kolesterolTotal != null &&
+          Number(result.kolesterolTotal) > 200
+        ) {
           healthIssuesCounts["Kolesterol Tinggi"]++;
-        if (Number(result.gulaDarahPuasa) > 115)
+        }
+
+        if (
+          result.gulaDarahPuasa != null &&
+          Number(result.gulaDarahPuasa) > 115
+        ) {
           healthIssuesCounts["Gula Darah Tinggi"]++;
-        const asamUrat = Number(result.asamUrat);
-        const gender = patient.gender?.toUpperCase();
-        if (gender === "LAKI-LAKI" && asamUrat > 7.0)
-          healthIssuesCounts["Asam Urat Tinggi"]++;
-        if (gender === "PEREMPUAN" && asamUrat > 5.7)
-          healthIssuesCounts["Asam Urat Tinggi"]++;
-        const hemoglobin = Number(result.hemoglobin);
-        if (gender === "LAKI-LAKI" && hemoglobin < 14.0)
-          healthIssuesCounts["Anemia"]++;
-        if (gender === "PEREMPUAN" && hemoglobin < 12.0)
-          healthIssuesCounts["Anemia"]++;
+        }
+
+        if (result.asamUrat != null) {
+          const asamUrat = Number(result.asamUrat);
+          const gender = patient.gender?.toUpperCase();
+          if (gender === "LAKI-LAKI" && asamUrat > 7.0) {
+            healthIssuesCounts["Asam Urat Tinggi"]++;
+          } else if (gender === "PEREMPUAN" && asamUrat > 5.7) {
+            healthIssuesCounts["Asam Urat Tinggi"]++;
+          }
+        }
+
+        if (result.hemoglobin != null) {
+          const hemoglobin = Number(result.hemoglobin);
+          const gender = patient.gender?.toUpperCase();
+          if (gender === "LAKI-LAKI" && hemoglobin < 14.0) {
+            healthIssuesCounts["Anemia"]++;
+          } else if (gender === "PEREMPUAN" && hemoglobin < 12.0) {
+            healthIssuesCounts["Anemia"]++;
+          }
+        }
       }
     }
 

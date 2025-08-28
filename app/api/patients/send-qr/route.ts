@@ -59,7 +59,7 @@ export async function POST(request: Request) {
     <div style="font-family: Arial, sans-serif; line-height:1.6; color:#222">
       <h1 style="margin:0 0 12px">Pendaftaran MCU Berhasil</h1>
       <p>Halo <strong>${patient.fullName}</strong>,</p>
-      <p>Pendaftaran Anda untuk Medical Check Up telah berhasil dengan nomor pasien <strong>${patient.patientId}</strong>.</p>
+      <p>Pendaftaran Anda untuk Medical Check Up telah berhasil dengan NIK pasien <strong>${patient.nik}</strong> dan nomor pasien <strong>${patient.patientId}</strong>.</p>
 
       <p style="margin:16px 0 8px">Sebelum datang, mohon mengisi kuesioner pra-MCU melalui tautan berikut:</p>
       <p>
