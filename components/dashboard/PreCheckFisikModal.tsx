@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useForm, Controller } from "react-hook-form"; // <-- PERBAIKAN 1: Import Controller
+import { useForm, Controller } from "react-hook-form";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,14 +18,14 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import type { PatientData } from "./PatientTable";
 
-// Tipe data untuk form ini
 type PreCheckFormValues = {
   kondisiKesehatan?: "BAIK" | "SEDANG" | "BURUK";
   kesadaran?: string;
   beratBadanKg?: number | "";
   tinggiBadanCm?: number | "";
-  bmi?: number | ""; // <-- TAMBAHAN: Field untuk BMI
+  bmi?: number | "";
   lingkarPerutCm?: number | "";
+  suhuC?: number | "";
   tensiSistol?: number | "";
   tensiDiastol?: number | "";
 };
@@ -45,12 +45,9 @@ export const PreCheckFisikModal = ({
 }: Props) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // --- PERBAIKAN 2: Ambil `control` dari useForm ---
   const { register, handleSubmit, reset, setValue, watch, control } =
     useForm<PreCheckFormValues>();
-  // -------------------------------------------------
 
-  // Efek untuk mengisi form dengan data yang sudah ada
   useEffect(() => {
     if (isOpen && patient?.mcuResults?.[0]?.pemeriksaanFisikForm) {
       const initialData = patient.mcuResults[0].pemeriksaanFisikForm;
@@ -63,13 +60,13 @@ export const PreCheckFisikModal = ({
         tinggiBadanCm: "",
         bmi: "",
         lingkarPerutCm: "",
+        suhuC: "",
         tensiSistol: "",
         tensiDiastol: "",
       });
     }
   }, [isOpen, patient, reset]);
 
-  // --- TAMBAHAN: Logika Kalkulasi BMI ---
   const bb = watch("beratBadanKg");
   const tb = watch("tinggiBadanCm");
 
@@ -85,7 +82,6 @@ export const PreCheckFisikModal = ({
       setValue("bmi", "", { shouldDirty: true });
     }
   }, [bb, tb, setValue]);
-  // ------------------------------------
 
   const handleFormSubmit = async (formData: PreCheckFormValues) => {
     if (!patient || !patient.mcuResults?.[0]?.id) {
@@ -190,7 +186,6 @@ export const PreCheckFisikModal = ({
                   })}
                 />
               </div>
-              {/* --- TAMBAHAN: Field BMI --- */}
               <div className="space-y-2">
                 <Label htmlFor="bmi">Body Mass Index</Label>
                 <div className="relative">
@@ -203,18 +198,31 @@ export const PreCheckFisikModal = ({
                   />
                 </div>
               </div>
-              {/* --------------------------- */}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="lingkarPerutCm">Lingkar Perut (cm)</Label>
-              <Input
-                id="lingkarPerutCm"
-                type="number"
-                placeholder="cth. 90"
-                {...register("lingkarPerutCm", {
-                  setValueAs: (v) => (v === "" ? "" : parseInt(v, 10)),
-                })}
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="lingkarPerutCm">Lingkar Perut (cm)</Label>
+                <Input
+                  id="lingkarPerutCm"
+                  type="number"
+                  placeholder="cth. 90"
+                  {...register("lingkarPerutCm", {
+                    setValueAs: (v) => (v === "" ? "" : parseInt(v, 10)),
+                  })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="suhuC">Suhu Badan (°C)</Label>
+                <Input
+                  id="suhuC"
+                  type="number"
+                  step="0.1"
+                  placeholder="cth. 36.5"
+                  {...register("suhuC", {
+                    setValueAs: (v) => (v === "" ? "" : parseFloat(v)),
+                  })}
+                />
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -250,7 +258,11 @@ export const PreCheckFisikModal = ({
             >
               Batal
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button
+              className="bg-[#01449D] hover:bg-[#01449D]/90 text-white md:w-auto md:px-4"
+              type="submit"
+              disabled={isSubmitting}
+            >
               {isSubmitting && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}

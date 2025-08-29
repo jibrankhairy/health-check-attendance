@@ -766,7 +766,11 @@ export default function PemeriksaanFisikFormModal({
                 >
                   Batal
                 </Button>
-                <Button type="submit" disabled={submitting}>
+                <Button
+                  className="bg-[#01449D] hover:bg-[#01449D]/90 text-white md:w-auto md:px-4"
+                  type="submit"
+                  disabled={submitting}
+                >
                   {submitting ? "Menyimpan..." : "Simpan & Check-in"}
                 </Button>
               </DialogFooter>
