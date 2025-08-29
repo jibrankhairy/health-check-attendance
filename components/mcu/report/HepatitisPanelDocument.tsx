@@ -5,7 +5,6 @@ import { Page, Text, View, Image, StyleSheet } from "@react-pdf/renderer";
 import { ReportHeader, PatientInfo, ReportFooter } from "./ReportLayout";
 import { styles } from "./reportStyles";
 
-// Tipe data spesifik untuk item di tabel Hepatitis
 interface HepatitisItem {
   no: number;
   label: string;
@@ -15,7 +14,6 @@ interface HepatitisItem {
   isAbnormal: (value: any) => boolean;
 }
 
-// Tipe data untuk props komponen
 export interface HepatitisPanelData extends Record<string, unknown> {
   patient?: { [k: string]: unknown } | null;
   hepatitisValidatorName?: string | null;
@@ -24,7 +22,6 @@ export interface HepatitisPanelData extends Record<string, unknown> {
   antiHbs?: number | string | null;
 }
 
-// Definisi item pemeriksaan hepatitis
 const hepatitisDataMap: HepatitisItem[] = [
   {
     no: 1,
@@ -47,11 +44,9 @@ const hepatitisDataMap: HepatitisItem[] = [
   },
 ];
 
-// Fungsi untuk menampilkan nilai, '-' jika kosong
 const displayValue = (v: unknown): string =>
   v === null || v === undefined || String(v).trim() === "" ? "-" : String(v);
 
-// Style lokal untuk bagian validator
 const localStyles = StyleSheet.create({
   validatorBox: {
     position: "absolute",
@@ -73,7 +68,6 @@ const localStyles = StyleSheet.create({
   },
 });
 
-// Komponen Utama Dokumen PDF
 export const HepatitisPanelDocument: React.FC<{ data: HepatitisPanelData }> = ({
   data,
 }) => {

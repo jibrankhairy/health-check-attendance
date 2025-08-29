@@ -179,7 +179,7 @@ model McuResult {
   hdl                        String? @db.Text
   ldl                        String? @db.Text
   hbsag                      String? @db.Text
-  antiHbs                    String? @db.Text // --- TAMBAHAN UNTUK PANEL HEPATITIS ---
+  antiHbs                    String? @db.Text
   bilirubinTotal             String? @db.Text
   bilirubinDirect            String? @db.Text
   alkaliPhosphatase          String? @db.Text
@@ -188,7 +188,7 @@ model McuResult {
 
   // --- Urinalisa ---
   urinWarna                  String? @db.Text
-  urinKejernihan              String? @db.Text
+  urinKejernihan             String? @db.Text
   urinBau                    String? @db.Text
   urinPh                     String? @db.Text
   urinBeratJenis             String? @db.Text
@@ -362,8 +362,8 @@ model McuResult {
   biomonitoringValidatorQr     String? @db.Text
   urinalisaValidatorName       String?
   urinalisaValidatorQr         String? @db.Text
-  hepatitisValidatorName       String? // --- TAMBAHAN UNTUK PANEL HEPATITIS ---
-  hepatitisValidatorQr         String? @db.Text // --- TAMBAHAN UNTUK PANEL HEPATITIS ---
+  hepatitisValidatorName       String?
+  hepatitisValidatorQr         String? @db.Text
   audiometryValidatorName      String?
   audiometryValidatorQr        String? @db.Text
   spirometryValidatorName      String?

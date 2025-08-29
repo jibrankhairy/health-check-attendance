@@ -1,6 +1,6 @@
 "use client";
 
-import { useFormContext } from "react-hook-form";
+import { useFormContext, Controller } from "react-hook-form";
 import {
   Card,
   CardContent,
@@ -33,19 +33,21 @@ export const HepatitisPanelForm = () => {
       <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8">
         <div className="space-y-2">
           <Label htmlFor="hbsag">HBsAg</Label>
-          {/* Menggunakan Controller untuk komponen Select dari ShadCN/UI */}
-          <Select
-            onValueChange={(value) => control.setValue("hbsag", value)}
-            defaultValue=""
-          >
-            <SelectTrigger id="hbsag">
-              <SelectValue placeholder="Pilih hasil" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Non-Reactive">Non-Reactive</SelectItem>
-              <SelectItem value="Reactive">Reactive</SelectItem>
-            </SelectContent>
-          </Select>
+          <Controller
+            name="hbsag"
+            control={control}
+            render={({ field }) => (
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <SelectTrigger id="hbsag">
+                  <SelectValue placeholder="Pilih hasil" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Non-Reactive">Non-Reactive</SelectItem>
+                  <SelectItem value="Reactive">Reactive</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+          />
         </div>
 
         <div className="space-y-2">
