@@ -14,6 +14,7 @@ export async function GET(
       where: { id: mcuResultId },
       select: {
         id: true,
+        pemeriksaanFisikForm: true,
         patient: {
           select: {
             id: true,
@@ -36,6 +37,7 @@ export async function GET(
 
     const responseData = {
       mcuResultId: mcuResult.id,
+      pemeriksaanFisikForm: mcuResult.pemeriksaanFisikForm,
       patient: {
         id: mcuResult.patient.id,
         mcuId: mcuResult.patient.patientId,

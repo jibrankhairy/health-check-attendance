@@ -116,6 +116,7 @@ type Props = {
   onSubmit: (values: PemeriksaanFisikFormValues) => Promise<void> | void;
   submitting?: boolean;
   onBack?: () => void;
+  initialData?: Partial<PemeriksaanFisikFormValues> | null;
 };
 
 export default function PemeriksaanFisikFormModal({
@@ -124,94 +125,18 @@ export default function PemeriksaanFisikFormModal({
   onSubmit,
   submitting,
   onBack,
+  initialData,
 }: Props) {
-  const DEFAULTS: PemeriksaanFisikFormValues = {
-    kondisiKesehatan: "BAIK",
-    kesadaran: "",
-    beratBadanKg: "",
-    tinggiBadanCm: "",
-    bmi: 0,
-    lingkarPerutCm: "",
-    suhuC: "",
-    tensiSistol: "",
-    tensiDiastol: "",
-    nadiPerMenit: "",
-    pernapasanPerMenit: "",
-    hipoHiperpigmentasi: "NEGATIF",
-    rash: "NEGATIF",
-    deviasiSeptum: "TIDAK",
-    pembesaranKonka: "TIDAK",
-    tonsilUkuran: "",
-    pharingHipermis: "TIDAK",
-    lidah: "NORMAL",
-    gigiKaries: "TIDAK",
-    gigiHilang: "TIDAK",
-    gigiPalsu: "TIDAK",
-    leherKondisi: "NORMAL",
-    tiroid: "NEGATIF",
-    kelenjarLymp: "NEGATIF",
-    butaWarna: "NORMAL",
-    anemiaOD: "",
-    anemiaOS: "",
-    ikterikOD: "",
-    ikterikOS: "",
-    pupilOD: "",
-    pupilOS: "",
-    refleksOD: "NORMAL",
-    refleksOS: "NORMAL",
-    pupilDistance: "-",
-    kacamata: "TIDAK",
-    ukuranOD: "-",
-    ukuranOS: "-",
-    visusOD: "",
-    visusOS: "",
-    lapangPandang: "NORMAL",
-    ketajaman: "NORMAL",
-    kemampuanPendengaranAD: "BAIK",
-    kemampuanPendengaranAS: "BAIK",
-    telingaLuarAD: "NORMAL",
-    telingaLuarAS: "NORMAL",
-    nyeriTekanAD: "TIDAK",
-    nyeriTekanAS: "TIDAK",
-    serumenAD: "NEGATIF",
-    serumenAS: "NEGATIF",
-    gendangAD: "",
-    gendangAS: "",
-    ictusInspeksi: "",
-    ictusPalpasi: "",
-    batasJantung: "NORMAL",
-    bisingJantung: "TIDAK",
-    paruInspeksi: "",
-    paruPalpasi: "NORMAL",
-    paruPerkusi: "",
-    paruAuskultasi: "",
-    cernaInspeksi: "",
-    hepar: "",
-    lien: "",
-    cernaPerkusi: "NORMAL",
-    peristaltik: "NORMAL",
-    deformitas: "-",
-    oedema: "-",
-    functioLaesa: "-",
-    refleksFisiologis: "TIDAK",
-    refleksPatologis: "TIDAK",
-    tulangBelakang: "NORMAL",
-    psikis: "NORMAL",
-    sikap: "NORMAL",
-    dayaIngat: "BAIK",
-    orientasi: "BAIK",
-  };
-
   const form = useForm<PemeriksaanFisikFormValues>({
-    defaultValues: DEFAULTS,
+    defaultValues: initialData || {},
     mode: "onSubmit",
   });
 
   useEffect(() => {
     if (isOpen) {
-      form.reset(DEFAULTS);
+      form.reset(initialData || {});
     }
-  }, [isOpen, form]);
+  }, [isOpen, initialData, form]);
 
   const bb = form.watch("beratBadanKg");
   const tb = form.watch("tinggiBadanCm");
@@ -247,11 +172,11 @@ export default function PemeriksaanFisikFormModal({
             <Input
               type={type}
               placeholder={placeholder}
-              value={type === "number" ? field.value ?? 0 : field.value ?? ""}
+              value={field.value ?? ""}
               onChange={(e) => {
                 if (type === "number") {
                   const v = e.target.value;
-                  field.onChange(v === "" ? 0 : Number(v));
+                  field.onChange(v === "" ? "" : Number(v));
                 } else {
                   field.onChange(e.target.value);
                 }
@@ -299,7 +224,7 @@ export default function PemeriksaanFisikFormModal({
             <FormControl>
               <RadioGroup
                 onValueChange={field.onChange}
-                defaultValue={field.value ? String(field.value) : undefined}
+                value={field.value ?? undefined}
                 className={[
                   "flex flex-wrap gap-x-4 gap-y-2",
                   stacked ? "justify-start" : "justify-start sm:justify-end",
@@ -331,18 +256,18 @@ export default function PemeriksaanFisikFormModal({
     >
       <DialogContent
         className="
-            w-[96vw]
-            sm:w-[92vw]
-            md:w-auto
-            sm:max-w-2xl
-            md:max-w-3xl
-            lg:max-w-5xl
-            xl:max-w-6xl
-            max-h-[90vh]
-            p-0
-            flex flex-col   
-            overflow-hidden    
-        "
+              w-[96vw]
+              sm:w-[92vw]
+              md:w-auto
+              sm:max-w-2xl
+              md:max-w-3xl
+              lg:max-w-5xl
+              xl:max-w-6xl
+              max-h-[90vh]
+              p-0
+              flex flex-col   
+              overflow-hidden      
+            "
         aria-describedby={undefined}
       >
         <DialogHeader className="flex flex-row items-center gap-2 px-6 pt-6 shrink-0">
@@ -356,14 +281,13 @@ export default function PemeriksaanFisikFormModal({
 
         <div
           className="
-            px-6 pb-6
-            flex-1 min-h-0 
-            overflow-y-auto 
-            "
+              px-6 pb-6
+              flex-1 min-h-0 
+              overflow-y-auto 
+              "
         >
           <Form {...form}>
             <form onSubmit={form.handleSubmit(submit)} className="space-y-8">
-              {/* A. Pemeriksaan Umum */}
               <section className="space-y-4">
                 <h3 className="text-base font-semibold">A. Pemeriksaan Umum</h3>
                 {RowRadio(
@@ -374,7 +298,7 @@ export default function PemeriksaanFisikFormModal({
                 {RowInput(
                   "kesadaran",
                   "Kesadaran Umum",
-                  "cth..   COMPOS MENTIS",
+                  "cth..  COMPOS MENTIS",
                   "text"
                 )}
 

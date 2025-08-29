@@ -20,6 +20,7 @@ type Checkpoint = {
 
 type PreviewData = {
   mcuResultId: string;
+  pemeriksaanFisikForm?: PemeriksaanFisikFormValues | null;
   patient: {
     id?: string;
     mcuId?: string;
@@ -71,6 +72,9 @@ const PetugasDashboardPage = () => {
   );
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewData, setPreviewData] = useState<PreviewData | null>(null);
+
+  const [initialFisikData, setInitialFisikData] =
+    useState<PemeriksaanFisikFormValues | null>(null);
 
   useEffect(() => {
     async function fetchCheckPoints() {
@@ -197,6 +201,7 @@ const PetugasDashboardPage = () => {
     if (!previewData || !selectedCheckPointSlug) return;
     setIsPreviewOpen(false);
     if (selectedCheckPointSlug === "pemeriksaan_fisik") {
+      setInitialFisikData(previewData.pemeriksaanFisikForm || null); // <-- UBAH DI SINI
       setPendingMcuResultId(previewData.mcuResultId);
       setShowFisikForm(true);
       toast.message(`Memproses pasien...`, {
@@ -253,16 +258,6 @@ const PetugasDashboardPage = () => {
 
   return (
     <>
-      <style jsx global>{`
-        #qr-reader-container video {
-          width: 100% !important;
-          height: auto !important;
-          border-radius: 0.5rem;
-        }
-        #qr-reader-container__dashboard_section_csr > div {
-          border: none !important;
-        }
-      `}</style>
       <div className="relative min-h-screen w-full bg-gradient-to-br from-slate-100 to-[#01449D]">
         <Header />
         <main className="flex flex-col items-center justify-center min-h-screen p-4 font-sans">
@@ -289,10 +284,12 @@ const PetugasDashboardPage = () => {
         />
         <PemeriksaanFisikFormModal
           isOpen={showFisikForm}
+          initialData={initialFisikData}
           onClose={() => {
             if (!isSubmitting) {
               setShowFisikForm(false);
               setPendingMcuResultId(null);
+              setInitialFisikData(null);
             }
           }}
           onSubmit={handleSubmitFisikForm}

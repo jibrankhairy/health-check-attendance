@@ -27,6 +27,7 @@ export async function POST(request: Request) {
         select: {
           patientId: true,
           examinationStartedAt: true,
+          pemeriksaanFisikForm: true,
         },
       }),
       prisma.checkpoint.findUnique({
@@ -76,7 +77,9 @@ export async function POST(request: Request) {
     const dataForMcuResult: Prisma.McuResultUpdateInput = {};
 
     if (pemeriksaanFisikForm) {
-      dataForMcuResult.pemeriksaanFisikForm = pemeriksaanFisikForm;
+      const existingData = (mcuResult.pemeriksaanFisikForm as any) || {};
+      const mergedData = { ...existingData, ...pemeriksaanFisikForm };
+      dataForMcuResult.pemeriksaanFisikForm = mergedData;
     }
 
     if (!mcuResult.examinationStartedAt) {

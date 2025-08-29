@@ -17,6 +17,7 @@ import {
   Download,
   Camera,
   IdCard,
+  ClipboardList,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -75,6 +76,7 @@ import { ConfirmationDialog } from "@/components/ConfirmationDialog";
 import { usePatientTable } from "@/hooks/usePatientTable";
 import { CameraCaptureModal } from "./CameraCaptureModal";
 import { toast } from "sonner";
+import { PreCheckFisikModal } from "./PreCheckFisikModal";
 
 export type PatientData = {
   id: number;
@@ -98,6 +100,7 @@ export type PatientData = {
   mcuResults: {
     id: string;
     fileUrl?: string;
+    pemeriksaanFisikForm?: any;
     progress: {
       id: string;
       status: "PENDING" | "COMPLETED" | "SKIPPED";
@@ -114,6 +117,9 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [takingPhotoFor, setTakingPhotoFor] = useState<PatientData | null>(
+    null
+  );
+  const [preCheckPatient, setPreCheckPatient] = useState<PatientData | null>(
     null
   );
 
@@ -522,6 +528,14 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
       </DropdownMenuItem>
 
       <DropdownMenuItem
+        onClick={() => setPreCheckPatient(patient)}
+        disabled={!patient.mcuResults || patient.mcuResults.length === 0}
+      >
+        <ClipboardList className="mr-2 h-4 w-4" />
+        <span>Registrasi Awal Fisik</span>
+      </DropdownMenuItem>
+
+      <DropdownMenuItem
         onClick={() => handlePrintKartuKontrol(patient)}
         disabled={!patient.mcuResults || patient.mcuResults.length === 0}
       >
@@ -748,6 +762,25 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                               </TooltipTrigger>
                               <TooltipContent>
                                 <p>Lihat Progres MCU</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="hover:text-teal-500"
+                                  disabled={
+                                    !patient.mcuResults ||
+                                    patient.mcuResults.length === 0
+                                  }
+                                  onClick={() => setPreCheckPatient(patient)}
+                                >
+                                  <ClipboardList className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Registrasi Awal Fisik</p>
                               </TooltipContent>
                             </Tooltip>
                             <Tooltip>
@@ -1091,6 +1124,17 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
         patient={takingPhotoFor}
         onUploadSuccess={() => {
           fetchPatients();
+        }}
+      />
+
+      <PreCheckFisikModal
+        isOpen={!!preCheckPatient}
+        onClose={() => setPreCheckPatient(null)}
+        patient={preCheckPatient}
+        onSuccess={() => {
+          setPreCheckPatient(null);
+          fetchPatients();
+          toast.success("Data registrasi awal berhasil disimpan.");
         }}
       />
     </>
