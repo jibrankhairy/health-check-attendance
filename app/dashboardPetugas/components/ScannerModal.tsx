@@ -39,14 +39,22 @@ export const ScannerModal = ({
         .then((devices) => {
           if (devices && devices.length) {
             setCameras(devices);
-            if (!selectedCameraId) {
+            if (selectedCameraId) return;
+
+            const rearCamera = devices.find((device) =>
+              /back|rear|environment/i.test(device.label)
+            );
+
+            if (rearCamera) {
+              setSelectedCameraId(rearCamera.id);
+            } else {
               setSelectedCameraId(devices[0].id);
             }
           }
         })
         .catch(() => toast.error("Tidak bisa mendapatkan daftar kamera."));
     }
-  }, [isOpen, selectedCameraId]);
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen && selectedCameraId) {
@@ -69,9 +77,7 @@ export const ScannerModal = ({
               onScanSuccess(decodedText);
             }
           },
-          () => {
-            /* Abaikan error per frame */
-          }
+          () => {}
         )
         .catch(() =>
           toast.error("Gagal memulai kamera. Pastikan izin sudah diberikan.")
