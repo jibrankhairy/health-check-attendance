@@ -33,20 +33,35 @@ export const ScannerModal = ({
   const qrScannerRef = useRef<Html5Qrcode | null>(null);
   const isFetchingRef = useRef(false);
 
+  // --- KODE YANG DIPERBAIKI ADA DI SINI ---
   useEffect(() => {
     if (isOpen) {
       Html5Qrcode.getCameras()
         .then((devices) => {
           if (devices && devices.length) {
             setCameras(devices);
-            if (!selectedCameraId) {
+            // Jangan set selectedCameraId di sini jika sudah ada
+            if (selectedCameraId) return;
+
+            // 1. Cari kamera belakang secara eksplisit
+            const rearCamera = devices.find((device) =>
+              /back|rear|environment/i.test(device.label)
+            );
+
+            if (rearCamera) {
+              // 2. Jika ketemu, gunakan kamera belakang
+              setSelectedCameraId(rearCamera.id);
+            } else {
+              // 3. Jika tidak ketemu, baru gunakan kamera pertama sebagai fallback
               setSelectedCameraId(devices[0].id);
             }
           }
         })
         .catch(() => toast.error("Tidak bisa mendapatkan daftar kamera."));
     }
-  }, [isOpen, selectedCameraId]);
+    // Hapus selectedCameraId dari dependency array ini agar tidak re-run saat kamera diganti manual
+  }, [isOpen]);
+  // --- AKHIR DARI KODE YANG DIPERBAIKI ---
 
   useEffect(() => {
     if (isOpen && selectedCameraId) {
