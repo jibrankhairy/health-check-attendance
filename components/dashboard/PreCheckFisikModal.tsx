@@ -28,6 +28,8 @@ type PreCheckFormValues = {
   suhuC?: number | "";
   tensiSistol?: number | "";
   tensiDiastol?: number | "";
+  visusOD?: string;
+  visusOS?: string;
 };
 
 type Props = {
@@ -63,6 +65,8 @@ export const PreCheckFisikModal = ({
         suhuC: "",
         tensiSistol: "",
         tensiDiastol: "",
+        visusOD: "",
+        visusOS: "",
       });
     }
   }, [isOpen, patient, reset]);
@@ -245,6 +249,24 @@ export const PreCheckFisikModal = ({
                   {...register("tensiDiastol", {
                     setValueAs: (v) => (v === "" ? "" : parseInt(v, 10)),
                   })}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="visusOD">Visus — OD</Label>
+                <Input
+                  id="visusOD"
+                  placeholder="cth. 6/38"
+                  {...register("visusOD")}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="visusOS">Visus — OS</Label>
+                <Input
+                  id="visusOS"
+                  placeholder="cth. 6/38"
+                  {...register("visusOS")}
                 />
               </div>
             </div>
