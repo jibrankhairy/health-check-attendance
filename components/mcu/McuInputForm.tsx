@@ -394,7 +394,10 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
     hasItem("mcu akhir") ||
     hasItem("biomonitoring");
   const showHepatitisPanel =
-    hasItem("mcu regular") || hasItem("mcu eksekutif") || hasItem("mcu akhir") || hasItem("panel hepatitis");
+    hasItem("mcu regular") ||
+    hasItem("mcu eksekutif") ||
+    hasItem("mcu akhir") ||
+    hasItem("panel hepatitis");
   const showUrinalisa =
     hasItem("mcu regular") || hasItem("mcu eksekutif") || hasItem("mcu akhir");
   const showAudioSpiro =
@@ -478,7 +481,12 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
           </div>
         )}
         <div className="flex justify-end pt-4">
-          <Button type="submit" size="lg" disabled={isSubmitting}>
+          <Button
+            className="bg-[#01449D] hover:bg-[#01449D]/90 text-white md:w-auto md:px-4"
+            type="submit"
+            size="lg"
+            disabled={isSubmitting}
+          >
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
