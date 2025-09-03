@@ -119,6 +119,92 @@ type Props = {
   initialData?: Partial<PemeriksaanFisikFormValues> | null;
 };
 
+const normalDefaultValues: Partial<PemeriksaanFisikFormValues> = {
+  kondisiKesehatan: "BAIK",
+  kesadaran: "COMPOS MENTIS",
+  beratBadanKg: "",
+  tinggiBadanCm: "",
+  lingkarPerutCm: "",
+  suhuC: "",
+  tensiSistol: "",
+  tensiDiastol: "",
+  nadiPerMenit: "",
+  pernapasanPerMenit: "",
+
+  hipoHiperpigmentasi: "NEGATIF",
+  rash: "NEGATIF",
+
+  deviasiSeptum: "TIDAK",
+  pembesaranKonka: "TIDAK",
+  tonsilUkuran: "T1/T1",
+  pharingHipermis: "TIDAK",
+  lidah: "NORMAL",
+  gigiKaries: "TIDAK",
+  gigiHilang: "TIDAK",
+  gigiPalsu: "TIDAK",
+  leherKondisi: "NORMAL",
+  tiroid: "NEGATIF",
+  kelenjarLymp: "NEGATIF",
+
+  butaWarna: "NORMAL",
+  anemiaOD: "TIDAK",
+  anemiaOS: "TIDAK",
+  ikterikOD: "TIDAK",
+  ikterikOS: "TIDAK",
+  pupilOD: "ISOKOR",
+  pupilOS: "ISOKOR",
+  refleksOD: "NORMAL",
+  refleksOS: "NORMAL",
+  pupilDistance: "-",
+  kacamata: "TIDAK",
+  ukuranOD: "-",
+  ukuranOS: "-",
+  visusOD: "6/6",
+  visusOS: "6/6",
+  lapangPandang: "NORMAL",
+  ketajaman: "NORMAL",
+
+  kemampuanPendengaranAD: "BAIK",
+  kemampuanPendengaranAS: "BAIK",
+  telingaLuarAD: "NORMAL",
+  telingaLuarAS: "NORMAL",
+  nyeriTekanAD: "TIDAK",
+  nyeriTekanAS: "TIDAK",
+  serumenAD: "NEGATIF",
+  serumenAS: "NEGATIF",
+  gendangAD: "INTAK",
+  gendangAS: "INTAK",
+
+  ictusInspeksi: "TIDAK TAMPAK",
+  ictusPalpasi: "TERABA",
+  batasJantung: "NORMAL",
+  bisingJantung: "TIDAK",
+
+  paruInspeksi: "SIMETRIS",
+  paruPalpasi: "NORMAL",
+  paruPerkusi: "SONOR",
+  paruAuskultasi: "VESIKULER",
+
+  cernaInspeksi: "SIMETRIS",
+  hepar: "TIDAK TERABA",
+  lien: "TIDAK TERABA",
+  cernaPerkusi: "NORMAL",
+  peristaltik: "NORMAL",
+
+  deformitas: "-",
+  oedema: "-",
+  functioLaesa: "-",
+  refleksFisiologis: "ADA",
+  refleksPatologis: "TIDAK",
+
+  tulangBelakang: "NORMAL",
+
+  psikis: "NORMAL",
+  sikap: "NORMAL",
+  dayaIngat: "BAIK",
+  orientasi: "BAIK",
+};
+
 export default function PemeriksaanFisikFormModal({
   isOpen,
   onClose,
@@ -128,13 +214,19 @@ export default function PemeriksaanFisikFormModal({
   initialData,
 }: Props) {
   const form = useForm<PemeriksaanFisikFormValues>({
-    defaultValues: initialData || {},
+    defaultValues: {
+      ...normalDefaultValues,
+      ...(initialData || {}),
+    },
     mode: "onSubmit",
   });
 
   useEffect(() => {
     if (isOpen) {
-      form.reset(initialData || {});
+      form.reset({
+        ...normalDefaultValues,
+        ...(initialData || {}),
+      });
     }
   }, [isOpen, initialData, form]);
 
@@ -256,18 +348,18 @@ export default function PemeriksaanFisikFormModal({
     >
       <DialogContent
         className="
-              w-[96vw]
-              sm:w-[92vw]
-              md:w-auto
-              sm:max-w-2xl
-              md:max-w-3xl
-              lg:max-w-5xl
-              xl:max-w-6xl
-              max-h-[90vh]
-              p-0
-              flex flex-col   
-              overflow-hidden      
-            "
+                  w-[96vw]
+                  sm:w-[92vw]
+                  md:w-auto
+                  sm:max-w-2xl
+                  md:max-w-3xl
+                  lg:max-w-5xl
+                  xl:max-w-6xl
+                  max-h-[90vh]
+                  p-0
+                  flex flex-col
+                  overflow-hidden
+                "
         aria-describedby={undefined}
       >
         <DialogHeader className="flex flex-row items-center gap-2 px-6 pt-6 shrink-0">
@@ -281,10 +373,10 @@ export default function PemeriksaanFisikFormModal({
 
         <div
           className="
-              px-6 pb-6
-              flex-1 min-h-0 
-              overflow-y-auto 
-              "
+                  px-6 pb-6
+                  flex-1 min-h-0
+                  overflow-y-auto
+                  "
         >
           <Form {...form}>
             <form onSubmit={form.handleSubmit(submit)} className="space-y-8">
