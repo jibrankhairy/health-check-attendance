@@ -115,7 +115,7 @@ type PatientTableProps = {
 
 export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-
+  const [isExporting, setIsExporting] = useState(false);
   const [takingPhotoFor, setTakingPhotoFor] = useState<PatientData | null>(
     null
   );
@@ -160,149 +160,140 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
     isEditLoading,
   } = usePatientTable(companyId);
 
+  const downloadCsv = (data: any[], companyName: string) => {
+    if (!data || data.length === 0) {
+      toast.info("Tidak ada data untuk diexport.");
+      return;
+    }
+    const headers = [
+      "Patient ID",
+      "NIK",
+      "Nama Lengkap",
+      "Tanggal Lahir",
+      "Umur",
+      "Jenis Kelamin",
+      "Posisi",
+      "Divisi",
+      "Paket MCU",
+      "Tanggal Selesai MCU",
+    ];
+    const csvRows = [
+      headers.join(","),
+      ...data.map((row) => {
+        const patient = row.patient;
+        const completedDate = row.completedAt
+          ? format(new Date(row.completedAt), "yyyy-MM-dd HH:mm:ss")
+          : "N/A";
+        const packageList = Array.isArray(patient.mcuPackage)
+          ? patient.mcuPackage.join(" | ")
+          : "";
+        const values = [
+          patient.patientId,
+          patient.nik,
+          `"${patient.fullName}"`,
+          format(new Date(patient.dob), "yyyy-MM-dd"),
+          patient.age,
+          patient.gender,
+          `"${patient.position}"`,
+          `"${patient.division}"`,
+          `"${packageList}"`,
+          completedDate,
+        ];
+        return values.join(",");
+      }),
+    ];
+    const csvContent = csvRows.join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const today = format(new Date(), "yyyy-MM-dd");
+    const fileName = `export_mcu_${companyName.replace(
+      /\s+/g,
+      "_"
+    )}_${today}.csv`;
+    link.setAttribute("href", url);
+    link.setAttribute("download", fileName);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    const today = format(new Date(), "yyyy-MM-dd");
+    const exportPromise = fetch(
+      `/api/export?companyId=${companyId}&date=${today}`
+    )
+      .then(async (res) => {
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.message || "Gagal mengambil data export");
+        }
+        return res.json();
+      })
+      .then((data) => {
+        downloadCsv(data, companyName);
+      });
+    toast.promise(exportPromise, {
+      loading: "Mempersiapkan data export...",
+      success: "Export berhasil! File sedang diunduh.",
+      error: (err) => err.message,
+    });
+    try {
+      await exportPromise;
+    } catch (error) {
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const handlePrintQr = (patient: PatientData) => {
     const printWindow = window.open("", "_blank");
     if (printWindow) {
       printWindow.document.write(`
-      <html>
-        <head>
-          <title>Print QR Code</title>
-          <style>
-            @page { size: 40mm 30mm; margin: 0; }
-            html, body {
-              width: 40mm;
-              height: 30mm;
-              margin: 0;
-              padding: 0;
-            }
-            body {
-              font-family: Arial, sans-serif;
-              font-size: 6pt;
-            }
-            .label {
-              box-sizing: border-box;
-              width: 40mm;
-              height: 30mm;
-              padding: 1.5mm 2mm;
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              justify-content: center;
-              overflow: hidden;
-            }
-            .qr {
-              width: 27mm; 
-              height: 27mm;
-              display: block;
-              margin: 0;
-              image-rendering: pixelated;
-              image-rendering: crisp-edges;
-            }
-            .info {
-              width: 100%;
-              text-align: center;
-              line-height: 1.1;
-              margin-bottom: 1mm;
-            }
-            .info p {
-              margin: 0 0 0.6mm 0;
-              font-weight: 600;
-            }
-            .info p:last-child { margin-bottom: 0; }
-            .info span { font-weight: 400; }
-            @media print {
-              body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="label">
-            <img
-              class="qr"
-              src="${patient.qrCode}"
-              alt="QR Code"
-            />
-            <div class="info">
-              <p>Nama: <span>${patient.fullName}</span></p>
-              <p>ID: <span>${patient.patientId}</span></p>
-            </div>
-          </div>
-
-          <script>
-            window.onload = function() {
-              window.focus();
-              window.print();
-              window.close();
-            };
-          </script>
-        </body>
-      </html>
-    `);
+      <html><head><title>Print QR Code</title><style>
+      @page { size: 40mm 30mm; margin: 0; }
+      html, body { width: 40mm; height: 30mm; margin: 0; padding: 0; }
+      body { font-family: Arial, sans-serif; font-size: 6pt; }
+      .label { box-sizing: border-box; width: 40mm; height: 30mm; padding: 1.5mm 2mm; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
+      .qr { width: 27mm; height: 27mm; display: block; margin: 0; image-rendering: pixelated; image-rendering: crisp-edges; }
+      .info { width: 100%; text-align: center; line-height: 1.1; margin-bottom: 1mm; }
+      .info p { margin: 0 0 0.6mm 0; font-weight: 600; }
+      .info p:last-child { margin-bottom: 0; }
+      .info span { font-weight: 400; }
+      @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+      </style></head><body>
+      <div class="label">
+        <img class="qr" src="${patient.qrCode}" alt="QR Code"/>
+        <div class="info">
+          <p>Nama: <span>${patient.fullName}</span></p>
+          <p>ID: <span>${patient.patientId}</span></p>
+        </div>
+      </div>
+      <script>
+        window.onload = function() { window.focus(); window.print(); window.close(); };
+      </script>
+      </body></html>`);
       printWindow.document.close();
     }
   };
-
-  // const buildKartuKontrolItems = (patient: PatientData): string[] => {
-  //   const baseItems = [
-  //     "POS PEMERIKSAAN FISIK",
-  //     "POS PEMERIKSAAN LAB",
-  //     "POS PEMERIKSAAN URIN",
-  //     "POS PEMERIKSAAN RADIOLOGI",
-  //   ];
-
-  //   const pkgArr: string[] = Array.isArray(patient.mcuPackage)
-  //     ? (patient.mcuPackage as string[])
-  //     : typeof patient.mcuPackage === "string"
-  //     ? (patient.mcuPackage as string)
-  //         .split(",")
-  //         .map((s) => s.trim())
-  //         .filter(Boolean)
-  //     : [];
-
-  //   const norm = pkgArr.map((s) => s.toLowerCase());
-
-  //   const addIf = (cond: boolean, label: string) => {
-  //     if (cond && !baseItems.includes(label)) baseItems.push(label);
-  //   };
-
-  //   addIf(
-  //     norm.some((s) => s.includes("ekg")),
-  //     "POS PEMERIKSAAN EKG"
-  //   );
-  //   addIf(
-  //     norm.some((s) => s.includes("audiometri") || s.includes("audiometry")),
-  //     "POS PEMERIKSAAN AUDIOMETRI"
-  //   );
-  //   addIf(
-  //     norm.some((s) => s.includes("spirometri") || s.includes("spirometry")),
-  //     "POS PEMERIKSAAN SPIROMETRI"
-  //   );
-  //   addIf(
-  //     norm.some((s) => s.includes("treadmill")),
-  //     "POS PEMERIKSAAN TREADMILL"
-  //   );
-
-  //   return baseItems;
-  // };
 
   const handlePrintKartuKontrol = (patient: PatientData) => {
     if (!patient.qrCode) {
       toast.info("QR pasien belum tersedia.");
       return;
     }
-
     const company = companyName || "KARTU KONTROL";
     const fullName = (patient.fullName || "").toUpperCase();
     const patientId = patient.patientId || "-";
     const location = (patient.location || "").toUpperCase();
-
     const pkg = Array.isArray(patient.mcuPackage)
       ? (patient.mcuPackage as string[])
       : typeof patient.mcuPackage === "string"
       ? (patient.mcuPackage as string).split(",").map((s: string) => s.trim())
       : [];
     const packageText = pkg.join(", ").toUpperCase();
-
     const baseItems = [
       "POS PEMERIKSAAN FISIK",
       "POS PEMERIKSAAN LAB",
@@ -333,9 +324,7 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
       norm.some((s) => s.includes("refraktometri")),
       "POS PEMERIKSAAN REFRAKTOMETRI"
     );
-
     const items = baseItems;
-
     const esc = (s: unknown) =>
       String(s ?? "")
         .replace(/&/g, "&amp;")
@@ -343,7 +332,6 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#39;");
-
     const printWin = window.open("", "_blank");
     if (!printWin) {
       toast.error(
@@ -351,169 +339,70 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
       );
       return;
     }
-
     printWin.document.write(`
-    <html>
-      <head>
-        <title>Print Kartu Kontrol</title>
-        <meta charset="utf-8" />
-        <style>
-          @page { size: A5 landscape; margin: 0; }
-          html, body { height: 100%; margin: 0; padding: 0; }
-          body {
-            font-family: Arial, sans-serif;
-            font-size: 9.5pt;
-            color: #333;
-          }
-          .page {
-            box-sizing: border-box;
-            padding: 8mm 10mm;
-            width: 100%;
-            min-height: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 6mm;
-          }
-          .header {
-            text-align: center;
-            font-weight: 700;
-            font-size: 12pt;
-          }
-          .top {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 5mm;
-            border: 1px solid #000;
-            padding: 4.5mm;
-          }
-          .ident { flex: 1 1 auto; }
-          .qrwrap {
-            flex: 0 0 auto;
-            display: flex;
-            align-items: flex-start;
-            justify-content: flex-end;
-            width: 36mm;
-          }
-          .qr {
-            width: 30mm;
-            height: 30mm;
-            image-rendering: pixelated;
-            image-rendering: crisp-edges;
-          }
-          .info-row { display: flex; margin-bottom: 2mm; }
-          .label { width: 33%; }
-          .colon { width: 5%; text-align: center; }
-          .value { width: 62%; font-weight: 700; }
-
-          /* GRID POS: 4 kolom, item ringkas */
-          .grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 3mm 5mm;
-          }
-          .pos-card {
-            border: 1px solid #000;
-            padding: 2.5mm;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1.5mm;
-            text-align: center;
-            break-inside: avoid;
-            page-break-inside: avoid;
-          }
-          .pos-title {
-            font-weight: 600;
-            font-size: 8pt; /* kecil & di atas kotak */
-            line-height: 1.15;
-            min-height: 10mm;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-          }
-          /* Tidak ada kotak di dalam kotak — hanya ruang kosong buat tanda tangan */
-          .sign-space {
-            height: 8mm; /* area untuk paraf/tanda tangan, tanpa border */
-          }
-          .name-line {
-            width: 22mm;
-            height: 0;
-            border-bottom: 0.5px solid #000;
-            margin-top: 1mm;
-          }
-          .hint {
-            font-size: 7pt;
-            line-height: 1;
-            color: #444;
-          }
-
-          @media print {
-            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="page">
-          <div class="header">
-            <div class="title">KARTU KONTROL PESERTA MCU</div>
-            <div class="company">${esc(company)}</div>
-          </div>
-
-          <div class="top">
-            <div class="ident">
-              <div class="info-row">
-                <div class="label">NAMA</div>
-                <div class="colon">:</div>
-                <div class="value">${esc(fullName)}</div>
-              </div>
-              <div class="info-row">
-                <div class="label">KODE MCU</div>
-                <div class="colon">:</div>
-                <div class="value">${esc(patientId)}</div>
-              </div>
-              <div class="info-row">
-                <div class="label">LOKASI</div>
-                <div class="colon">:</div>
-                <div class="value">${esc(location)}</div>
-              </div>
-              <div class="info-row">
-                <div class="label">JENIS PEMERIKSAAN</div>
-                <div class="colon">:</div>
-                <div class="value">${esc(packageText)}</div>
-              </div>
-            </div>
-            <div class="qrwrap">
-              <img class="qr" src="${esc(patient.qrCode)}" alt="QR" />
-            </div>
-          </div>
-
-          <div class="grid">
-            ${items
-              .map(
-                (it) => `
-              <div class="pos-card">
-                <div class="pos-title">${esc(it)}</div>
-                <div class="sign-space"></div>
-                <div class="name-line"></div>
-                <div class="hint">Nama Petugas</div>
-              </div>`
-              )
-              .join("")}
-          </div>
+    <html><head><title>Print Kartu Kontrol</title><meta charset="utf-8"/><style>
+    @page { size: A5 landscape; margin: 0; }
+    html, body { height: 100%; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; font-size: 9.5pt; color: #333; }
+    .page { box-sizing: border-box; padding: 8mm 10mm; width: 100%; min-height: 100%; display: flex; flex-direction: column; gap: 6mm; }
+    .header { text-align: center; font-weight: 700; font-size: 12pt; }
+    .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 5mm; border: 1px solid #000; padding: 4.5mm; }
+    .ident { flex: 1 1 auto; }
+    .qrwrap { flex: 0 0 auto; display: flex; align-items: flex-start; justify-content: flex-end; width: 36mm; }
+    .qr { width: 30mm; height: 30mm; image-rendering: pixelated; image-rendering: crisp-edges; }
+    .info-row { display: flex; margin-bottom: 2mm; }
+    .label { width: 33%; }
+    .colon { width: 5%; text-align: center; }
+    .value { width: 62%; font-weight: 700; }
+    .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm 5mm; }
+    .pos-card { border: 1px solid #000; padding: 2.5mm; display: flex; flex-direction: column; align-items: center; gap: 1.5mm; text-align: center; break-inside: avoid; page-break-inside: avoid; }
+    .pos-title { font-weight: 600; font-size: 8pt; line-height: 1.15; min-height: 10mm; display: flex; align-items: center; justify-content: center; }
+    .sign-space { height: 8mm; }
+    .name-line { width: 22mm; height: 0; border-bottom: 0.5px solid #000; margin-top: 1mm; }
+    .hint { font-size: 7pt; line-height: 1; color: #444; }
+    @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+    </style></head><body>
+    <div class="page">
+      <div class="header">
+        <div class="title">KARTU KONTROL PESERTA MCU</div>
+        <div class="company">${esc(company)}</div>
+      </div>
+      <div class="top">
+        <div class="ident">
+          <div class="info-row"><div class="label">NAMA</div><div class="colon">:</div><div class="value">${esc(
+            fullName
+          )}</div></div>
+          <div class="info-row"><div class="label">KODE MCU</div><div class="colon">:</div><div class="value">${esc(
+            patientId
+          )}</div></div>
+          <div class="info-row"><div class="label">LOKASI</div><div class="colon">:</div><div class="value">${esc(
+            location
+          )}</div></div>
+          <div class="info-row"><div class="label">JENIS PEMERIKSAAN</div><div class="colon">:</div><div class="value">${esc(
+            packageText
+          )}</div></div>
         </div>
-
-        <script>
-          function doPrint() {
-            try { window.focus(); window.print(); } catch(e) { window.print(); }
-          }
-          window.addEventListener('load', () => setTimeout(doPrint, 200));
-          window.addEventListener('afterprint', () => window.close());
-        <\/script>
-      </body>
-    </html>
-  `);
-
+        <div class="qrwrap"><img class="qr" src="${esc(
+          patient.qrCode
+        )}" alt="QR"/></div>
+      </div>
+      <div class="grid">
+        ${items
+          .map(
+            (it) =>
+              `<div class="pos-card"><div class="pos-title">${esc(
+                it
+              )}</div><div class="sign-space"></div><div class="name-line"></div><div class="hint">Nama Petugas</div></div>`
+          )
+          .join("")}
+      </div>
+    </div>
+    <script>
+      function doPrint() { try { window.focus(); window.print(); } catch(e) { window.print(); } }
+      window.addEventListener('load', () => setTimeout(doPrint, 200));
+      window.addEventListener('afterprint', () => window.close());
+    </script>
+    </body></html>`);
     printWin.document.close();
   };
 
@@ -526,7 +415,6 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
         <Eye className="mr-2 h-4 w-4" />
         <span>Lihat Progres</span>
       </DropdownMenuItem>
-
       <DropdownMenuItem
         onClick={() => setPreCheckPatient(patient)}
         disabled={!patient.mcuResults || patient.mcuResults.length === 0}
@@ -534,7 +422,6 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
         <ClipboardList className="mr-2 h-4 w-4" />
         <span>Registrasi Awal Fisik</span>
       </DropdownMenuItem>
-
       <DropdownMenuItem
         onClick={() => handlePrintKartuKontrol(patient)}
         disabled={!patient.mcuResults || patient.mcuResults.length === 0}
@@ -542,7 +429,6 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
         <IdCard className="mr-2 h-4 w-4" />
         <span>Print Kartu Kontrol</span>
       </DropdownMenuItem>
-
       <DropdownMenuItem onClick={() => handleEditClick(patient.id)}>
         <Pencil className="mr-2 h-4 w-4" />
         <span>Edit</span>
@@ -626,7 +512,31 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handleExport}
+                    disabled={isExporting}
+                    className="md:w-auto md:px-4"
+                  >
+                    {isExporting ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Download className="h-4 w-4" />
+                    )}
+                    <span className="hidden md:inline ml-2">
+                      {isExporting ? "Mengekspor..." : "Export Hari Ini"}
+                    </span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent className="md:hidden">
+                  <p>Export Data Selesai MCU</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <Dialog
               open={isDialogOpen}
               onOpenChange={(open) => {
@@ -680,7 +590,6 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
             </Dialog>
           </div>
         </div>
-
         <div className="rounded-lg border bg-white">
           <div className="hidden md:block">
             <Table>
@@ -726,7 +635,6 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                       <TableCell>
                         {format(new Date(patient.createdAt), "dd MMM yyyy")}
                       </TableCell>
-
                       <TableCell className="flex justify-center">
                         {patient.qrCode ? (
                           <img
@@ -739,7 +647,6 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                           "N/A"
                         )}
                       </TableCell>
-
                       <TableCell>
                         <TooltipProvider>
                           <div className="flex items-center justify-center gap-1">
@@ -851,8 +758,6 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                                 <p>Print QR Code</p>
                               </TooltipContent>
                             </Tooltip>
-
-                            {/* Tombol Kartu Kontrol (client-side print) */}
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button
@@ -874,7 +779,6 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                                 <p>Print Kartu Kontrol</p>
                               </TooltipContent>
                             </Tooltip>
-
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button
@@ -941,7 +845,6 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
               </TableBody>
             </Table>
           </div>
-
           <div className="md:hidden space-y-4">
             {loading ? (
               <div className="flex justify-center items-center h-24">
@@ -1013,7 +916,6 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
             )}
           </div>
         </div>
-
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 mt-4">
           <div className="text-sm text-gray-600 order-last md:order-first">
             Menampilkan{" "}
@@ -1071,7 +973,6 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
           </div>
         </div>
       </div>
-
       <AlertDialog
         open={isImportConfirmOpen}
         onOpenChange={setIsImportConfirmOpen}
@@ -1101,7 +1002,6 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
       <McuProgressModal
         mcuResultId={viewingMcuResultId}
         packageItems={viewingPatientPackage as string[] | null}
@@ -1126,7 +1026,6 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
           fetchPatients();
         }}
       />
-
       <PreCheckFisikModal
         isOpen={!!preCheckPatient}
         onClose={() => setPreCheckPatient(null)}

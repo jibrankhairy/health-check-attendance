@@ -99,6 +99,7 @@ model McuResult {
   createdAt              DateTime      @default(now())
   updatedAt              DateTime      @updatedAt
   status                 String        @default("IN_PROGRESS")
+  completedAt            DateTime?
   fileUrl                String?       @db.Text
   patient                Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
   patientId              Int
