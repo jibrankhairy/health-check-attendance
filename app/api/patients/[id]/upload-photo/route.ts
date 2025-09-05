@@ -40,34 +40,42 @@ export async function POST(
     }
 
     const file = maybeFile as File;
+    const { url } = await put(
+      `patients/${patientId}/${Date.now()}-${file.name}`,
+      file,
+      {
+        access: "public",
+        addRandomSuffix: false,
+      }
+    );
 
-    const maxBytes = 10 * 1024 * 1024;
-    if (file.size > maxBytes) {
+    const latestMcuResult = await prisma.mcuResult.findFirst({
+      where: { patientId: patientId },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (!latestMcuResult) {
       return NextResponse.json(
-        { message: "Ukuran file terlalu besar. Maksimal 10MB." },
-        { status: 413 }
+        { message: "Sesi MCU untuk pasien ini tidak ditemukan." },
+        { status: 404 }
       );
     }
 
-    const ext = file.name?.split(".").pop() ?? "";
-    const keyBase = `patients/${patientId}/${Date.now()}`;
-    const objectName = ext ? `${keyBase}.${ext}` : keyBase;
-
-    const { url } = await put(objectName, file, {
-      access: "public",
-      contentType: file.type || undefined,
-      addRandomSuffix: true,
-    });
-
-    const updated = await prisma.patient.update({
-      where: { id: patientId },
-      data: { photoUrl: url },
-      select: { id: true, photoUrl: true },
-    });
+    const [updatedPatient] = await prisma.$transaction([
+      prisma.patient.update({
+        where: { id: patientId },
+        data: { photoUrl: url },
+        select: { id: true, photoUrl: true },
+      }),
+      prisma.mcuResult.update({
+        where: { id: latestMcuResult.id },
+        data: { completedAt: new Date() },
+      }),
+    ]);
 
     return NextResponse.json({
-      message: "Upload berhasil",
-      patient: updated,
+      message: "Upload berhasil dan MCU ditandai selesai",
+      patient: updatedPatient,
     });
   } catch (error: any) {
     console.error("Upload photo error:", error);

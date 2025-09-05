@@ -123,6 +123,8 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
     null
   );
 
+  const [isExporting, setIsExporting] = useState(false);
+
   const {
     loading,
     isDialogOpen,
@@ -159,6 +161,94 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
     setParsedPatients,
     isEditLoading,
   } = usePatientTable(companyId);
+
+  const downloadCsv = (data: any[], companyName: string) => {
+    if (!data || data.length === 0) {
+      toast.info("Tidak ada data untuk diexport.");
+      return;
+    }
+    const headers = [
+      "Patient ID",
+      "NIK",
+      "Nama Lengkap",
+      "Tanggal Lahir",
+      "Umur",
+      "Jenis Kelamin",
+      "Posisi",
+      "Divisi",
+      "Paket MCU",
+      "Tanggal Selesai MCU",
+    ];
+    const csvRows = [
+      headers.join(","),
+      ...data.map((row) => {
+        const patient = row.patient;
+        const completedDate = row.completedAt
+          ? format(new Date(row.completedAt), "yyyy-MM-dd HH:mm:ss")
+          : "N/A";
+        const packageList = Array.isArray(patient.mcuPackage)
+          ? patient.mcuPackage.join(" | ")
+          : "";
+        const values = [
+          patient.patientId,
+          patient.nik,
+          `"${patient.fullName}"`,
+          format(new Date(patient.dob), "yyyy-MM-dd"),
+          patient.age,
+          patient.gender,
+          `"${patient.position}"`,
+          `"${patient.division}"`,
+          `"${packageList}"`,
+          completedDate,
+        ];
+        return values.join(",");
+      }),
+    ];
+    const csvContent = csvRows.join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const today = format(new Date(), "yyyy-MM-dd");
+    const fileName = `export_mcu_${companyName.replace(
+      /\s+/g,
+      "_"
+    )}_${today}.csv`;
+    link.setAttribute("href", url);
+    link.setAttribute("download", fileName);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    const today = format(new Date(), "yyyy-MM-dd");
+    const exportPromise = fetch(
+      `/api/export?companyId=${companyId}&date=${today}`
+    )
+      .then(async (res) => {
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.message || "Gagal mengambil data export");
+        }
+        return res.json();
+      })
+      .then((data) => {
+        downloadCsv(data, companyName);
+      });
+    toast.promise(exportPromise, {
+      loading: "Mempersiapkan data export...",
+      success: "Export berhasil! File sedang diunduh.",
+      error: (err) => err.message,
+    });
+    try {
+      await exportPromise;
+    } catch (error) {
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const handlePrintQr = (patient: PatientData) => {
     const printWindow = window.open("", "_blank");
@@ -509,7 +599,7 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
           }
           window.addEventListener('load', () => setTimeout(doPrint, 200));
           window.addEventListener('afterprint', () => window.close());
-        <\/script>
+        </script>
       </body>
     </html>
   `);
@@ -623,6 +713,32 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                 </TooltipTrigger>
                 <TooltipContent className="md:hidden">
                   <p>Import Excel</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handleExport}
+                    disabled={isExporting}
+                    className="md:w-auto md:px-4"
+                  >
+                    {isExporting ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Download className="h-4 w-4" />
+                    )}
+                    <span className="hidden md:inline ml-2">
+                      {isExporting ? "Mengekspor..." : "Export Hari Ini"}
+                    </span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent className="md:hidden">
+                  <p>Export Data Selesai MCU</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -852,7 +968,6 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                               </TooltipContent>
                             </Tooltip>
 
-                            {/* Tombol Kartu Kontrol (client-side print) */}
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button
