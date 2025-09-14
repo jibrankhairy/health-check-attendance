@@ -28,6 +28,8 @@ type PreCheckFormValues = {
   suhuC?: number | "";
   tensiSistol?: number | "";
   tensiDiastol?: number | "";
+  nadiPerMenit?: number | "";
+  pernapasanPerMenit?: number | "";
   visusOD?: string;
   visusOS?: string;
 };
@@ -65,6 +67,8 @@ export const PreCheckFisikModal = ({
         suhuC: "",
         tensiSistol: "",
         tensiDiastol: "",
+        nadiPerMenit: "",
+        pernapasanPerMenit: "",
         visusOD: "",
         visusOS: "",
       });
@@ -247,6 +251,30 @@ export const PreCheckFisikModal = ({
                   type="number"
                   placeholder="cth. 80"
                   {...register("tensiDiastol", {
+                    setValueAs: (v) => (v === "" ? "" : parseInt(v, 10)),
+                  })}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="nadiPerMenit">Nadi / Menit</Label>
+                <Input
+                  id="nadiPerMenit"
+                  type="number"
+                  placeholder="cth. 80"
+                  {...register("nadiPerMenit", {
+                    setValueAs: (v) => (v === "" ? "" : parseInt(v, 10)),
+                  })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="pernapasanPerMenit">Pernapasan / Menit</Label>
+                <Input
+                  id="pernapasanPerMenit"
+                  type="number"
+                  placeholder="cth. 20"
+                  {...register("pernapasanPerMenit", {
                     setValueAs: (v) => (v === "" ? "" : parseInt(v, 10)),
                   })}
                 />
