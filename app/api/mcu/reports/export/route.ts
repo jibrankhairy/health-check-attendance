@@ -15,6 +15,7 @@ const templateHeaders = [
   "dassFasValidatorName",
 
   // Hematologi
+  "golonganDarah",
   "hemoglobin",
   "leukosit",
   "trombosit",

@@ -32,6 +32,14 @@ export interface HematologiData extends Record<string, unknown> {
 const hematologyDataMap: HematologyItem[] = [
   {
     no: 1,
+    label: "GOLONGAN DARAH",
+    field: "golonganDarah",
+    ref: {},
+    unit: "",
+    refText: "A / B / AB / O",
+  },
+  {
+    no: 2,
     label: "HEMOGLOBIN",
     field: "hemoglobin",
     ref: { male: { min: 14.0, max: 17.4 }, female: { min: 12.0, max: 14.0 } },
@@ -39,7 +47,7 @@ const hematologyDataMap: HematologyItem[] = [
     refText: "P: 14.0-17.4, W: 12.0-14.0",
   },
   {
-    no: 2,
+    no: 3,
     label: "LEUKOSIT",
     field: "leukosit",
     ref: { all: { min: 4000, max: 10000 } },
@@ -47,7 +55,7 @@ const hematologyDataMap: HematologyItem[] = [
     refText: "4.000-10.000",
   },
   {
-    no: 3,
+    no: 4,
     label: "TROMBOSIT",
     field: "trombosit",
     ref: { all: { min: 150000, max: 450000 } },
@@ -55,7 +63,7 @@ const hematologyDataMap: HematologyItem[] = [
     refText: "150.000-450.000",
   },
   {
-    no: 4,
+    no: 5,
     label: "HEMATOKRIT",
     field: "hematokrit",
     ref: { all: { min: 40.0, max: 54.0 } },
@@ -63,7 +71,7 @@ const hematologyDataMap: HematologyItem[] = [
     refText: "40.0-54.0",
   },
   {
-    no: 5,
+    no: 6,
     label: "ERITROSIT",
     field: "eritrosit",
     ref: { all: { min: 4.0, max: 6.1 } },
@@ -71,7 +79,7 @@ const hematologyDataMap: HematologyItem[] = [
     refText: "4.00-6.10",
   },
   {
-    no: 6,
+    no: 7,
     label: "MCV",
     field: "mcv",
     ref: { all: { min: 80.0, max: 96.0 } },
@@ -79,7 +87,7 @@ const hematologyDataMap: HematologyItem[] = [
     refText: "80.0-96.0",
   },
   {
-    no: 7,
+    no: 8,
     label: "MCH",
     field: "mch",
     ref: { all: { min: 27.0, max: 31.0 } },
@@ -87,7 +95,7 @@ const hematologyDataMap: HematologyItem[] = [
     refText: "27.0-31.0",
   },
   {
-    no: 8,
+    no: 9,
     label: "MCHC",
     field: "mchc",
     ref: { all: { min: 30.0, max: 34.0 } },
@@ -95,7 +103,7 @@ const hematologyDataMap: HematologyItem[] = [
     refText: "30.0-34.0",
   },
   {
-    no: 9,
+    no: 10,
     label: "RDW",
     field: "rdw",
     ref: { all: { min: 10.0, max: 15.0 } },
@@ -103,7 +111,7 @@ const hematologyDataMap: HematologyItem[] = [
     refText: "10.0-15.0",
   },
   {
-    no: 10,
+    no: 11,
     label: "MPV",
     field: "mpv",
     ref: { all: { min: 6.5, max: 11.0 } },
@@ -111,7 +119,7 @@ const hematologyDataMap: HematologyItem[] = [
     refText: "6.50-11.0",
   },
   {
-    no: 11,
+    no: 12,
     label: "PDW",
     field: "pdw",
     ref: { all: { min: 10.0, max: 18.0 } },
@@ -119,7 +127,7 @@ const hematologyDataMap: HematologyItem[] = [
     refText: "10.0-18.0",
   },
   {
-    no: 12,
+    no: 13,
     label: "EOSINOFIL",
     field: "hitungJenisEosinofil",
     ref: { all: { min: 1, max: 3 } },
@@ -127,7 +135,7 @@ const hematologyDataMap: HematologyItem[] = [
     refText: "1-3",
   },
   {
-    no: 13,
+    no: 14,
     label: "BASOFIL",
     field: "hitungJenisBasofil",
     ref: { all: { min: 0, max: 1 } },
@@ -135,7 +143,7 @@ const hematologyDataMap: HematologyItem[] = [
     refText: "0-1",
   },
   {
-    no: 14,
+    no: 15,
     label: "NEUTROFIL STAB",
     field: "hitungJenisNeutrofilStab",
     ref: { all: { min: 3, max: 5 } },
@@ -143,7 +151,7 @@ const hematologyDataMap: HematologyItem[] = [
     refText: "3-5",
   },
   {
-    no: 15,
+    no: 16,
     label: "NEUTROFIL SEGMEN",
     field: "hitungJenisNeutrofilSegmen",
     ref: { all: { min: 25, max: 60 } },
@@ -151,7 +159,7 @@ const hematologyDataMap: HematologyItem[] = [
     refText: "25-60",
   },
   {
-    no: 16,
+    no: 17,
     label: "LIMFOSIT",
     field: "hitungJenisLimfosit",
     ref: { all: { min: 20, max: 40 } },
@@ -159,7 +167,7 @@ const hematologyDataMap: HematologyItem[] = [
     refText: "20-40",
   },
   {
-    no: 17,
+    no: 18,
     label: "MONOSIT",
     field: "hitungJenisMonosit",
     ref: { all: { min: 4, max: 8 } },
@@ -167,7 +175,7 @@ const hematologyDataMap: HematologyItem[] = [
     refText: "4-8",
   },
   {
-    no: 18,
+    no: 19,
     label: "LAJU ENDAP DARAH",
     field: "led",
     ref: { all: { min: 0, max: 15 } },

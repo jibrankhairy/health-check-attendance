@@ -26,6 +26,7 @@ import { ConclusionDocument } from "./ConclusionDocument";
 import { FraminghamDocument } from "./FraminghamDocument";
 
 const HEMATOLOGI_FIELDS = [
+  "golonganDarah",
   "hemoglobin",
   "leukosit",
   "trombosit",

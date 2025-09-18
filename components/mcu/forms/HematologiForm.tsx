@@ -25,6 +25,14 @@ export const HematologiForm = () => {
       </CardHeader>
       <CardContent className="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-8">
         <div className="space-y-2">
+          <Label htmlFor="golonganDarah">Golongan Darah</Label>
+          <Input
+            id="golonganDarah"
+            {...register("golonganDarah")}
+            placeholder="cth: A+"
+          />
+        </div>
+        <div className="space-y-2">
           <Label htmlFor="hemoglobin">Hemoglobin</Label>
           <Input
             id="hemoglobin"

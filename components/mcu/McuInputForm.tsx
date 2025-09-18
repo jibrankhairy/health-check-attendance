@@ -26,6 +26,7 @@ import { ConclusionForm } from "./forms/ConclusionForm";
 import { FraminghamForm } from "./forms/FraminghamForm";
 
 const formSchema = z.object({
+  gologanDarah: z.string().optional().nullable(),
   hemoglobin: z.string().optional().nullable(),
   leukosit: z.string().optional().nullable(),
   trombosit: z.string().optional().nullable(),

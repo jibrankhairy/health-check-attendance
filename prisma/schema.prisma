@@ -148,6 +148,7 @@ model McuResult {
   examinationStartedAt   DateTime?
 
   // --- Hematologi ---
+  golonganDarah              String? @db.Text
   hemoglobin                 String? @db.Text
   leukosit                   String? @db.Text
   trombosit                  String? @db.Text
