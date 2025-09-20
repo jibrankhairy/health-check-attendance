@@ -22,10 +22,12 @@ export async function POST(request: Request) {
       const blob = await put(filename, file, {
         access: "public",
         token: process.env.BLOB_READ_WRITE_TOKEN,
+        contentType: file.type, // <-- [TAMBAHAN] Baris ini ditambahkan
       });
       return NextResponse.json({ url: blob.url });
     }
 
+    // Bagian untuk lokal development, tidak perlu diubah, sudah benar.
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
     const filename = `${Date.now()}_${file.name.replace(/\s/g, "_")}`;

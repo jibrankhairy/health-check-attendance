@@ -26,6 +26,7 @@ export const ImageUploadField = ({ name, label }: ImageUploadFieldProps) => {
     formData.append("file", file);
 
     try {
+      // Endpoint ini tetap sama, tidak perlu diubah.
       const response = await fetch("/api/upload", {
         method: "POST",
         body: formData,
@@ -33,7 +34,7 @@ export const ImageUploadField = ({ name, label }: ImageUploadFieldProps) => {
       const result = await response.json();
       if (!response.ok)
         throw new Error(result.error || "Gagal mengunggah gambar.");
-      setValue(name, result.url, { shouldValidate: true });
+      setValue(name, result.url, { shouldValidate: true, shouldDirty: true });
       toast.success(`Gambar untuk ${label} berhasil diunggah.`);
     } catch (error: any) {
       toast.error(error.message);
@@ -48,21 +49,24 @@ export const ImageUploadField = ({ name, label }: ImageUploadFieldProps) => {
         id={inputId}
         type="file"
         className="hidden"
+        // [KEMBALIKAN] Hanya menerima format gambar
         accept="image/png, image/jpeg"
         onChange={(e) => e.target.files && handleFileUpload(e.target.files[0])}
         disabled={isUploading}
       />
       <Label
         htmlFor={inputId}
-        className="flex flex-col items-center justify-center w-full h-full border-2 border-dashed rounded-lg cursor-pointer hover:bg-gray-50"
+        className="flex flex-col items-center justify-center w-full h-full border-2 border-dashed rounded-lg cursor-pointer hover:bg-gray-50 bg-white"
       >
         {imageUrl ? (
+          // [KEMBALIKAN] Hanya menampilkan tag <img>
           <img
             src={imageUrl}
             alt={label}
             className="object-contain w-full h-full rounded-lg"
           />
         ) : (
+          // Tampilan default untuk upload
           <div className="flex flex-col items-center justify-center text-gray-500 text-center p-2">
             {isUploading ? (
               <p>Uploading...</p>
@@ -75,12 +79,13 @@ export const ImageUploadField = ({ name, label }: ImageUploadFieldProps) => {
           </div>
         )}
       </Label>
+      {/* Tombol hapus */}
       {imageUrl && (
         <Button
           variant="destructive"
           size="icon"
           className="absolute top-2 right-2 h-7 w-7"
-          onClick={() => setValue(name, null, { shouldValidate: true })}
+          onClick={() => setValue(name, null, { shouldValidate: true, shouldDirty: true })}
         >
           <X className="h-4 w-4" />
         </Button>

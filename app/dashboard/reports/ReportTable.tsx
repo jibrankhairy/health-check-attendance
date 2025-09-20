@@ -10,6 +10,7 @@ import {
   AlertCircle,
   Upload,
   Download,
+  ChevronDown,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,9 +30,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuPortal,
+} from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import Link from "next/link";
+
+const IMAGE_TYPES = {
+  rontgen: { label: "Rontgen" },
+  ekg: { label: "EKG" },
+  treadmill: { label: "Treadmill" },
+  usgAbdomen: { label: "USG Abdomen" },
+  usgMammae: { label: "USG Mammae" },
+} as const;
+
+type ImageType = keyof typeof IMAGE_TYPES;
 
 type Company = {
   id: string;
@@ -83,6 +106,12 @@ export const ReportTable = () => {
   const [isExportingResults, setIsExportingResults] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [isImportingImages, setIsImportingImages] = useState(false);
+  const imageFileInputRef = useRef<HTMLInputElement>(null);
+  const [currentImageType, setCurrentImageType] = useState<ImageType | null>(
+    null
+  );
+
   const fetchCompanies = useCallback(async () => {
     try {
       const res = await fetch("/api/mcu/companies", { cache: "no-store" });
@@ -99,7 +128,7 @@ export const ReportTable = () => {
   }, []);
 
   const fetchReports = useCallback(async () => {
-    if (!isImporting) setLoading(true);
+    if (!isImporting && !isImportingImages) setLoading(true);
     if (!companyId) {
       setRows([]);
       setMeta({ page: 1, pageSize, total: 0, totalPages: 1 });
@@ -123,7 +152,7 @@ export const ReportTable = () => {
     } finally {
       setLoading(false);
     }
-  }, [companyId, page, pageSize, searchQuery, isImporting]);
+  }, [companyId, page, pageSize, searchQuery, isImporting, isImportingImages]);
 
   useEffect(() => {
     fetchCompanies();
@@ -254,6 +283,82 @@ export const ReportTable = () => {
     }
   };
 
+  const handleImageFileSelect = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const files = event.target.files;
+    if (files && files.length > 0 && companyId && currentImageType) {
+      handleImageImport(Array.from(files), companyId, currentImageType);
+    }
+    if (event.target) event.target.value = "";
+    setCurrentImageType(null);
+  };
+
+  // --- [VERSI GABUNGAN] Fungsi import gambar yang disederhanakan ---
+  const handleImageImport = async (
+    files: File[],
+    companyId: string,
+    imageType: ImageType
+  ) => {
+    setIsImportingImages(true);
+    const toastId = toast.loading(
+      `Mengunggah ${files.length} file ${IMAGE_TYPES[imageType].label}...`,
+      {
+        description: "Proses ini mungkin memerlukan waktu beberapa saat...",
+      }
+    );
+
+    try {
+      const formData = new FormData();
+      formData.append("companyId", companyId);
+      formData.append("imageType", imageType);
+      files.forEach((file) => {
+        formData.append("files", file);
+      });
+
+      // Hanya satu kali panggilan API
+      const res = await fetch("/api/mcu/reports/import-images", {
+        method: "POST",
+        body: formData,
+        // Untuk FormData, browser akan set header Content-Type secara otomatis
+      });
+
+      const result = await res.json();
+      if (!res.ok) {
+        throw new Error(result.message || "Gagal mengimpor gambar.");
+      }
+
+      toast.success("Impor Gambar Selesai!", {
+        id: toastId,
+        description: `${result.successCount} file berhasil diproses.`,
+      });
+
+      // Tampilkan error jika ada
+      if (result.errors && result.errors.length > 0) {
+        toast.warning("Beberapa file gagal diimpor:", {
+          description: (
+            <ul className="list-disc list-inside max-h-40 overflow-y-auto">
+              {result.errors.slice(0, 10).map((e: string, i: number) => (
+                <li key={i}>{e}</li>
+              ))}
+              {result.errors.length > 10 && <li>...dan lainnya.</li>}
+            </ul>
+          ),
+          duration: 10000,
+        });
+      }
+
+      fetchReports(); // Refresh data tabel
+    } catch (e: any) {
+      toast.error("Impor Gambar Gagal!", {
+        id: toastId,
+        description: e.message,
+      });
+    } finally {
+      setIsImportingImages(false);
+    }
+  };
+  
   const renderTableContent = () => {
     if (loading) {
       return (
@@ -341,13 +446,18 @@ export const ReportTable = () => {
   };
 
   const isActionDisabled =
-    !companyId || isImporting || isExporting || isExportingResults;
+    !companyId ||
+    isImporting ||
+    isExporting ||
+    isExportingResults ||
+    isImportingImages;
   const paginationDisabled =
     !companyId ||
     meta.total === 0 ||
     isImporting ||
     isExporting ||
-    isExportingResults;
+    isExportingResults ||
+    isImportingImages;
 
   return (
     <div>
@@ -364,7 +474,8 @@ export const ReportTable = () => {
               companies.length === 0 ||
               isImporting ||
               isExporting ||
-              isExportingResults
+              isExportingResults ||
+              isImportingImages
             }
           >
             <SelectTrigger className="w-64">
@@ -401,7 +512,6 @@ export const ReportTable = () => {
               )}
               Export Template
             </Button>
-
             <Button
               variant="outline"
               disabled={isActionDisabled}
@@ -414,7 +524,6 @@ export const ReportTable = () => {
               )}
               Export Hasil FAS DAS Health
             </Button>
-
             <input
               type="file"
               ref={fileInputRef}
@@ -422,18 +531,57 @@ export const ReportTable = () => {
               className="hidden"
               accept=".xlsx,.xls,.csv"
             />
-            <Button
-              className="bg-[#01449D] hover:bg-[#01449D]/90 text-white md:w-auto md:px-4"
-              disabled={isActionDisabled}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              {isImporting ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Upload className="mr-2 h-4 w-4" />
-              )}
-              Import Hasil
-            </Button>
+            <input
+              type="file"
+              ref={imageFileInputRef}
+              onChange={handleImageFileSelect}
+              className="hidden"
+              accept="image/jpeg,image/png,application/pdf"
+              multiple
+            />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  className="bg-[#01449D] hover:bg-[#01449D]/90 text-white"
+                  disabled={isActionDisabled}
+                >
+                  {isImporting || isImportingImages ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Upload className="mr-2 h-4 w-4" />
+                  )}
+                  Import Data
+                  <ChevronDown className="ml-2 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Pilih Tipe Import</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
+                  Import Hasil (Excel)
+                </DropdownMenuItem>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
+                    <span>Import Gambar</span>
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuPortal>
+                    <DropdownMenuSubContent>
+                      {Object.entries(IMAGE_TYPES).map(([key, value]) => (
+                        <DropdownMenuItem
+                          key={key}
+                          onClick={() => {
+                            setCurrentImageType(key as ImageType);
+                            imageFileInputRef.current?.click();
+                          }}
+                        >
+                          {`Import ${value.label}`}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuSubContent>
+                  </DropdownMenuPortal>
+                </DropdownMenuSub>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
         <div className="relative w-full max-w-sm">
@@ -450,7 +598,6 @@ export const ReportTable = () => {
           />
         </div>
       </div>
-
       <div className="rounded-lg border bg-white">
         <Table>
           <TableHeader>
@@ -467,7 +614,6 @@ export const ReportTable = () => {
           <TableBody>{renderTableContent()}</TableBody>
         </Table>
       </div>
-
       <div className="flex flex-col sm:flex-row items-center justify-between mt-4 gap-4">
         <div className="text-sm text-gray-600">
           {companyId ? (
