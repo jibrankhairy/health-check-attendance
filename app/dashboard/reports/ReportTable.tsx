@@ -1,3 +1,5 @@
+// Lokasi File: app/dashboard/reports/ReportTable.tsx
+
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
@@ -63,8 +65,6 @@ type ApiResp = {
 };
 
 export const ReportTable = () => {
-  const useShadcnSelect = true;
-
   const [companies, setCompanies] = useState<Company[]>([]);
   const [companyId, setCompanyId] = useState<string | null>(null);
 
@@ -82,6 +82,8 @@ export const ReportTable = () => {
 
   const [isImporting, setIsImporting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  // --- BARU: State loading untuk tombol export hasil ---
+  const [isExportingResults, setIsExportingResults] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchCompanies = useCallback(async () => {
@@ -134,24 +136,20 @@ export const ReportTable = () => {
   }, [fetchReports]);
 
   const handleExport = async () => {
+    // ... (fungsi ini tidak diubah, biarkan seperti semula)
     if (!companyId) return;
-
     setIsExporting(true);
     const toastId = toast.loading("Mempersiapkan file untuk diunduh...");
-
     try {
       const res = await fetch(`/api/mcu/reports/export?companyId=${companyId}`);
-
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || "Gagal membuat file ekspor.");
       }
-
       const disposition = res.headers.get("Content-Disposition");
       const fileNameMatch =
         disposition && disposition.match(/filename="(.+?)"/);
       const fileName = fileNameMatch ? fileNameMatch[1] : "template-mcu.xlsx";
-
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -161,7 +159,6 @@ export const ReportTable = () => {
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
-
       toast.success("Unduhan Dimulai!", {
         id: toastId,
         description: `File ${fileName} sedang diunduh.`,
@@ -173,7 +170,44 @@ export const ReportTable = () => {
     }
   };
 
+  // --- BARU: Fungsi untuk handle export hasil MCU ---
+  const handleExportResults = async () => {
+    if (!companyId) return;
+    setIsExportingResults(true);
+    const toastId = toast.loading("Mempersiapkan data hasil MCU...");
+    try {
+      const res = await fetch(`/api/mcu/reports/export-results?companyId=${companyId}`);
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Gagal membuat file ekspor hasil.");
+      }
+      const disposition = res.headers.get("Content-Disposition");
+      const fileNameMatch =
+        disposition && disposition.match(/filename="(.+?)"/);
+      const fileName = fileNameMatch ? fileNameMatch[1] : "hasil-mcu.xlsx";
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success("Unduhan Dimulai!", {
+        id: toastId,
+        description: `File ${fileName} sedang diunduh.`,
+      });
+    } catch (e: any) {
+      toast.error("Ekspor Gagal!", { id: toastId, description: e.message });
+    } finally {
+      setIsExportingResults(false);
+    }
+  };
+
+
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    // ... (fungsi ini tidak diubah, biarkan seperti semula)
     const file = event.target.files?.[0];
     if (file && companyId) {
       handleImport(file, companyId);
@@ -182,32 +216,27 @@ export const ReportTable = () => {
   };
 
   const handleImport = async (file: File, companyId: string) => {
+    // ... (fungsi ini tidak diubah, biarkan seperti semula)
     setIsImporting(true);
     const toastId = toast.loading("Mengunggah dan memproses file...", {
       description: "Mohon tunggu, ini mungkin memakan waktu beberapa saat.",
     });
-
     try {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("companyId", companyId);
-
       const res = await fetch("/api/mcu/reports/import", {
         method: "POST",
         body: formData,
       });
-
       const result = await res.json();
-
       if (!res.ok) {
         throw new Error(result.message || "Gagal mengimpor data.");
       }
-
       toast.success("Impor Selesai!", {
         id: toastId,
         description: result.message,
       });
-
       if (result.errors && result.errors.length > 0) {
         toast.warning("Beberapa baris data gagal diimpor.", {
           description: (
@@ -221,7 +250,6 @@ export const ReportTable = () => {
           duration: 10000,
         });
       }
-
       fetchReports();
     } catch (e: any) {
       toast.error("Impor Gagal!", { id: toastId, description: e.message });
@@ -231,6 +259,7 @@ export const ReportTable = () => {
   };
 
   const renderTableContent = () => {
+    // ... (bagian ini tidak diubah, biarkan seperti semula)
     if (loading) {
       return (
         <TableRow>
@@ -316,9 +345,10 @@ export const ReportTable = () => {
     );
   };
 
-  const isActionDisabled = !companyId || isImporting || isExporting;
+  // --- BARU: Tambahkan isExportingResults agar tombol di-disable saat loading ---
+  const isActionDisabled = !companyId || isImporting || isExporting || isExportingResults;
   const paginationDisabled =
-    !companyId || meta.total === 0 || isImporting || isExporting;
+    !companyId || meta.total === 0 || isImporting || isExporting || isExportingResults;
 
   return (
     <div>
@@ -331,8 +361,9 @@ export const ReportTable = () => {
               setCompanyId(v);
               setPage(1);
             }}
-            disabled={companies.length === 0 || isImporting || isExporting}
+            disabled={companies.length === 0 || isImporting || isExporting || isExportingResults}
           >
+            {/* ... */}
             <SelectTrigger className="w-64">
               <SelectValue placeholder="Pilih Perusahaan" />
             </SelectTrigger>
@@ -367,6 +398,21 @@ export const ReportTable = () => {
               )}
               Export Template
             </Button>
+            
+            {/* --- BARU: Tombol untuk Export Hasil MCU --- */}
+            <Button
+              variant="outline"
+              disabled={isActionDisabled}
+              onClick={handleExportResults}
+            >
+              {isExportingResults ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="mr-2 h-4 w-4" />
+              )}
+              Export Hasil FAS DAS Health
+            </Button>
+
             <input
               type="file"
               ref={fileInputRef}
@@ -389,6 +435,7 @@ export const ReportTable = () => {
           </div>
         </div>
         <div className="relative w-full max-w-sm">
+          {/* ... (bagian search tidak diubah) ... */}
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
             placeholder="Cari nama atau ID pasien…"
@@ -404,6 +451,7 @@ export const ReportTable = () => {
       </div>
 
       <div className="rounded-lg border bg-white">
+        {/* ... (bagian tabel tidak diubah) ... */}
         <Table>
           <TableHeader>
             <TableRow>
@@ -421,6 +469,7 @@ export const ReportTable = () => {
       </div>
 
       <div className="flex flex-col sm:flex-row items-center justify-between mt-4 gap-4">
+        {/* ... (bagian pagination tidak diubah) ... */}
         <div className="text-sm text-gray-600">
           {companyId ? (
             <>
