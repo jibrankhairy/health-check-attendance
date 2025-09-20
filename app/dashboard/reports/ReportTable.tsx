@@ -63,8 +63,6 @@ type ApiResp = {
 };
 
 export const ReportTable = () => {
-  const useShadcnSelect = true;
-
   const [companies, setCompanies] = useState<Company[]>([]);
   const [companyId, setCompanyId] = useState<string | null>(null);
 
@@ -82,6 +80,7 @@ export const ReportTable = () => {
 
   const [isImporting, setIsImporting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isExportingResults, setIsExportingResults] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchCompanies = useCallback(async () => {
@@ -135,23 +134,18 @@ export const ReportTable = () => {
 
   const handleExport = async () => {
     if (!companyId) return;
-
     setIsExporting(true);
     const toastId = toast.loading("Mempersiapkan file untuk diunduh...");
-
     try {
       const res = await fetch(`/api/mcu/reports/export?companyId=${companyId}`);
-
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || "Gagal membuat file ekspor.");
       }
-
       const disposition = res.headers.get("Content-Disposition");
       const fileNameMatch =
         disposition && disposition.match(/filename="(.+?)"/);
       const fileName = fileNameMatch ? fileNameMatch[1] : "template-mcu.xlsx";
-
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -161,7 +155,6 @@ export const ReportTable = () => {
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
-
       toast.success("Unduhan Dimulai!", {
         id: toastId,
         description: `File ${fileName} sedang diunduh.`,
@@ -170,6 +163,44 @@ export const ReportTable = () => {
       toast.error("Ekspor Gagal!", { id: toastId, description: e.message });
     } finally {
       setIsExporting(false);
+    }
+  };
+
+  const handleExportResults = async () => {
+    if (!companyId) return;
+    setIsExportingResults(true);
+    const toastId = toast.loading("Mempersiapkan data hasil MCU...");
+    try {
+      const res = await fetch(
+        `/api/mcu/reports/export-results?companyId=${companyId}`
+      );
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(
+          errorData.message || "Gagal membuat file ekspor hasil."
+        );
+      }
+      const disposition = res.headers.get("Content-Disposition");
+      const fileNameMatch =
+        disposition && disposition.match(/filename="(.+?)"/);
+      const fileName = fileNameMatch ? fileNameMatch[1] : "hasil-mcu.xlsx";
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success("Unduhan Dimulai!", {
+        id: toastId,
+        description: `File ${fileName} sedang diunduh.`,
+      });
+    } catch (e: any) {
+      toast.error("Ekspor Gagal!", { id: toastId, description: e.message });
+    } finally {
+      setIsExportingResults(false);
     }
   };
 
@@ -186,28 +217,22 @@ export const ReportTable = () => {
     const toastId = toast.loading("Mengunggah dan memproses file...", {
       description: "Mohon tunggu, ini mungkin memakan waktu beberapa saat.",
     });
-
     try {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("companyId", companyId);
-
       const res = await fetch("/api/mcu/reports/import", {
         method: "POST",
         body: formData,
       });
-
       const result = await res.json();
-
       if (!res.ok) {
         throw new Error(result.message || "Gagal mengimpor data.");
       }
-
       toast.success("Impor Selesai!", {
         id: toastId,
         description: result.message,
       });
-
       if (result.errors && result.errors.length > 0) {
         toast.warning("Beberapa baris data gagal diimpor.", {
           description: (
@@ -221,7 +246,6 @@ export const ReportTable = () => {
           duration: 10000,
         });
       }
-
       fetchReports();
     } catch (e: any) {
       toast.error("Impor Gagal!", { id: toastId, description: e.message });
@@ -316,9 +340,14 @@ export const ReportTable = () => {
     );
   };
 
-  const isActionDisabled = !companyId || isImporting || isExporting;
+  const isActionDisabled =
+    !companyId || isImporting || isExporting || isExportingResults;
   const paginationDisabled =
-    !companyId || meta.total === 0 || isImporting || isExporting;
+    !companyId ||
+    meta.total === 0 ||
+    isImporting ||
+    isExporting ||
+    isExportingResults;
 
   return (
     <div>
@@ -331,7 +360,12 @@ export const ReportTable = () => {
               setCompanyId(v);
               setPage(1);
             }}
-            disabled={companies.length === 0 || isImporting || isExporting}
+            disabled={
+              companies.length === 0 ||
+              isImporting ||
+              isExporting ||
+              isExportingResults
+            }
           >
             <SelectTrigger className="w-64">
               <SelectValue placeholder="Pilih Perusahaan" />
@@ -367,6 +401,20 @@ export const ReportTable = () => {
               )}
               Export Template
             </Button>
+
+            <Button
+              variant="outline"
+              disabled={isActionDisabled}
+              onClick={handleExportResults}
+            >
+              {isExportingResults ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="mr-2 h-4 w-4" />
+              )}
+              Export Hasil FAS DAS Health
+            </Button>
+
             <input
               type="file"
               ref={fileInputRef}
