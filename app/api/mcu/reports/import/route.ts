@@ -1,5 +1,3 @@
-// app/api/mcu/reports/import/route.ts
-
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import * as XLSX from "xlsx";
@@ -142,11 +140,12 @@ export async function POST(request: Request) {
 
     let updatedCount = 0;
     const errors: string[] = [];
+    let skippedCount = 0;
 
     const validatorMap: { [key: string]: string } = {
       hematologiValidatorName: "hematologiValidatorQr",
       kimiaDarahValidatorName: "kimiaDarahValidatorQr",
-      hepatitisValidatorName: "hepatitisValidatorQr", // <-- TAMBAHAN
+      hepatitisValidatorName: "hepatitisValidatorQr",
       biomonitoringValidatorName: "biomonitoringValidatorQr",
       urinalisaValidatorName: "urinalisaValidatorQr",
       audiometryValidatorName: "audiometryValidatorQr",
@@ -191,6 +190,11 @@ export async function POST(request: Request) {
           continue;
         }
 
+        if (mcuResult.status === "COMPLETED") {
+          skippedCount++;
+          continue;
+        }
+
         const dataToUpdate = mapExcelToPrisma(row);
 
         for (const nameField in validatorMap) {
@@ -221,7 +225,10 @@ export async function POST(request: Request) {
     }
 
     const totalRows = jsonData.length;
-    let message = `Berhasil memperbarui ${updatedCount} dari ${totalRows} data laporan.`;
+    let message = `Berhasil memperbarui ${updatedCount} dari ${totalRows} data.`;
+    if (skippedCount > 0) {
+      message += ` ${skippedCount} data dilewati karena sudah selesai.`;
+    }
     if (errors.length > 0) {
       message += ` Gagal memperbarui ${errors.length} data.`;
     }
