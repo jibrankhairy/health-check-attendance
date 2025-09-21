@@ -25,6 +25,8 @@ import { PsikologiForm } from "./forms/PsikologiForm";
 import { ConclusionForm } from "./forms/ConclusionForm";
 import { FraminghamForm } from "./forms/FraminghamForm";
 
+// -- PERUBAHAN --
+// Tidak ada perubahan di skema Zod, masih sama seperti punyamu.
 const formSchema = z.object({
   gologanDarah: z.string().optional().nullable(),
   hemoglobin: z.string().optional().nullable(),
@@ -267,13 +269,22 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
     }
   }, [errors]);
 
+  // -- PERUBAHAN --
+  // Fungsi onSubmit dimodifikasi untuk memanggil API generator PDF
   const onSubmit = async (data: McuFormData) => {
     setIsSubmitting(true);
+    const reportId = initialData.id; // Ambil ID laporan dari initialData
+
     try {
-      const response = await fetch(`/api/mcu/reports/${initialData.id}`, {
+      // Langkah 1: Simpan data form seperti biasa
+      const response = await fetch(`/api/mcu/reports/${reportId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        // Pastikan 'saran' dikirim sebagai array JSON string
+        body: JSON.stringify({
+          ...data,
+          saran: data.saran ? JSON.stringify(data.saran) : null,
+        }),
       });
 
       if (!response.ok) {
@@ -283,14 +294,31 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
 
       toast.success("Hasil MCU berhasil disimpan!");
 
+      // Langkah 2: Panggil API untuk generate PDF di background
+      toast.info("Memproses file PDF di latar belakang...", {
+        description: "Laporan akan segera tersedia untuk diunduh.",
+      });
+
+      // 'fetch' tanpa 'await' agar user tidak perlu menunggu
+      fetch(`/api/mcu/reports/${reportId}/generate-and-save-pdf`, {
+        method: 'POST',
+      }).catch(err => {
+        // Handle error jika pemanggilan API gagal, tapi jangan blok UI
+        console.error("Gagal memulai proses pembuatan PDF:", err);
+        // Toast error ini opsional, bisa jadi terlalu berisik untuk user
+        // toast.error("Gagal memulai proses pembuatan PDF di background.");
+      });
+
+      // Arahkan user kembali ke halaman daftar
       router.push("/dashboard/reports");
       router.refresh();
+
     } catch (error) {
       let errorMessage = "Terjadi kesalahan.";
       if (error instanceof Error) {
         errorMessage = error.message;
       }
-      toast.error(errorMessage);
+      toast.error("Penyimpanan Gagal", { description: errorMessage });
     } finally {
       setIsSubmitting(false);
     }
@@ -494,7 +522,9 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
                 Menyimpan...
               </>
             ) : (
-              "Simpan Semua Hasil"
+              // -- PERUBAHAN --
+              // Ganti teks tombol agar lebih jelas
+              "Simpan & Selesaikan Laporan"
             )}
           </Button>
         </div>

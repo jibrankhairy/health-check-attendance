@@ -45,6 +45,11 @@ import {
 import { format } from "date-fns";
 import { toast } from "sonner";
 import Link from "next/link";
+import * as XLSX from "xlsx";
+
+// --- IMPORT BARU UNTUK GENERATE PDF DI CLIENT ---
+import { pdf } from "@react-pdf/renderer";
+import { FullReportDocument } from "@/components/mcu/report/FullReportDocument";
 
 const IMAGE_TYPES = {
   rontgen: { label: "Rontgen" },
@@ -88,29 +93,20 @@ type ApiResp = {
 export const ReportTable = () => {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [companyId, setCompanyId] = useState<string | null>(null);
-
   const [rows, setRows] = useState<ReportRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [meta, setMeta] = useState<ApiMeta>({
-    page: 1,
-    pageSize: 10,
-    total: 0,
-    totalPages: 1,
-  });
-
+  const [meta, setMeta] = useState<ApiMeta>({ page: 1, pageSize: 10, total: 0, totalPages: 1 });
   const [isImporting, setIsImporting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [isExportingResults, setIsExportingResults] = useState(false);
+  const [isDownloadingAll, setIsDownloadingAll] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
   const [isImportingImages, setIsImportingImages] = useState(false);
   const imageFileInputRef = useRef<HTMLInputElement>(null);
-  const [currentImageType, setCurrentImageType] = useState<ImageType | null>(
-    null
-  );
+  const [currentImageType, setCurrentImageType] = useState<ImageType | null>(null);
 
   const fetchCompanies = useCallback(async () => {
     try {
@@ -172,8 +168,7 @@ export const ReportTable = () => {
         throw new Error(errorData.message || "Gagal membuat file ekspor.");
       }
       const disposition = res.headers.get("Content-Disposition");
-      const fileNameMatch =
-        disposition && disposition.match(/filename="(.+?)"/);
+      const fileNameMatch = disposition && disposition.match(/filename="(.+?)"/);
       const fileName = fileNameMatch ? fileNameMatch[1] : "template-mcu.xlsx";
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
@@ -184,10 +179,7 @@ export const ReportTable = () => {
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
-      toast.success("Unduhan Dimulai!", {
-        id: toastId,
-        description: `File ${fileName} sedang diunduh.`,
-      });
+      toast.success("Unduhan Dimulai!", { id: toastId, description: `File ${fileName} sedang diunduh.` });
     } catch (e: any) {
       toast.error("Ekspor Gagal!", { id: toastId, description: e.message });
     } finally {
@@ -200,18 +192,13 @@ export const ReportTable = () => {
     setIsExportingResults(true);
     const toastId = toast.loading("Mempersiapkan data hasil MCU...");
     try {
-      const res = await fetch(
-        `/api/mcu/reports/export-results?companyId=${companyId}`
-      );
+      const res = await fetch(`/api/mcu/reports/export-results?companyId=${companyId}`);
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(
-          errorData.message || "Gagal membuat file ekspor hasil."
-        );
+        throw new Error(errorData.message || "Gagal membuat file ekspor hasil.");
       }
       const disposition = res.headers.get("Content-Disposition");
-      const fileNameMatch =
-        disposition && disposition.match(/filename="(.+?)"/);
+      const fileNameMatch = disposition && disposition.match(/filename="(.+?)"/);
       const fileName = fileNameMatch ? fileNameMatch[1] : "hasil-mcu.xlsx";
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
@@ -222,14 +209,57 @@ export const ReportTable = () => {
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
-      toast.success("Unduhan Dimulai!", {
-        id: toastId,
-        description: `File ${fileName} sedang diunduh.`,
-      });
+      toast.success("Unduhan Dimulai!", { id: toastId, description: `File ${fileName} sedang diunduh.` });
     } catch (e: any) {
       toast.error("Ekspor Gagal!", { id: toastId, description: e.message });
     } finally {
       setIsExportingResults(false);
+    }
+  };
+
+  const handleDownloadAll = async () => {
+    if (!companyId) return;
+    setIsDownloadingAll(true);
+    const toastId = toast.loading("Mempersiapkan Laporan...", {
+      description: "Mengambil daftar laporan yang sudah selesai.",
+    });
+
+    try {
+      const res = await fetch(`/api/mcu/reports/all-completed?companyId=${companyId}`);
+      if (!res.ok) {
+        throw new Error("Gagal mengambil daftar laporan.");
+      }
+      const reportsToDownload = await res.json();
+
+      if (!reportsToDownload || reportsToDownload.length === 0) {
+        toast.info("Tidak Ada Laporan", {
+          id: toastId,
+          description: "Tidak ada laporan yang berstatus selesai untuk diunduh.",
+        });
+        return;
+      }
+      
+      toast.success(`Ditemukan ${reportsToDownload.length} laporan`, {
+        id: toastId,
+        description: "Proses unduh akan dimulai satu per satu...",
+      });
+      
+      for (const report of reportsToDownload) {
+        const fileName = `Laporan_MCU_${report.patient.fullName.replace(/\s/g, "_")}.pdf`;
+        const blob = await pdf(<FullReportDocument data={report} />).toBlob();
+        
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+      }
+    } catch (e: any) {
+      toast.error("Gagal Mengunduh Semua", { id: toastId, description: e.message });
+    } finally {
+      setIsDownloadingAll(false);
     }
   };
 
@@ -243,9 +273,7 @@ export const ReportTable = () => {
 
   const handleImport = async (file: File, companyId: string) => {
     setIsImporting(true);
-    const toastId = toast.loading("Mengunggah dan memproses file...", {
-      description: "Mohon tunggu, ini mungkin memakan waktu beberapa saat.",
-    });
+    const toastId = toast.loading("Mengunggah dan memproses file...", { description: "Mohon tunggu, ini mungkin memakan waktu beberapa saat." });
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -258,17 +286,12 @@ export const ReportTable = () => {
       if (!res.ok) {
         throw new Error(result.message || "Gagal mengimpor data.");
       }
-      toast.success("Impor Selesai!", {
-        id: toastId,
-        description: result.message,
-      });
+      toast.success("Impor Selesai!", { id: toastId, description: result.message });
       if (result.errors && result.errors.length > 0) {
         toast.warning("Beberapa baris data gagal diimpor.", {
           description: (
             <ul className="list-disc list-inside max-h-40 overflow-y-auto">
-              {result.errors.slice(0, 10).map((e: string, i: number) => (
-                <li key={i}>{e}</li>
-              ))}
+              {result.errors.slice(0, 10).map((e: string, i: number) => (<li key={i}>{e}</li>))}
               {result.errors.length > 10 && <li>...dan lainnya.</li>}
             </ul>
           ),
@@ -283,9 +306,7 @@ export const ReportTable = () => {
     }
   };
 
-  const handleImageFileSelect = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleImageFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files.length > 0 && companyId && currentImageType) {
       handleImageImport(Array.from(files), companyId, currentImageType);
@@ -294,19 +315,11 @@ export const ReportTable = () => {
     setCurrentImageType(null);
   };
 
-  // --- [VERSI GABUNGAN] Fungsi import gambar yang disederhanakan ---
-  const handleImageImport = async (
-    files: File[],
-    companyId: string,
-    imageType: ImageType
-  ) => {
+  const handleImageImport = async (files: File[], companyId: string, imageType: ImageType) => {
     setIsImportingImages(true);
-    const toastId = toast.loading(
-      `Mengunggah ${files.length} file ${IMAGE_TYPES[imageType].label}...`,
-      {
-        description: "Proses ini mungkin memerlukan waktu beberapa saat...",
-      }
-    );
+    const toastId = toast.loading(`Mengunggah ${files.length} file ${IMAGE_TYPES[imageType].label}...`, {
+      description: "Proses ini mungkin memerlukan waktu beberapa saat...",
+    });
 
     try {
       const formData = new FormData();
@@ -316,49 +329,31 @@ export const ReportTable = () => {
         formData.append("files", file);
       });
 
-      // Hanya satu kali panggilan API
-      const res = await fetch("/api/mcu/reports/import-images", {
-        method: "POST",
-        body: formData,
-        // Untuk FormData, browser akan set header Content-Type secara otomatis
-      });
-
+      const res = await fetch("/api/mcu/reports/import-images", { method: "POST", body: formData });
       const result = await res.json();
       if (!res.ok) {
         throw new Error(result.message || "Gagal mengimpor gambar.");
       }
-
-      toast.success("Impor Gambar Selesai!", {
-        id: toastId,
-        description: `${result.successCount} file berhasil diproses.`,
-      });
-
-      // Tampilkan error jika ada
+      toast.success("Impor Gambar Selesai!", { id: toastId, description: `${result.successCount} file berhasil diproses.` });
       if (result.errors && result.errors.length > 0) {
         toast.warning("Beberapa file gagal diimpor:", {
           description: (
             <ul className="list-disc list-inside max-h-40 overflow-y-auto">
-              {result.errors.slice(0, 10).map((e: string, i: number) => (
-                <li key={i}>{e}</li>
-              ))}
+              {result.errors.slice(0, 10).map((e: string, i: number) => (<li key={i}>{e}</li>))}
               {result.errors.length > 10 && <li>...dan lainnya.</li>}
             </ul>
           ),
           duration: 10000,
         });
       }
-
-      fetchReports(); // Refresh data tabel
+      fetchReports();
     } catch (e: any) {
-      toast.error("Impor Gambar Gagal!", {
-        id: toastId,
-        description: e.message,
-      });
+      toast.error("Impor Gambar Gagal!", { id: toastId, description: e.message });
     } finally {
       setIsImportingImages(false);
     }
   };
-  
+
   const renderTableContent = () => {
     if (loading) {
       return (
@@ -385,24 +380,14 @@ export const ReportTable = () => {
       const indexOfFirstRow = (meta.page - 1) * meta.pageSize;
       return rows.map((report, i) => (
         <TableRow key={report.id}>
-          <TableCell className="font-medium text-center">
-            {indexOfFirstRow + i + 1}
-          </TableCell>
-          <TableCell>
-            <Badge variant="secondary">{report.patient.patientId}</Badge>
-          </TableCell>
-          <TableCell className="font-semibold">
-            {report.patient.fullName}
-          </TableCell>
+          <TableCell className="font-medium text-center">{indexOfFirstRow + i + 1}</TableCell>
+          <TableCell><Badge variant="secondary">{report.patient.patientId}</Badge></TableCell>
+          <TableCell className="font-semibold">{report.patient.fullName}</TableCell>
           <TableCell>{report.patient.company.name}</TableCell>
-          <TableCell>
-            {format(new Date(report.updatedAt), "dd MMM yyyy, HH:mm")}
-          </TableCell>
+          <TableCell>{format(new Date(report.updatedAt), "dd MMM yyyy, HH:mm")}</TableCell>
           <TableCell>
             {report.status === "COMPLETED" ? (
-              <Badge className="bg-green-100 text-green-800 border-green-300">
-                Selesai
-              </Badge>
+              <Badge className="bg-green-100 text-green-800 border-green-300">Selesai</Badge>
             ) : (
               <Badge variant="destructive">Menunggu Input</Badge>
             )}
@@ -412,21 +397,15 @@ export const ReportTable = () => {
               {report.status === "COMPLETED" ? (
                 <>
                   <Link href={`/dashboard/reports/view/${report.id}`} passHref>
-                    <Button variant="outline" size="sm">
-                      <FileText className="mr-2 h-4 w-4" /> Lihat
-                    </Button>
+                    <Button variant="outline" size="sm"><FileText className="mr-2 h-4 w-4" /> Lihat</Button>
                   </Link>
                   <Link href={`/dashboard/reports/${report.id}`} passHref>
-                    <Button variant="secondary" size="sm">
-                      <Pencil className="mr-2 h-4 w-4" /> Edit
-                    </Button>
+                    <Button variant="secondary" size="sm"><Pencil className="mr-2 h-4 w-4" /> Edit</Button>
                   </Link>
                 </>
               ) : (
                 <Link href={`/dashboard/reports/${report.id}`} passHref>
-                  <Button variant="default" size="sm">
-                    <FilePenLine className="mr-2 h-4 w-4" /> Input Hasil
-                  </Button>
+                  <Button variant="default" size="sm"><FilePenLine className="mr-2 h-4 w-4" /> Input Hasil</Button>
                 </Link>
               )}
             </div>
@@ -437,27 +416,14 @@ export const ReportTable = () => {
     return (
       <TableRow>
         <TableCell colSpan={7} className="h-24 text-center text-gray-500">
-          {searchQuery
-            ? "Laporan tidak ditemukan."
-            : "Belum ada data untuk perusahaan ini."}
+          {searchQuery ? "Laporan tidak ditemukan." : "Belum ada data untuk perusahaan ini."}
         </TableCell>
       </TableRow>
     );
   };
 
-  const isActionDisabled =
-    !companyId ||
-    isImporting ||
-    isExporting ||
-    isExportingResults ||
-    isImportingImages;
-  const paginationDisabled =
-    !companyId ||
-    meta.total === 0 ||
-    isImporting ||
-    isExporting ||
-    isExportingResults ||
-    isImportingImages;
+  const isActionDisabled = !companyId || isImporting || isExporting || isExportingResults || isImportingImages || isDownloadingAll;
+  const paginationDisabled = !companyId || meta.total === 0 || isImporting || isExporting || isExportingResults || isImportingImages || isDownloadingAll;
 
   return (
     <div>
@@ -470,86 +436,45 @@ export const ReportTable = () => {
               setCompanyId(v);
               setPage(1);
             }}
-            disabled={
-              companies.length === 0 ||
-              isImporting ||
-              isExporting ||
-              isExportingResults ||
-              isImportingImages
-            }
+            disabled={companies.length === 0 || isImporting || isExporting || isExportingResults || isImportingImages}
           >
-            <SelectTrigger className="w-64">
-              <SelectValue placeholder="Pilih Perusahaan" />
-            </SelectTrigger>
+            <SelectTrigger className="w-64"><SelectValue placeholder="Pilih Perusahaan" /></SelectTrigger>
             <SelectContent>
-              {companies.map((c) => (
-                <SelectItem key={c.id} value={c.id}>
-                  {c.name}
-                </SelectItem>
-              ))}
+              {companies.map((c) => (<SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>))}
             </SelectContent>
           </Select>
           <span className="text-xs text-gray-500">
-            {companies.length > 0 ? (
-              `${companies.length} prsh`
-            ) : (
-              <span className="text-amber-600 flex items-center gap-1">
-                <AlertCircle className="h-3.5 w-3.5" />
-                Kosong
-              </span>
+            {companies.length > 0 ? (`${companies.length} prsh`) : (
+              <span className="text-amber-600 flex items-center gap-1"><AlertCircle className="h-3.5 w-3.5" />Kosong</span>
             )}
           </span>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              disabled={isActionDisabled}
-              onClick={handleExport}
-            >
-              {isExporting ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Download className="mr-2 h-4 w-4" />
-              )}
+            <Button variant="outline" disabled={isActionDisabled} onClick={handleExport}>
+              {isExporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
               Export Template
             </Button>
-            <Button
-              variant="outline"
-              disabled={isActionDisabled}
-              onClick={handleExportResults}
-            >
-              {isExportingResults ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Download className="mr-2 h-4 w-4" />
-              )}
+            <Button variant="outline" disabled={isActionDisabled} onClick={handleExportResults}>
+              {isExportingResults ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
               Export Hasil FAS DAS Health
             </Button>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileSelect}
-              className="hidden"
-              accept=".xlsx,.xls,.csv"
-            />
-            <input
-              type="file"
-              ref={imageFileInputRef}
-              onChange={handleImageFileSelect}
-              className="hidden"
-              accept="image/jpeg,image/png,application/pdf"
-              multiple
-            />
+            
+            <Button
+              variant="default"
+              className="bg-green-600 hover:bg-green-700"
+              disabled={isActionDisabled}
+              onClick={handleDownloadAll}
+            >
+              {isDownloadingAll ? (<Loader2 className="mr-2 h-4 w-4 animate-spin" />) : (<Download className="mr-2 h-4 w-4" />)}
+              Download All Laporan
+            </Button>
+            
+            <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept=".xlsx,.xls,.csv" />
+            <input type="file" ref={imageFileInputRef} onChange={handleImageFileSelect} className="hidden" accept="image/jpeg,image/png,application/pdf" multiple />
+            
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  className="bg-[#01449D] hover:bg-[#01449D]/90 text-white"
-                  disabled={isActionDisabled}
-                >
-                  {isImporting || isImportingImages ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Upload className="mr-2 h-4 w-4" />
-                  )}
+                <Button className="bg-[#01449D] hover:bg-[#01449D]/90 text-white" disabled={isActionDisabled}>
+                  {isImporting || isImportingImages ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
                   Import Data
                   <ChevronDown className="ml-2 h-4 w-4" />
                 </Button>
@@ -557,23 +482,13 @@ export const ReportTable = () => {
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Pilih Tipe Import</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
-                  Import Hasil (Excel)
-                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>Import Hasil (Excel)</DropdownMenuItem>
                 <DropdownMenuSub>
-                  <DropdownMenuSubTrigger>
-                    <span>Import Gambar</span>
-                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubTrigger><span>Import Gambar</span></DropdownMenuSubTrigger>
                   <DropdownMenuPortal>
                     <DropdownMenuSubContent>
                       {Object.entries(IMAGE_TYPES).map(([key, value]) => (
-                        <DropdownMenuItem
-                          key={key}
-                          onClick={() => {
-                            setCurrentImageType(key as ImageType);
-                            imageFileInputRef.current?.click();
-                          }}
-                        >
+                        <DropdownMenuItem key={key} onClick={() => { setCurrentImageType(key as ImageType); imageFileInputRef.current?.click(); }}>
                           {`Import ${value.label}`}
                         </DropdownMenuItem>
                       ))}
@@ -618,56 +533,30 @@ export const ReportTable = () => {
         <div className="text-sm text-gray-600">
           {companyId ? (
             <>
-              Menampilkan{" "}
-              {meta.total > 0 ? (meta.page - 1) * meta.pageSize + 1 : 0} -{" "}
-              {Math.min(meta.page * meta.pageSize, meta.total)} dari{" "}
-              {meta.total} laporan
+              Menampilkan {meta.total > 0 ? (meta.page - 1) * meta.pageSize + 1 : 0} - {Math.min(meta.page * meta.pageSize, meta.total)} dari {meta.total} laporan
             </>
-          ) : (
-            "Pilih perusahaan untuk melihat laporan"
-          )}
+          ) : ( "Pilih perusahaan untuk melihat laporan" )}
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <p className="text-sm">Baris:</p>
             <Select
               value={`${pageSize}`}
-              onValueChange={(v) => {
-                setPageSize(Number(v));
-                setPage(1);
-              }}
+              onValue-change={(v) => { setPageSize(Number(v)); setPage(1); }}
               disabled={paginationDisabled}
             >
-              <SelectTrigger className="h-8 w-[70px]">
-                <SelectValue placeholder={`${pageSize}`} />
-              </SelectTrigger>
+              <SelectTrigger className="h-8 w-[70px]"><SelectValue placeholder={`${pageSize}`} /></SelectTrigger>
               <SelectContent side="top">
-                {[10, 25, 50].map((ps) => (
-                  <SelectItem key={ps} value={`${ps}`}>
-                    {ps}
-                  </SelectItem>
-                ))}
+                {[10, 25, 50].map((ps) => (<SelectItem key={ps} value={`${ps}`}>{ps}</SelectItem>))}
               </SelectContent>
             </Select>
           </div>
-          <div className="text-sm font-medium">
-            Hal {meta.page} dari {meta.totalPages}
-          </div>
+          <div className="text-sm font-medium">Hal {meta.page} dari {meta.totalPages}</div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((p) => Math.max(p - 1, 1))}
-              disabled={paginationDisabled || page <= 1}
-            >
+            <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(p - 1, 1))} disabled={paginationDisabled || page <= 1}>
               Sebelumnya
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((p) => Math.min(p + 1, meta.totalPages))}
-              disabled={paginationDisabled || page >= meta.totalPages}
-            >
+            <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(p + 1, meta.totalPages))} disabled={paginationDisabled || page >= meta.totalPages}>
               Selanjutnya
             </Button>
           </div>
