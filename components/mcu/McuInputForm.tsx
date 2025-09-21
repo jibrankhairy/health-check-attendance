@@ -269,11 +269,16 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
 
   const onSubmit = async (data: McuFormData) => {
     setIsSubmitting(true);
+    const reportId = initialData.id;
+
     try {
-      const response = await fetch(`/api/mcu/reports/${initialData.id}`, {
+      const response = await fetch(`/api/mcu/reports/${reportId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          saran: data.saran ? JSON.stringify(data.saran) : null,
+        }),
       });
 
       if (!response.ok) {
@@ -283,6 +288,16 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
 
       toast.success("Hasil MCU berhasil disimpan!");
 
+      toast.info("Memproses file PDF di latar belakang...", {
+        description: "Laporan akan segera tersedia untuk diunduh.",
+      });
+
+      fetch(`/api/mcu/reports/${reportId}/generate-and-save-pdf`, {
+        method: "POST",
+      }).catch((err) => {
+        console.error("Gagal memulai proses pembuatan PDF:", err);
+      });
+
       router.push("/dashboard/reports");
       router.refresh();
     } catch (error) {
@@ -290,7 +305,7 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
       if (error instanceof Error) {
         errorMessage = error.message;
       }
-      toast.error(errorMessage);
+      toast.error("Penyimpanan Gagal", { description: errorMessage });
     } finally {
       setIsSubmitting(false);
     }
@@ -494,7 +509,7 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
                 Menyimpan...
               </>
             ) : (
-              "Simpan Semua Hasil"
+              "Simpan & Selesaikan Laporan"
             )}
           </Button>
         </div>

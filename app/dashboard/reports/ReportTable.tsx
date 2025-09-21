@@ -10,6 +10,7 @@ import {
   AlertCircle,
   Upload,
   Download,
+  ChevronDown,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,9 +30,35 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuPortal,
+} from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import Link from "next/link";
+import * as XLSX from "xlsx";
+
+import { pdf } from "@react-pdf/renderer";
+import { FullReportDocument } from "@/components/mcu/report/FullReportDocument";
+
+const IMAGE_TYPES = {
+  rontgen: { label: "Rontgen" },
+  ekg: { label: "EKG" },
+  treadmill: { label: "Treadmill" },
+  usgAbdomen: { label: "USG Abdomen" },
+  usgMammae: { label: "USG Mammae" },
+} as const;
+
+type ImageType = keyof typeof IMAGE_TYPES;
 
 type Company = {
   id: string;
@@ -65,7 +92,6 @@ type ApiResp = {
 export const ReportTable = () => {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [companyId, setCompanyId] = useState<string | null>(null);
-
   const [rows, setRows] = useState<ReportRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -77,11 +103,16 @@ export const ReportTable = () => {
     total: 0,
     totalPages: 1,
   });
-
   const [isImporting, setIsImporting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [isExportingResults, setIsExportingResults] = useState(false);
+  const [isDownloadingAll, setIsDownloadingAll] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isImportingImages, setIsImportingImages] = useState(false);
+  const imageFileInputRef = useRef<HTMLInputElement>(null);
+  const [currentImageType, setCurrentImageType] = useState<ImageType | null>(
+    null
+  );
 
   const fetchCompanies = useCallback(async () => {
     try {
@@ -99,7 +130,7 @@ export const ReportTable = () => {
   }, []);
 
   const fetchReports = useCallback(async () => {
-    if (!isImporting) setLoading(true);
+    if (!isImporting && !isImportingImages) setLoading(true);
     if (!companyId) {
       setRows([]);
       setMeta({ page: 1, pageSize, total: 0, totalPages: 1 });
@@ -123,7 +154,7 @@ export const ReportTable = () => {
     } finally {
       setLoading(false);
     }
-  }, [companyId, page, pageSize, searchQuery, isImporting]);
+  }, [companyId, page, pageSize, searchQuery, isImporting, isImportingImages]);
 
   useEffect(() => {
     fetchCompanies();
@@ -204,6 +235,61 @@ export const ReportTable = () => {
     }
   };
 
+  const handleDownloadAll = async () => {
+    if (!companyId) return;
+    setIsDownloadingAll(true);
+    const toastId = toast.loading("Mempersiapkan Laporan...", {
+      description: "Mengambil daftar laporan yang sudah selesai.",
+    });
+
+    try {
+      const res = await fetch(
+        `/api/mcu/reports/all-completed?companyId=${companyId}`
+      );
+      if (!res.ok) {
+        throw new Error("Gagal mengambil daftar laporan.");
+      }
+      const reportsToDownload = await res.json();
+
+      if (!reportsToDownload || reportsToDownload.length === 0) {
+        toast.info("Tidak Ada Laporan", {
+          id: toastId,
+          description:
+            "Tidak ada laporan yang berstatus selesai untuk diunduh.",
+        });
+        return;
+      }
+
+      toast.success(`Ditemukan ${reportsToDownload.length} laporan`, {
+        id: toastId,
+        description: "Proses unduh akan dimulai satu per satu...",
+      });
+
+      for (const report of reportsToDownload) {
+        const fileName = `Laporan_MCU_${report.patient.fullName.replace(
+          /\s/g,
+          "_"
+        )}.pdf`;
+        const blob = await pdf(<FullReportDocument data={report} />).toBlob();
+
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+      }
+    } catch (e: any) {
+      toast.error("Gagal Mengunduh Semua", {
+        id: toastId,
+        description: e.message,
+      });
+    } finally {
+      setIsDownloadingAll(false);
+    }
+  };
+
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && companyId) {
@@ -251,6 +337,74 @@ export const ReportTable = () => {
       toast.error("Impor Gagal!", { id: toastId, description: e.message });
     } finally {
       setIsImporting(false);
+    }
+  };
+
+  const handleImageFileSelect = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const files = event.target.files;
+    if (files && files.length > 0 && companyId && currentImageType) {
+      handleImageImport(Array.from(files), companyId, currentImageType);
+    }
+    if (event.target) event.target.value = "";
+    setCurrentImageType(null);
+  };
+
+  const handleImageImport = async (
+    files: File[],
+    companyId: string,
+    imageType: ImageType
+  ) => {
+    setIsImportingImages(true);
+    const toastId = toast.loading(
+      `Mengunggah ${files.length} file ${IMAGE_TYPES[imageType].label}...`,
+      {
+        description: "Proses ini mungkin memerlukan waktu beberapa saat...",
+      }
+    );
+
+    try {
+      const formData = new FormData();
+      formData.append("companyId", companyId);
+      formData.append("imageType", imageType);
+      files.forEach((file) => {
+        formData.append("files", file);
+      });
+
+      const res = await fetch("/api/mcu/reports/import-images", {
+        method: "POST",
+        body: formData,
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        throw new Error(result.message || "Gagal mengimpor gambar.");
+      }
+      toast.success("Impor Gambar Selesai!", {
+        id: toastId,
+        description: `${result.successCount} file berhasil diproses.`,
+      });
+      if (result.errors && result.errors.length > 0) {
+        toast.warning("Beberapa file gagal diimpor:", {
+          description: (
+            <ul className="list-disc list-inside max-h-40 overflow-y-auto">
+              {result.errors.slice(0, 10).map((e: string, i: number) => (
+                <li key={i}>{e}</li>
+              ))}
+              {result.errors.length > 10 && <li>...dan lainnya.</li>}
+            </ul>
+          ),
+          duration: 10000,
+        });
+      }
+      fetchReports();
+    } catch (e: any) {
+      toast.error("Impor Gambar Gagal!", {
+        id: toastId,
+        description: e.message,
+      });
+    } finally {
+      setIsImportingImages(false);
     }
   };
 
@@ -341,13 +495,20 @@ export const ReportTable = () => {
   };
 
   const isActionDisabled =
-    !companyId || isImporting || isExporting || isExportingResults;
+    !companyId ||
+    isImporting ||
+    isExporting ||
+    isExportingResults ||
+    isImportingImages ||
+    isDownloadingAll;
   const paginationDisabled =
     !companyId ||
     meta.total === 0 ||
     isImporting ||
     isExporting ||
-    isExportingResults;
+    isExportingResults ||
+    isImportingImages ||
+    isDownloadingAll;
 
   return (
     <div>
@@ -364,7 +525,8 @@ export const ReportTable = () => {
               companies.length === 0 ||
               isImporting ||
               isExporting ||
-              isExportingResults
+              isExportingResults ||
+              isImportingImages
             }
           >
             <SelectTrigger className="w-64">
@@ -390,6 +552,7 @@ export const ReportTable = () => {
           </span>
           <div className="flex items-center gap-2">
             <Button
+              className="bg-[#01449D] hover:bg-[#01449D]/90 text-white"
               variant="outline"
               disabled={isActionDisabled}
               onClick={handleExport}
@@ -401,8 +564,8 @@ export const ReportTable = () => {
               )}
               Export Template
             </Button>
-
             <Button
+              className="bg-[#01449D] hover:bg-[#01449D]/90 text-white"
               variant="outline"
               disabled={isActionDisabled}
               onClick={handleExportResults}
@@ -412,7 +575,21 @@ export const ReportTable = () => {
               ) : (
                 <Download className="mr-2 h-4 w-4" />
               )}
-              Export Hasil FAS DAS Health
+              Export Hasil DAS FAS Health
+            </Button>
+
+            <Button
+              variant="default"
+              className="bg-[#01449D] hover:bg-[#01449D]/90 text-white"
+              disabled={isActionDisabled}
+              onClick={handleDownloadAll}
+            >
+              {isDownloadingAll ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="mr-2 h-4 w-4" />
+              )}
+              Unduh Semua Hasil
             </Button>
 
             <input
@@ -422,18 +599,58 @@ export const ReportTable = () => {
               className="hidden"
               accept=".xlsx,.xls,.csv"
             />
-            <Button
-              className="bg-[#01449D] hover:bg-[#01449D]/90 text-white md:w-auto md:px-4"
-              disabled={isActionDisabled}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              {isImporting ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Upload className="mr-2 h-4 w-4" />
-              )}
-              Import Hasil
-            </Button>
+            <input
+              type="file"
+              ref={imageFileInputRef}
+              onChange={handleImageFileSelect}
+              className="hidden"
+              accept="image/jpeg,image/png,application/pdf"
+              multiple
+            />
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  className="bg-[#01449D] hover:bg-[#01449D]/90 text-white"
+                  disabled={isActionDisabled}
+                >
+                  {isImporting || isImportingImages ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Upload className="mr-2 h-4 w-4" />
+                  )}
+                  Import Data
+                  <ChevronDown className="ml-2 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Pilih Tipe Import</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
+                  Import Hasil (Excel)
+                </DropdownMenuItem>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
+                    <span>Import Gambar</span>
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuPortal>
+                    <DropdownMenuSubContent>
+                      {Object.entries(IMAGE_TYPES).map(([key, value]) => (
+                        <DropdownMenuItem
+                          key={key}
+                          onClick={() => {
+                            setCurrentImageType(key as ImageType);
+                            imageFileInputRef.current?.click();
+                          }}
+                        >
+                          {`Import ${value.label}`}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuSubContent>
+                  </DropdownMenuPortal>
+                </DropdownMenuSub>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
         <div className="relative w-full max-w-sm">
@@ -450,7 +667,6 @@ export const ReportTable = () => {
           />
         </div>
       </div>
-
       <div className="rounded-lg border bg-white">
         <Table>
           <TableHeader>
@@ -467,7 +683,6 @@ export const ReportTable = () => {
           <TableBody>{renderTableContent()}</TableBody>
         </Table>
       </div>
-
       <div className="flex flex-col sm:flex-row items-center justify-between mt-4 gap-4">
         <div className="text-sm text-gray-600">
           {companyId ? (
@@ -486,7 +701,7 @@ export const ReportTable = () => {
             <p className="text-sm">Baris:</p>
             <Select
               value={`${pageSize}`}
-              onValueChange={(v) => {
+              onValueChange={(v: string) => {
                 setPageSize(Number(v));
                 setPage(1);
               }}

@@ -33,7 +33,7 @@ export const ImageUploadField = ({ name, label }: ImageUploadFieldProps) => {
       const result = await response.json();
       if (!response.ok)
         throw new Error(result.error || "Gagal mengunggah gambar.");
-      setValue(name, result.url, { shouldValidate: true });
+      setValue(name, result.url, { shouldValidate: true, shouldDirty: true });
       toast.success(`Gambar untuk ${label} berhasil diunggah.`);
     } catch (error: any) {
       toast.error(error.message);
@@ -54,7 +54,7 @@ export const ImageUploadField = ({ name, label }: ImageUploadFieldProps) => {
       />
       <Label
         htmlFor={inputId}
-        className="flex flex-col items-center justify-center w-full h-full border-2 border-dashed rounded-lg cursor-pointer hover:bg-gray-50"
+        className="flex flex-col items-center justify-center w-full h-full border-2 border-dashed rounded-lg cursor-pointer hover:bg-gray-50 bg-white"
       >
         {imageUrl ? (
           <img
@@ -80,7 +80,9 @@ export const ImageUploadField = ({ name, label }: ImageUploadFieldProps) => {
           variant="destructive"
           size="icon"
           className="absolute top-2 right-2 h-7 w-7"
-          onClick={() => setValue(name, null, { shouldValidate: true })}
+          onClick={() =>
+            setValue(name, null, { shouldValidate: true, shouldDirty: true })
+          }
         >
           <X className="h-4 w-4" />
         </Button>

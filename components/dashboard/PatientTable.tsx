@@ -77,6 +77,8 @@ import { usePatientTable } from "@/hooks/usePatientTable";
 import { CameraCaptureModal } from "./CameraCaptureModal";
 import { toast } from "sonner";
 import { PreCheckFisikModal } from "./PreCheckFisikModal";
+import { pdf } from "@react-pdf/renderer";
+import { FullReportDocument } from "@/components/mcu/report/FullReportDocument";
 
 export type PatientData = {
   id: number;
@@ -122,6 +124,7 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
   const [preCheckPatient, setPreCheckPatient] = useState<PatientData | null>(
     null
   );
+  const [isDownloadingAll, setIsDownloadingAll] = useState(false); // New state
 
   const [isExporting, setIsExporting] = useState(false);
 
@@ -250,6 +253,62 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
     }
   };
 
+  // New function for downloading all reports
+  const handleDownloadAll = async () => {
+    if (!companyId) return;
+    setIsDownloadingAll(true);
+    const toastId = toast.loading("Mempersiapkan Laporan...", {
+      description: "Mengambil daftar laporan yang sudah selesai.",
+    });
+
+    try {
+      const res = await fetch(
+        `/api/mcu/reports/all-completed?companyId=${companyId}`
+      );
+      if (!res.ok) {
+        throw new Error("Gagal mengambil daftar laporan.");
+      }
+      const reportsToDownload = await res.json();
+
+      if (!reportsToDownload || reportsToDownload.length === 0) {
+        toast.info("Tidak Ada Laporan", {
+          id: toastId,
+          description:
+            "Tidak ada laporan yang berstatus selesai untuk diunduh.",
+        });
+        return;
+      }
+
+      toast.success(`Ditemukan ${reportsToDownload.length} laporan`, {
+        id: toastId,
+        description: "Proses unduh akan dimulai satu per satu...",
+      });
+
+      for (const report of reportsToDownload) {
+        const fileName = `Laporan_MCU_${report.patient.fullName.replace(
+          /\s/g,
+          "_"
+        )}.pdf`;
+        const blob = await pdf(<FullReportDocument data={report} />).toBlob();
+
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+      }
+    } catch (e: any) {
+      toast.error("Gagal Mengunduh Semua", {
+        id: toastId,
+        description: e.message,
+      });
+    } finally {
+      setIsDownloadingAll(false);
+    }
+  };
+
   const handlePrintQr = (patient: PatientData) => {
     const printWindow = window.open("", "_blank");
     if (printWindow) {
@@ -331,49 +390,6 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
       printWindow.document.close();
     }
   };
-
-  // const buildKartuKontrolItems = (patient: PatientData): string[] => {
-  //   const baseItems = [
-  //     "POS PEMERIKSAAN FISIK",
-  //     "POS PEMERIKSAAN LAB",
-  //     "POS PEMERIKSAAN URIN",
-  //     "POS PEMERIKSAAN RADIOLOGI",
-  //   ];
-
-  //   const pkgArr: string[] = Array.isArray(patient.mcuPackage)
-  //     ? (patient.mcuPackage as string[])
-  //     : typeof patient.mcuPackage === "string"
-  //     ? (patient.mcuPackage as string)
-  //         .split(",")
-  //         .map((s) => s.trim())
-  //         .filter(Boolean)
-  //     : [];
-
-  //   const norm = pkgArr.map((s) => s.toLowerCase());
-
-  //   const addIf = (cond: boolean, label: string) => {
-  //     if (cond && !baseItems.includes(label)) baseItems.push(label);
-  //   };
-
-  //   addIf(
-  //     norm.some((s) => s.includes("ekg")),
-  //     "POS PEMERIKSAAN EKG"
-  //   );
-  //   addIf(
-  //     norm.some((s) => s.includes("audiometri") || s.includes("audiometry")),
-  //     "POS PEMERIKSAAN AUDIOMETRI"
-  //   );
-  //   addIf(
-  //     norm.some((s) => s.includes("spirometri") || s.includes("spirometry")),
-  //     "POS PEMERIKSAAN SPIROMETRI"
-  //   );
-  //   addIf(
-  //     norm.some((s) => s.includes("treadmill")),
-  //     "POS PEMERIKSAAN TREADMILL"
-  //   );
-
-  //   return baseItems;
-  // };
 
   const handlePrintKartuKontrol = (patient: PatientData) => {
     if (!patient.qrCode) {
@@ -743,6 +759,32 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
               </Tooltip>
             </TooltipProvider>
 
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handleDownloadAll}
+                    disabled={isDownloadingAll}
+                    className="md:w-auto md:px-4"
+                  >
+                    {isDownloadingAll ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Download className="h-4 w-4" />
+                    )}
+                    <span className="hidden md:inline ml-2">
+                      {isDownloadingAll ? "Mengunduh..." : "Unduh Semua Hasil"}
+                    </span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent className="md:hidden">
+                  <p>Unduh Semua Laporan</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
             <Dialog
               open={isDialogOpen}
               onOpenChange={(open) => {
@@ -967,7 +1009,6 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                                 <p>Print QR Code</p>
                               </TooltipContent>
                             </Tooltip>
-
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button
@@ -989,7 +1030,6 @@ export const PatientTable = ({ companyId, companyName }: PatientTableProps) => {
                                 <p>Print Kartu Kontrol</p>
                               </TooltipContent>
                             </Tooltip>
-
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button
