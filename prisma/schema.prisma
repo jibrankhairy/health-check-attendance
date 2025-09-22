@@ -236,6 +236,7 @@ model McuResult {
   treadmillImage1                String? @db.Text
   treadmillImage2                String? @db.Text
   treadmillImage3                String? @db.Text
+  treadmillImage4                String? @db.Text
   treadmillLamaLatihan           String? @db.Text
   treadmillKlasifikasiKebugaran  String? @db.Text
   treadmillKerjaFisik            String? @db.Text

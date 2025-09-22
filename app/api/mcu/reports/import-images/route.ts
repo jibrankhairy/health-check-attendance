@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { PrismaClient, Prisma } from "@prisma/client";
 import path from "path";
 import fs from "fs/promises";
+// Hanya butuh 'put', tidak perlu 'del'
 import { put } from "@vercel/blob";
 
 const prisma = new PrismaClient();
@@ -74,12 +75,18 @@ export async function POST(request: Request) {
 
         if (process.env.BLOB_READ_WRITE_TOKEN) {
           const blobPath = `mcu-images/${companyId}/${imageType}/${originalFilename}`;
+          
+          // --- INI BAGIAN YANG DIPERBAIKI ---
           const blob = await put(blobPath, file, {
             access: "public",
             contentType: file.type,
+            addRandomSuffix: false, // Tetap false agar nama file tidak diacak
+            allowOverwrite: true,   // Opsi untuk mengizinkan penimpaan file
           });
           finalUrl = blob.url;
+
         } else {
+          // Logika penyimpanan lokal tidak berubah
           const uploadDir = path.join(
             process.cwd(),
             "public",
@@ -103,6 +110,7 @@ export async function POST(request: Request) {
       } catch (e) {
         const error = e as Error;
         console.error(`Gagal memproses ID "${identifier}":`, error);
+        // Tampilkan error dari Vercel Blob di response agar lebih jelas
         errors.push(`Error untuk ID "${identifier}": ${error.message}`);
       }
     }
