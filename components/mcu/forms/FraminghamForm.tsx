@@ -31,15 +31,49 @@ interface FraminghamFormProps {
   patientGender?: string;
 }
 
-export const FraminghamForm = ({}: FraminghamFormProps) => {
-  const { control, setValue } = useFormContext();
+export const FraminghamForm = ({
+  patientAge,
+  patientGender,
+}: FraminghamFormProps) => {
+  const { control, setValue, watch } = useFormContext();
+
+  const hdlCholesterolFromChem = watch("hdl");
+  const totalCholesterolFromChem = watch("kolesterolTotal");
+  const systolicBpFromChem = watch("systolicBp");
+
+  useEffect(() => {
+    if (patientAge) {
+      setValue("framinghamAge", String(patientAge));
+    }
+    if (patientGender) {
+      setValue("framinghamGender", patientGender);
+    }
+  }, [patientAge, patientGender, setValue]);
+
+  useEffect(() => {
+    if (hdlCholesterolFromChem) {
+      setValue("framinghamHdlCholesterol", hdlCholesterolFromChem);
+    }
+    if (totalCholesterolFromChem) {
+      setValue("framinghamTotalCholesterol", totalCholesterolFromChem);
+    }
+    if (systolicBpFromChem) {
+      setValue("framinghamSystolicBp", systolicBpFromChem);
+    }
+  }, [
+    hdlCholesterolFromChem,
+    totalCholesterolFromChem,
+    systolicBpFromChem,
+    setValue,
+  ]);
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Framingham Risk Score</CardTitle>
         <CardDescription>
-          Input manual data untuk kalkulasi Framingham Risk Score.
+          Data untuk kalkulasi Framingham Risk Score akan terisi otomatis dari
+          data pemeriksaan.
         </CardDescription>
       </CardHeader>
       <CardContent className="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-8">
@@ -63,6 +97,7 @@ export const FraminghamForm = ({}: FraminghamFormProps) => {
             </FormItem>
           )}
         />
+
         <FormField
           control={control}
           name="framinghamGender"
@@ -96,10 +131,12 @@ export const FraminghamForm = ({}: FraminghamFormProps) => {
               <FormLabel>HDL Kolesterol</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="cth: 50"
+                  placeholder="Otomatis terisi"
                   type="number"
                   {...field}
                   value={field.value || ""}
+                  readOnly
+                  className="bg-gray-100"
                 />
               </FormControl>
               <FormMessage />
@@ -114,10 +151,12 @@ export const FraminghamForm = ({}: FraminghamFormProps) => {
               <FormLabel>Total Kolesterol</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="cth: 200"
+                  placeholder="Otomatis terisi"
                   type="number"
                   {...field}
                   value={field.value || ""}
+                  readOnly
+                  className="bg-gray-100"
                 />
               </FormControl>
               <FormMessage />
@@ -132,26 +171,33 @@ export const FraminghamForm = ({}: FraminghamFormProps) => {
               <FormLabel>Tekanan Darah Sistolik</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="cth: 120"
+                  placeholder="Otomatis terisi"
                   type="number"
                   {...field}
                   value={field.value || ""}
+                  readOnly
+                  className="bg-gray-100"
                 />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+
         <FormField
           control={control}
           name="framinghamIsSmoker"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Merokok</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value || ""}>
+              <Select
+                onValueChange={field.onChange}
+                value={field.value || ""}
+                disabled
+              >
                 <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih Opsi" />
+                  <SelectTrigger className="bg-gray-100">
+                    <SelectValue placeholder="Otomatis terisi" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -163,16 +209,21 @@ export const FraminghamForm = ({}: FraminghamFormProps) => {
             </FormItem>
           )}
         />
+
         <FormField
           control={control}
           name="framinghamIsOnHypertensionTreatment"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Mengkonsumsi Obat Hipertensi</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value || ""}>
+              <Select
+                onValueChange={field.onChange}
+                value={field.value || ""}
+                disabled
+              >
                 <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih Opsi" />
+                  <SelectTrigger className="bg-gray-100">
+                    <SelectValue placeholder="Otomatis terisi" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -184,7 +235,9 @@ export const FraminghamForm = ({}: FraminghamFormProps) => {
             </FormItem>
           )}
         />
+
         <div />
+
         <FormField
           control={control}
           name="framinghamRiskPercentage"
@@ -193,9 +246,11 @@ export const FraminghamForm = ({}: FraminghamFormProps) => {
               <FormLabel>Estimasi Risiko CVD (%)</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="cth: 10"
+                  placeholder="Otomatis terisi"
                   {...field}
                   value={field.value || ""}
+                  readOnly
+                  className="bg-gray-100"
                 />
               </FormControl>
               <FormMessage />
@@ -210,9 +265,11 @@ export const FraminghamForm = ({}: FraminghamFormProps) => {
               <FormLabel>Kategori Risiko</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="cth: Rendah"
+                  placeholder="Otomatis terisi"
                   {...field}
                   value={field.value || ""}
+                  readOnly
+                  className="bg-gray-100"
                 />
               </FormControl>
               <FormMessage />
@@ -227,9 +284,11 @@ export const FraminghamForm = ({}: FraminghamFormProps) => {
               <FormLabel>Estimasi Usia Vaskular</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="cth: 60"
+                  placeholder="Otomatis terisi"
                   {...field}
                   value={field.value || ""}
+                  readOnly
+                  className="bg-gray-100"
                 />
               </FormControl>
               <FormMessage />

@@ -24,6 +24,9 @@ import { RontgenForm } from "./forms/RontgenForm";
 import { PsikologiForm } from "./forms/PsikologiForm";
 import { ConclusionForm } from "./forms/ConclusionForm";
 import { FraminghamForm } from "./forms/FraminghamForm";
+import { calculateFraminghamRisk } from "./forms/framinghamCalculator";
+import type { PemeriksaanFisikFormValues } from "@/app/dashboardPetugas/components/PemeriksaanFisikForm";
+import type { HealthHistoryValues } from "@/app/form/components/HealthHistoryForm";
 
 const formSchema = z.object({
   gologanDarah: z.string().optional().nullable(),
@@ -61,6 +64,8 @@ const formSchema = z.object({
   bilirubinTotal: z.string().optional().nullable(),
   bilirubinDirect: z.string().optional().nullable(),
   alkaliPhosphatase: z.string().optional().nullable(),
+  pemeriksaanFisikForm: z.any().optional().nullable(),
+  healthHistoryAnswers: z.any().optional().nullable(),
 
   antiHbs: z.string().optional().nullable(),
 
@@ -245,21 +250,132 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
     formSchema
   ) as unknown as Resolver<McuFormData>;
 
+  const pemeriksaanFisikData =
+    typeof formValues.pemeriksaanFisikForm === "string"
+      ? (JSON.parse(
+          formValues.pemeriksaanFisikForm
+        ) as PemeriksaanFisikFormValues)
+      : (formValues.pemeriksaanFisikForm as PemeriksaanFisikFormValues) || {};
+
+  const healthHistoryData =
+    typeof formValues.healthHistoryAnswers === "string"
+      ? (JSON.parse(formValues.healthHistoryAnswers) as HealthHistoryValues)
+      : (formValues.healthHistoryAnswers as HealthHistoryValues) || {};
+
   const methods = useForm<McuFormData>({
     resolver: typedResolver,
     defaultValues: {
       ...(formValues as Partial<McuFormData>),
       saran: Array.isArray(initialData.saran) ? initialData.saran : [],
-      framinghamAge: initialData.patient.age
-        ? String(initialData.patient.age)
-        : "",
+      framinghamAge: String(initialData.patient.age || ""),
       framinghamGender: initialData.patient.gender || "",
+      framinghamHdlCholesterol: initialData.hdl || "",
+      framinghamTotalCholesterol: initialData.kolesterolTotal || "",
+      framinghamSystolicBp: String(pemeriksaanFisikData?.tensiSistol || ""),
+      framinghamIsSmoker:
+        healthHistoryData?.rokok === "rutin" ||
+        healthHistoryData?.rokok === "kadang-kadang"
+          ? "Ya"
+          : "Tidak",
+      framinghamIsOnHypertensionTreatment:
+        healthHistoryData?.obatHipertensi === "ada" ? "Ya" : "Tidak",
     },
   });
 
   const {
     formState: { errors },
+    watch,
+    setValue,
   } = methods;
+
+  const [
+    hdl,
+    kolesterolTotal,
+    pemeriksaanFisik,
+    healthHistory,
+    framinghamAge,
+    framinghamGender,
+    framinghamIsSmoker,
+    framinghamIsOnHypertensionTreatment,
+  ] = watch([
+    "hdl",
+    "kolesterolTotal",
+    "pemeriksaanFisikForm",
+    "healthHistoryAnswers",
+    "framinghamAge",
+    "framinghamGender",
+    "framinghamIsSmoker",
+    "framinghamIsOnHypertensionTreatment",
+  ]);
+
+  useEffect(() => {
+    const systolicBp = (pemeriksaanFisik as PemeriksaanFisikFormValues)
+      ?.tensiSistol
+      ? String((pemeriksaanFisik as PemeriksaanFisikFormValues).tensiSistol)
+      : "";
+
+    const isSmoker =
+      (healthHistory as HealthHistoryValues)?.rokok === "rutin" ||
+      (healthHistory as HealthHistoryValues)?.rokok === "kadang-kadang"
+        ? "Ya"
+        : "Tidak";
+
+    const isOnHypertensionTreatment =
+      (healthHistory as HealthHistoryValues)?.obatHipertensi === "ada"
+        ? "Ya"
+        : "Tidak";
+
+    setValue("framinghamHdlCholesterol", hdl || "");
+    setValue("framinghamTotalCholesterol", kolesterolTotal || "");
+    setValue("framinghamSystolicBp", systolicBp);
+    setValue("framinghamIsSmoker", isSmoker);
+    setValue("framinghamIsOnHypertensionTreatment", isOnHypertensionTreatment);
+
+    const data = {
+      gender: framinghamGender || "",
+      age: Number(framinghamAge),
+      hdlCholesterol: Number(hdl),
+      totalCholesterol: Number(kolesterolTotal),
+      systolicBp: Number(systolicBp),
+      isSmoker: isSmoker === "Ya",
+      isOnHypertensionTreatment: isOnHypertensionTreatment === "Ya",
+    };
+
+    if (
+      data.age &&
+      data.gender &&
+      !isNaN(data.hdlCholesterol) &&
+      !isNaN(data.totalCholesterol) &&
+      !isNaN(data.systolicBp) &&
+      data.isSmoker !== undefined &&
+      data.isOnHypertensionTreatment !== undefined
+    ) {
+      const { riskPercentage, riskCategory, vascularAge } =
+        calculateFraminghamRisk(data);
+
+      setValue("framinghamRiskPercentage", String(riskPercentage), {
+        shouldValidate: true,
+      });
+      setValue("framinghamRiskCategory", riskCategory, {
+        shouldValidate: true,
+      });
+      setValue("framinghamVascularAge", String(vascularAge), {
+        shouldValidate: true,
+      });
+    } else {
+      setValue("framinghamRiskPercentage", "");
+      setValue("framinghamRiskCategory", "");
+      setValue("framinghamVascularAge", "");
+    }
+  }, [
+    hdl,
+    kolesterolTotal,
+    pemeriksaanFisik,
+    healthHistory,
+    framinghamAge,
+    framinghamGender,
+    setValue,
+  ]);
 
   useEffect(() => {
     if (Object.keys(errors).length > 0) {
@@ -272,13 +388,17 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
     const reportId = initialData.id;
 
     try {
+      const payload = {
+        ...data,
+        pemeriksaanFisikForm: JSON.stringify(data.pemeriksaanFisikForm),
+        healthHistoryAnswers: JSON.stringify(data.healthHistoryAnswers),
+        saran: data.saran ? JSON.stringify(data.saran) : null,
+      };
+
       const response = await fetch(`/api/mcu/reports/${reportId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...data,
-          saran: data.saran ? JSON.stringify(data.saran) : null,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
