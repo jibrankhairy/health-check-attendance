@@ -172,6 +172,7 @@ const formSchema = z.object({
   treadmillImage1: z.string().optional().nullable(),
   treadmillImage2: z.string().optional().nullable(),
   treadmillImage3: z.string().optional().nullable(),
+  treadmillImage4: z.string().optional().nullable(),
   treadmillLamaLatihan: z.string().optional().nullable(),
   treadmillKlasifikasiKebugaran: z.string().optional().nullable(),
   treadmillKerjaFisik: z.string().optional().nullable(),

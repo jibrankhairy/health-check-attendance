@@ -11,6 +11,7 @@ type TreadmillData = {
   treadmillImage1?: string | null;
   treadmillImage2?: string | null;
   treadmillImage3?: string | null;
+  treadmillImage4?: string | null;
   treadmillLamaLatihan?: string | null;
   treadmillKlasifikasiKebugaran?: string | null;
   treadmillKerjaFisik?: string | null;
@@ -195,6 +196,12 @@ export const TreadmillDocument: React.FC<{ data: TreadmillData }> = ({
       {data?.treadmillImage3 && (
         <ImageAttachmentPage
           src={data.treadmillImage3}
+          title="Lampiran Gambar Treadmill"
+        />
+      )}
+      {data?.treadmillImage4 && (
+        <ImageAttachmentPage
+          src={data.treadmillImage4}
           title="Lampiran Gambar Treadmill"
         />
       )}

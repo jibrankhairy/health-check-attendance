@@ -32,6 +32,7 @@ export const TreadmillForm = () => {
             <ImageUploadField name="treadmillImage1" label="Gambar 1" />
             <ImageUploadField name="treadmillImage2" label="Gambar 2" />
             <ImageUploadField name="treadmillImage3" label="Gambar 3" />
+            <ImageUploadField name="treadmillImage4" label="Gambar 4" />
           </div>
         </div>
 

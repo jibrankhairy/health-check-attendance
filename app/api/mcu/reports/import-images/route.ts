@@ -7,11 +7,11 @@ import { put } from "@vercel/blob";
 const prisma = new PrismaClient();
 
 const IMAGE_TYPES = {
-  rontgen: { field: "rontgenImage" },
-  ekg: { field: "ekgImage1" },
-  treadmill: { field: "treadmillImage1" },
-  usgAbdomen: { field: "usgAbdomenImage1" },
-  usgMammae: { field: "usgMammaeImage1" },
+  rontgen: { type: "single", field: "rontgenImage" },
+  ekg: { type: "single", field: "ekgImage1" },
+  usgAbdomen: { type: "single", field: "usgAbdomenImage1" },
+  usgMammae: { type: "single", field: "usgMammaeImage1" },
+  treadmill: { type: "multiple", fieldPrefix: "treadmillImage", max: 4 },
 } as const;
 
 type ImageType = keyof typeof IMAGE_TYPES;
@@ -38,13 +38,38 @@ export async function POST(request: Request) {
 
     const errors: string[] = [];
     let successCount = 0;
-    const fieldToUpdate = IMAGE_TYPES[imageType].field;
+    const imageConfig = IMAGE_TYPES[imageType];
 
     for (const file of files) {
       const originalFilename = file.name;
-
       const baseFilename = path.parse(originalFilename).name;
-      const identifier = baseFilename.split("_")[0];
+
+      let identifier: string;
+      let fieldToUpdate: string;
+
+      if (imageConfig.type === "multiple") {
+        const parts = baseFilename.split("-");
+        const imageIndexStr = parts.pop();
+        const imageIndex = parseInt(imageIndexStr || "", 10);
+
+        if (
+          !imageIndexStr ||
+          isNaN(imageIndex) ||
+          imageIndex < 1 ||
+          imageIndex > imageConfig.max
+        ) {
+          errors.push(
+            `Nama file treadmill tidak valid: ${originalFilename}. Harus diakhiri dengan -1, -2, -3, atau -4.`
+          );
+          continue;
+        }
+
+        identifier = parts.join("-");
+        fieldToUpdate = `${imageConfig.fieldPrefix}${imageIndex}`;
+      } else {
+        identifier = baseFilename.split("_")[0];
+        fieldToUpdate = imageConfig.field;
+      }
 
       if (!identifier) {
         errors.push(`Gagal memproses nama file: ${originalFilename}`);
@@ -71,12 +96,13 @@ export async function POST(request: Request) {
         }
 
         let finalUrl = "";
-
         if (process.env.BLOB_READ_WRITE_TOKEN) {
           const blobPath = `mcu-images/${companyId}/${imageType}/${originalFilename}`;
           const blob = await put(blobPath, file, {
             access: "public",
             contentType: file.type,
+            addRandomSuffix: false,
+            allowOverwrite: true,
           });
           finalUrl = blob.url;
         } else {
