@@ -185,13 +185,15 @@ export const FullReportDocument: React.FC<FullReportDocumentProps> = ({
   const showHematologi =
     (hasItem("mcu regular") ||
       hasItem("mcu eksekutif") ||
-      hasItem("mcu akhir")) &&
+      hasItem("mcu akhir") ||
+      hasItem("mcu dmc")) &&
     sectionHasData(d, HEMATOLOGI_FIELDS);
 
   const showKimiaDarah =
     (hasItem("mcu regular") ||
       hasItem("mcu eksekutif") ||
-      hasItem("mcu akhir")) &&
+      hasItem("mcu akhir") ||
+      hasItem("mcu dmc")) &&
     sectionHasData(d, KIMIA_DARAH_FIELDS);
 
   const showBiomonitoring = sectionHasData(d, BIOMONITORING_FIELDS);
@@ -201,13 +203,15 @@ export const FullReportDocument: React.FC<FullReportDocumentProps> = ({
   const showUrinalisa =
     (hasItem("mcu regular") ||
       hasItem("mcu eksekutif") ||
-      hasItem("mcu akhir")) &&
+      hasItem("mcu akhir") ||
+      hasItem("mcu dmc")) &&
     sectionHasData(d, URINALISA_FIELDS);
 
   const showRontgen =
     (hasItem("mcu regular") ||
       hasItem("mcu eksekutif") ||
       hasItem("mcu akhir") ||
+      hasItem("mcu dmc") ||
       hasItem("radiologi thoraks")) &&
     sectionHasData(d, RONTGEN_FIELDS);
 
@@ -216,7 +220,12 @@ export const FullReportDocument: React.FC<FullReportDocumentProps> = ({
     sectionHasData(d, EKG_FIELDS);
 
   const showTreadmill =
-    hasItem("treadmill") && sectionHasData(d, TREADMILL_FIELDS);
+    (hasItem("mcu reguler") ||
+      hasItem("mcu eksekutif") ||
+      hasItem("mcu akhir") ||
+      hasItem("mcu dmc") ||
+      hasItem("treadmill")) &&
+    sectionHasData(d, TREADMILL_FIELDS);
 
   const showAudiometry =
     (hasItem("mcu eksekutif") || hasItem("audiometry")) &&
@@ -292,8 +301,10 @@ export const FullReportDocument: React.FC<FullReportDocumentProps> = ({
       {showUrinalisa && <UrinalisaDocument data={data as UrinalisaData} />}
       {showKimiaDarah && <KimiaDarahDocument data={data as KimiaDarahData} />}
 
-      {showHepatitisPanel && <HepatitisPanelDocument data={data as HepatitisPanelData} />}
-      
+      {showHepatitisPanel && (
+        <HepatitisPanelDocument data={data as HepatitisPanelData} />
+      )}
+
       {showBiomonitoring && (
         <BiomonitoringDocument data={data as BiomonitoringData} />
       )}

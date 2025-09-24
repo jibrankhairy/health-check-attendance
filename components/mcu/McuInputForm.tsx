@@ -522,21 +522,32 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
     packageItemsLower.includes(item.toLowerCase());
 
   const showHematologi =
-    hasItem("mcu regular") || hasItem("mcu eksekutif") || hasItem("mcu akhir");
+    hasItem("mcu regular") ||
+    hasItem("mcu eksekutif") ||
+    hasItem("mcu akhir") ||
+    hasItem("mcu dmc");
   const showKimiaDarah =
-    hasItem("mcu regular") || hasItem("mcu eksekutif") || hasItem("mcu akhir");
+    hasItem("mcu regular") ||
+    hasItem("mcu eksekutif") ||
+    hasItem("mcu akhir") ||
+    hasItem("mcu dmc");
   const showBiomonitoring =
     hasItem("mcu regular") ||
     hasItem("mcu eksekutif") ||
     hasItem("mcu akhir") ||
+    hasItem("mcu dmc") ||
     hasItem("biomonitoring");
   const showHepatitisPanel =
     hasItem("mcu regular") ||
     hasItem("mcu eksekutif") ||
     hasItem("mcu akhir") ||
+    hasItem("mcu dmc") ||
     hasItem("panel hepatitis");
   const showUrinalisa =
-    hasItem("mcu regular") || hasItem("mcu eksekutif") || hasItem("mcu akhir");
+    hasItem("mcu regular") ||
+    hasItem("mcu eksekutif") ||
+    hasItem("mcu akhir") ||
+    hasItem("mcu dmc");
   const showAudioSpiro =
     hasItem("mcu eksekutif") || hasItem("audiometry") || hasItem("spirometry");
   const showUsgAbdomen =
@@ -548,11 +559,13 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
     hasItem("mcu reguler") ||
     hasItem("mcu eksekutif") ||
     hasItem("mcu akhir") ||
+    hasItem("mcu dmc") ||
     hasItem("treadmill");
   const showRontgen =
     hasItem("mcu regular") ||
     hasItem("mcu eksekutif") ||
     hasItem("mcu akhir") ||
+    hasItem("mcu dmc") ||
     hasItem("radiologi thoraks");
 
   const showFramingham = true;
