@@ -86,6 +86,11 @@ export async function POST(request: Request) {
 
         const mcuResult = await prisma.mcuResult.findFirst({
           where: { patient: patientWhereClause },
+          select: {
+            id: true,
+            isExcelDataImported: true,
+            kesimpulan: true,
+          },
         });
 
         if (!mcuResult) {
@@ -120,10 +125,29 @@ export async function POST(request: Request) {
           finalUrl = `/uploads/${companyId}/${imageType}/${originalFilename}`;
         }
 
-        await prisma.mcuResult.update({
+        const updatedResult = await prisma.mcuResult.update({
           where: { id: mcuResult.id },
-          data: { [fieldToUpdate]: finalUrl },
+          data: {
+            [fieldToUpdate]: finalUrl,
+            isImagesUploaded: true,
+          },
+          select: {
+            isExcelDataImported: true,
+            kesimpulan: true,
+            id: true,
+          },
         });
+
+        if (updatedResult.isExcelDataImported && updatedResult.kesimpulan) {
+          await prisma.mcuResult.update({
+            where: { id: updatedResult.id },
+            data: {
+              status: "COMPLETED",
+              completedAt: new Date(),
+              fileUrl: `/dashboard/reports/view/${updatedResult.id}`,
+            },
+          });
+        }
 
         successCount++;
       } catch (e) {

@@ -90,12 +90,6 @@ function mapExcelToPrisma(row: any): { [key: string]: any } {
     }
   }
 
-  if (mappedData.kesimpulan && String(mappedData.kesimpulan).trim() !== "") {
-    mappedData.status = "COMPLETED";
-  } else {
-    mappedData.status = "IN_PROGRESS";
-  }
-
   return mappedData;
 }
 
@@ -170,19 +164,21 @@ export async function POST(request: Request) {
           continue;
         }
 
-        const patient = await prisma.patient.findUnique({
-          where: { nik, companyId },
-          include: { mcuResults: { take: 1, orderBy: { createdAt: "desc" } } },
+        const mcuResult = await prisma.mcuResult.findFirst({
+          where: {
+            patient: {
+              nik: nik,
+              companyId: companyId,
+            },
+          },
+          orderBy: { createdAt: "desc" },
+          select: {
+            id: true,
+            status: true,
+            isImagesUploaded: true,
+          },
         });
 
-        if (!patient) {
-          errors.push(
-            `Baris ${rowNum}: Pasien dengan NIK ${nik} tidak ditemukan.`
-          );
-          continue;
-        }
-
-        const mcuResult = patient.mcuResults[0];
         if (!mcuResult) {
           errors.push(
             `Baris ${rowNum}: Laporan MCU untuk pasien NIK ${nik} tidak ditemukan.`
@@ -197,6 +193,16 @@ export async function POST(request: Request) {
 
         const dataToUpdate = mapExcelToPrisma(row);
 
+        dataToUpdate.isExcelDataImported = true;
+
+        if (mcuResult.isImagesUploaded) {
+          dataToUpdate.status = "COMPLETED";
+          dataToUpdate.fileUrl = `/dashboard/reports/view/${mcuResult.id}`;
+          dataToUpdate.completedAt = new Date();
+        } else {
+          dataToUpdate.status = "IN_PROGRESS";
+        }
+
         for (const nameField in validatorMap) {
           if (dataToUpdate[nameField]) {
             const qrField = validatorMap[nameField];
@@ -204,10 +210,6 @@ export async function POST(request: Request) {
             const qrCodeDataUrl = await QRCode.toDataURL(validatorName);
             dataToUpdate[qrField] = qrCodeDataUrl;
           }
-        }
-
-        if (dataToUpdate.status === "COMPLETED") {
-          dataToUpdate.fileUrl = `/dashboard/reports/view/${mcuResult.id}`;
         }
 
         await prisma.mcuResult.update({

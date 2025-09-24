@@ -65,14 +65,30 @@ export async function PUT(request: Request, { params }: { params: Params }) {
 
     const isReportFinal = !!validData.kesimpulan;
 
+    const existingResult = await prisma.mcuResult.findUnique({
+      where: { id: resultId },
+      select: { isImagesUploaded: true },
+    });
+
+    if (!existingResult) {
+      return NextResponse.json(
+        { message: "Data laporan tidak ditemukan." },
+        { status: 404 }
+      );
+    }
+
     const dataToUpdate: any = {
       ...validData,
-      status: isReportFinal ? "COMPLETED" : "IN_PROGRESS",
+      isExcelDataImported: true,
+      status:
+        isReportFinal && existingResult.isImagesUploaded
+          ? "COMPLETED"
+          : "IN_PROGRESS",
     };
 
-    if (isReportFinal) {
-      const pdfUrl = `/dashboard/reports/view/${resultId}`;
-      dataToUpdate.fileUrl = pdfUrl;
+    if (dataToUpdate.status === "COMPLETED") {
+      dataToUpdate.fileUrl = `/dashboard/reports/view/${resultId}`;
+      dataToUpdate.completedAt = new Date();
     }
 
     const updatedResult = await prisma.mcuResult.update({

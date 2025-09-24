@@ -101,6 +101,8 @@ model McuResult {
   status                 String        @default("IN_PROGRESS")
   completedAt            DateTime?
   fileUrl                String?       @db.Text
+  isExcelDataImported   Boolean     @default(false)
+  isImagesUploaded      Boolean     @default(false)
   patient                Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
   patientId              Int
   progress               McuProgress[]
