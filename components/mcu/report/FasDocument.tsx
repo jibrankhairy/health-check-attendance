@@ -45,7 +45,6 @@ const toScore = (v: unknown): number | null => {
   return Math.trunc(n);
 };
 
-// total (10..50) -> 1..10
 const normalizeToTen = (total: number): number => {
   const clamped = Math.max(10, Math.min(50, total));
   const normalized = Math.round(((clamped - 10) / 40) * 9 + 1);
@@ -106,6 +105,13 @@ const calculateFas = (
       : categoryExplanation[category as Exclude<Category, "N/A">];
 
   return { rawTotal: total, score1to10, category, explanation };
+};
+
+const getGenderDisplay = (gender?: string | null): string => {
+  const g = (gender || "").toLowerCase();
+  if (g === "male" || g === "laki-laki") return "Laki-laki";
+  if (g === "female" || g === "perempuan") return "Perempuan";
+  return "-";
 };
 
 export const FasDocument: React.FC<{ data: FasData }> = ({ data }) => {
@@ -169,12 +175,7 @@ export const FasDocument: React.FC<{ data: FasData }> = ({ data }) => {
           <View style={s.infoRow}>
             <Text style={s.infoLabel}>Jenis Kelamin</Text>
             <Text style={s.infoValue}>
-              :{" "}
-              {data?.patient?.gender === "Male"
-                ? "Laki-laki"
-                : data?.patient?.gender === "Female"
-                ? "Perempuan"
-                : "-"}
+              : {getGenderDisplay(data?.patient?.gender)}
             </Text>
           </View>
         </View>
@@ -375,6 +376,7 @@ const s = StyleSheet.create({
   scoreRow: {
     justifyContent: "center",
     alignItems: "center",
+    borderTopWidth: 1,
     borderTopColor: "#333",
   },
   scoreText: { fontSize: 8, textAlign: "center" },

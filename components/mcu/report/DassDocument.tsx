@@ -131,6 +131,13 @@ export const DassDocument: React.FC<{ data: DassData }> = ({ data }) => {
     },
   };
 
+  const getGenderDisplay = (gender?: string | null): string => {
+    const g = (gender || "").toLowerCase();
+    if (g === "male" || g === "laki-laki") return "Laki-laki";
+    if (g === "female" || g === "perempuan") return "Perempuan";
+    return "-";
+  };
+
   return (
     <Page size="A4" style={globalStyles.page}>
       <ReportHeader />
@@ -159,12 +166,7 @@ export const DassDocument: React.FC<{ data: DassData }> = ({ data }) => {
           <View style={localStyles.infoRow}>
             <Text style={localStyles.infoLabel}>Jenis Kelamin</Text>
             <Text style={localStyles.infoValue}>
-              :{" "}
-              {data?.patient?.gender === "Male"
-                ? "Laki-laki"
-                : data?.patient?.gender === "Female"
-                ? "Perempuan"
-                : "-"}
+              : {getGenderDisplay(data?.patient?.gender)}
             </Text>
           </View>
         </View>
@@ -343,24 +345,24 @@ export const DassDocument: React.FC<{ data: DassData }> = ({ data }) => {
             </View>
           </View>
         </View>
-      </View>
 
-      {(data?.dassFasValidatorName || data?.dassFasValidatorQr) && (
-        <View style={localStyles.validatorBox}>
-          {data?.dassFasValidatorQr && (
-            <Image
-              src={data.dassFasValidatorQr as string}
-              style={localStyles.validatorQr}
-            />
-          )}
-          {data?.dassFasValidatorName && (
-            <Text style={localStyles.validatorName}>
-              {data.dassFasValidatorName as string}
-            </Text>
-          )}
-          <Text style={localStyles.validatorLabel}>Psikolog / Validator</Text>
-        </View>
-      )}
+        {(data?.dassFasValidatorName || data?.dassFasValidatorQr) && (
+          <View style={localStyles.validatorBox}>
+            {data?.dassFasValidatorQr && (
+              <Image
+                src={data.dassFasValidatorQr as string}
+                style={localStyles.validatorQr}
+              />
+            )}
+            {data?.dassFasValidatorName && (
+              <Text style={localStyles.validatorName}>
+                {data.dassFasValidatorName as string}
+              </Text>
+            )}
+            <Text style={localStyles.validatorLabel}>Psikolog / Validator</Text>
+          </View>
+        )}
+      </View>
 
       <ReportFooter />
     </Page>
