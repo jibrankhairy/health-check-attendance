@@ -90,7 +90,6 @@ interface UrinalisaDocumentProps {
 
 const urinalisaDataMap: Row[] = [
   { no: "1", label: "MAKROSKOPIS", isHeader: true },
-
   {
     no: "",
     label: "WARNA",
@@ -272,7 +271,11 @@ const isResultAbnormal = (
     return !normals.includes(lower);
   }
 
-  const num = Number(resultValue);
+  let num = Number(resultValue);
+  if (item.field === "urinBeratJenis" && Number.isInteger(num) && num > 100) {
+    num = num / 1000;
+  }
+
   if (Number.isNaN(num)) return false;
 
   const { min, max } = item.ref.all;
@@ -360,6 +363,17 @@ export const UrinalisaDocument: React.FC<UrinalisaDocumentProps> = ({
           }
 
           const val = data?.[item.field as keyof UrinalisaData];
+          let displayVal = val;
+          if (item.field === "urinBeratJenis" && val != null) {
+            // Coba konversi nilai ke angka
+            const num = parseFloat(String(val).replace(/,/g, "."));
+            if (!isNaN(num) && num > 100) {
+              displayVal = (num / 1000).toFixed(3);
+            } else if (!isNaN(num)) {
+              displayVal = num.toFixed(3);
+            }
+          }
+
           const abnormal = isResultAbnormal(item as NonHeaderRow, val);
           const isLast = idx === urinalisaDataMap.length - 1;
           const rowStyle = isLast
@@ -375,7 +389,7 @@ export const UrinalisaDocument: React.FC<UrinalisaDocumentProps> = ({
               <Text style={[styles.tableCol, styles.colJenis]}>
                 {(item as NonHeaderRow).label}
               </Text>
-              <Text style={hasilStyles}>{val ?? "-"}</Text>
+              <Text style={hasilStyles}>{displayVal ?? "-"}</Text>
               <Text style={[styles.tableCol, styles.colRujukan]}>
                 {(item as NonHeaderRow).refText}
               </Text>

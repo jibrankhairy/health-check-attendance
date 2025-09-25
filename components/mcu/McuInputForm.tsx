@@ -477,6 +477,35 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
           }
         }
 
+        if (
+          importedData.urinBeratJenis !== undefined &&
+          importedData.urinBeratJenis !== null
+        ) {
+          let value = importedData.urinBeratJenis;
+          let formattedValue;
+
+          if (typeof value === "string") {
+            // Ganti koma dengan titik dan parse sebagai float
+            const num = parseFloat(value.replace(/,/g, "."));
+            if (!isNaN(num)) {
+              value = num;
+            }
+          }
+
+          // Jika nilai berupa angka dan lebih besar dari 100 (misal 1015), bagi dengan 1000
+          if (typeof value === "number" && value > 100) {
+            formattedValue = (value / 1000).toFixed(3);
+          } else if (typeof value === "number") {
+            // Jika sudah dalam format desimal, format ke 3 desimal
+            formattedValue = value.toFixed(3);
+          } else {
+            // Jika tidak bisa diproses, biarkan seperti string aslinya
+            formattedValue = String(value);
+          }
+
+          (processedData as any).urinBeratJenis = formattedValue;
+        }
+
         if (importedData.saran && typeof importedData.saran === "string") {
           processedData.saran = importedData.saran
             .split(";")
@@ -581,7 +610,6 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
     hasItem("radiologi thoraks");
 
   const showRefraktometri = hasItem("refraktometri");
-
   const showFramingham = true;
 
   const itemsToCheck = new Set<string>(initialData.patient.mcuPackage || []);

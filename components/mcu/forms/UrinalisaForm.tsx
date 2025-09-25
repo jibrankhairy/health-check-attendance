@@ -58,6 +58,8 @@ export const UrinalisaForm = () => {
                 id="urinBeratJenis"
                 {...register("urinBeratJenis")}
                 placeholder="cth: 1.015"
+                type="number"
+                step="0.001"
               />
             </div>
             <div className="space-y-2">
