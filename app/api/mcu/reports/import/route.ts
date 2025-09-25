@@ -152,6 +152,7 @@ export async function POST(request: Request) {
       conclusionValidatorName: "conclusionValidatorQr",
       dassFasValidatorName: "dassFasValidatorQr",
       framinghamValidatorName: "framinghamValidatorQr",
+      refraValidatorName: "refraValidatorQr",
     };
 
     for (const [index, row] of jsonData.entries()) {

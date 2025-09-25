@@ -137,6 +137,16 @@ model McuResult {
   lapangPandang          String?       @db.Text
   fisikMataLainnya       String?       @db.Text
 
+  // --- Refraktometri BARU ---
+  refraKananSpheris     String?     @db.Text
+  refraKananChylinder   String?     @db.Text
+  refraKananAxis        String?     @db.Text
+  refraKananAdd         String?     @db.Text
+  refraKiriSpheris      String?     @db.Text
+  refraKiriChylinder    String?     @db.Text
+  refraKiriAxis         String?     @db.Text
+  refraKiriAdd          String?     @db.Text
+
   // --- THT & Pendengaran ---
   fisikTelinga           String?       @db.Text
   fisikHidung            String?       @db.Text
@@ -389,4 +399,7 @@ model McuResult {
   dassFasValidatorQr           String? @db.Text
   framinghamValidatorName      String?
   framinghamValidatorQr        String? @db.Text
+
+  refraValidatorName           String?
+  refraValidatorQr             String? @db.Text
 }

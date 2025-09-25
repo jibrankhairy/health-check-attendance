@@ -24,6 +24,7 @@ import { RontgenForm } from "./forms/RontgenForm";
 import { PsikologiForm } from "./forms/PsikologiForm";
 import { ConclusionForm } from "./forms/ConclusionForm";
 import { FraminghamForm } from "./forms/FraminghamForm";
+import { RefraktometriForm } from "./forms/RefraktometriForm";
 import { calculateFraminghamRisk } from "./forms/framinghamCalculator";
 import type { PemeriksaanFisikFormValues } from "@/app/dashboardPetugas/components/PemeriksaanFisikForm";
 import type { HealthHistoryValues } from "@/app/form/components/HealthHistoryForm";
@@ -226,6 +227,17 @@ const formSchema = z.object({
   framinghamVascularAge: z.string().optional().nullable(),
   framinghamValidatorName: z.string().optional().nullable(),
   framinghamValidatorQr: z.string().optional().nullable(),
+
+  refraKananSpheris: z.string().optional().nullable(),
+  refraKananChylinder: z.string().optional().nullable(),
+  refraKananAxis: z.string().optional().nullable(),
+  refraKananAdd: z.string().optional().nullable(),
+  refraKiriSpheris: z.string().optional().nullable(),
+  refraKiriChylinder: z.string().optional().nullable(),
+  refraKiriAxis: z.string().optional().nullable(),
+  refraKiriAdd: z.string().optional().nullable(),
+  refraValidatorName: z.string().optional().nullable(),
+  refraValidatorQr: z.string().optional().nullable(),
 });
 
 export type McuFormData = z.infer<typeof formSchema>;
@@ -568,6 +580,8 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
     hasItem("mcu dmc") ||
     hasItem("radiologi thoraks");
 
+  const showRefraktometri = hasItem("refraktometri");
+
   const showFramingham = true;
 
   const itemsToCheck = new Set<string>(initialData.patient.mcuPackage || []);
@@ -620,7 +634,9 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
         {showUsgAbdomen && <UsgAbdomenForm />}
         {showUsgMammae && <UsgMammaeForm />}
         {showEkg && <EkgForm />}
-        {showTreadmill && <TreadmillForm />} {showRontgen && <RontgenForm />}
+        {showTreadmill && <TreadmillForm />}
+        {showRontgen && <RontgenForm />}
+        {showRefraktometri && <RefraktometriForm />}
         <ConclusionForm />
         {Object.keys(errors).length > 0 && (
           <div className="p-4 my-4 border-l-4 border-red-600 bg-red-50 rounded-md">

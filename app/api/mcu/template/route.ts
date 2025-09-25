@@ -138,6 +138,17 @@ export async function GET() {
     "ekgAdvice",
     "ekgValidatorName",
     "ekgValidatorQr",
+    // Refraktometri
+    "refraKananSpheris",
+    "refraKananChylinder",
+    "refraKananAxis",
+    "refraKananAdd",
+    "refraKiriSpheris",
+    "refraKiriChylinder",
+    "refraKiriAxis",
+    "refraKiriAdd",
+    "refraValidatorName",
+    "refraValidatorQr",
     // Rontgen
     "kesanRontgen",
     "rontgenValidatorName",

@@ -24,6 +24,7 @@ import { UsgAbdomenDocument } from "./UsgAbdomenDocument";
 import { UsgMammaeDocument } from "./UsgMammaeDocument";
 import { ConclusionDocument } from "./ConclusionDocument";
 import { FraminghamDocument } from "./FraminghamDocument";
+import { RefraktometriDocument } from "./RefraktometriDocument";
 
 const HEMATOLOGI_FIELDS = [
   "golonganDarah",
@@ -142,6 +143,16 @@ const FRAMINGHAM_FIELDS = [
   "framinghamRiskCategory",
   "framinghamVascularAge",
 ];
+const REFRAKTOMETRI_FIELDS = [
+  "refraKananSpheris",
+  "refraKananChylinder",
+  "refraKananAxis",
+  "refraKananAdd",
+  "refraKiriSpheris",
+  "refraKiriChylinder",
+  "refraKiriAxis",
+  "refraKiriAdd",
+];
 
 const sectionHasData = (
   data: Record<string, any>,
@@ -220,7 +231,7 @@ export const FullReportDocument: React.FC<FullReportDocumentProps> = ({
     sectionHasData(d, EKG_FIELDS);
 
   const showTreadmill =
-    (hasItem("mcu reguler") ||
+    (hasItem("mcu regular") ||
       hasItem("mcu eksekutif") ||
       hasItem("mcu akhir") ||
       hasItem("mcu dmc") ||
@@ -244,6 +255,9 @@ export const FullReportDocument: React.FC<FullReportDocumentProps> = ({
     sectionHasData(d, USG_MAMMAE_FIELDS);
 
   const showFramingham = sectionHasData(d, FRAMINGHAM_FIELDS);
+
+  const showRefraktometri =
+    hasItem("refraktometri") && sectionHasData(d, REFRAKTOMETRI_FIELDS);
 
   const showDass = !!d.dassTestAnswers;
   const showFas = !!d.fasTestAnswers;
@@ -279,6 +293,9 @@ export const FullReportDocument: React.FC<FullReportDocumentProps> = ({
   type UsgMammaeData = React.ComponentProps<typeof UsgMammaeDocument>["data"];
   type ConclusionData = React.ComponentProps<typeof ConclusionDocument>["data"];
   type FraminghamData = React.ComponentProps<typeof FraminghamDocument>["data"];
+  type RefraktometriData = React.ComponentProps<
+    typeof RefraktometriDocument
+  >["data"];
 
   return (
     <Document>
@@ -317,6 +334,9 @@ export const FullReportDocument: React.FC<FullReportDocumentProps> = ({
       {showUsgAbdomen && <UsgAbdomenDocument data={data as UsgAbdomenData} />}
       {showUsgMammae && <UsgMammaeDocument data={data as UsgMammaeData} />}
       {showFramingham && <FraminghamDocument data={data as FraminghamData} />}
+      {showRefraktometri && (
+        <RefraktometriDocument data={data as RefraktometriData} />
+      )}
 
       <ConclusionDocument data={data as ConclusionData} />
     </Document>

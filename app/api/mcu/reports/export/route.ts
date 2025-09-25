@@ -166,6 +166,18 @@ const templateHeaders = [
   "kesimpulanSpirometry",
   "spirometryValidatorName",
 
+  // Refraktometri
+  "refraKananSpheris",
+  "refraKananChylinder",
+  "refraKananAxis",
+  "refraKananAdd",
+  "refraKiriSpheris",
+  "refraKiriChylinder",
+  "refraKiriAxis",
+  "refraKiriAdd",
+  "refraValidatorName",
+  "refraValidatorQr",
+
   // USG Abdomen & Mammae
   "usgAbdomenHepar",
   "usgAbdomenGallBladder",
