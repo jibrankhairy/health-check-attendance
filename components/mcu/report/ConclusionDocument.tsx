@@ -27,18 +27,24 @@ type MetricItem = {
 };
 
 type Summaries = {
-  hematologi: string;
-  kimiaDarah: string;
-  urinRutin: string;
-  rontgen: string;
-  ekg: string;
-  mammae: string;
-  abdomen: string;
-  fisik: string;
+  hematologi?: string;
+  kimiaDarah?: string;
+  urinRutin?: string;
+  rontgen?: string;
+  ekg?: string;
+  mammae?: string;
+  abdomen?: string;
+  fisik?: string;
+  audiometry?: string;
+  spirometry?: string;
+  treadmill?: string;
+  biomonitoring?: string;
+  hepatitis?: string;
+  refraktometri?: string;
 };
 
 type ConclusionData = {
-  patient?: { gender?: string } | null;
+  patient?: { gender?: string; mcuPackage?: string[] } | null;
   saran?: string | string[] | null;
   kesimpulan?: string | null;
 
@@ -49,6 +55,13 @@ type ConclusionData = {
   ekgConclusion?: string | null;
   usgMammaeKesimpulan?: string | null;
   usgAbdomenKesimpulan?: string | null;
+  audiometryKesimpulanUmum?: string | null;
+  kesimpulanSpirometry?: string | null;
+  treadmillHasilTest?: string | null;
+  refraKananSpheris?: string | null;
+  refraKiriSpheris?: string | null;
+  timbalDarah?: string | null;
+  hbsag?: string | null;
 } & Record<string, unknown>;
 
 const hematologyDataMap: MetricItem[] = [
@@ -317,18 +330,20 @@ const isAbnormal = (
 
 const summarizeResults = (data: ConclusionData): Summaries => {
   const gender = data?.patient?.gender;
-  const summaries: Summaries = {
-    hematologi: "",
-    kimiaDarah: "",
-    urinRutin: "",
-    rontgen: "",
-    ekg: "",
-    mammae: "",
-    abdomen: "",
-    fisik: "",
-  };
+  const mcuPackage = (data?.patient?.mcuPackage || []).map((p) =>
+    p.toLowerCase()
+  );
+  const has = (s: string) => mcuPackage.includes(s.toLowerCase());
 
-  const getAbnormalFindings = (dataMap: MetricItem[]): string => {
+  const hasBasicMcu =
+    has("mcu regular") ||
+    has("mcu eksekutif") ||
+    has("mcu akhir") ||
+    has("mcu dmc");
+
+  const summaries: Summaries = {};
+
+  const getAbnormalFindings = (dataMap: MetricItem[]): string | undefined => {
     const abnormalResults = dataMap
       .map((item) => {
         const resultValue = (data as Record<string, unknown>)?.[item.field];
@@ -342,24 +357,60 @@ const summarizeResults = (data: ConclusionData): Summaries => {
     return abnormalResults.length > 0 ? abnormalResults.join("\n") : "NORMAL";
   };
 
-  summaries.hematologi = getAbnormalFindings(hematologyDataMap);
-  summaries.kimiaDarah = getAbnormalFindings(kimiaDarahDataMap);
-  summaries.urinRutin = getAbnormalFindings(urinalisaDataMap);
+  summaries.fisik = "NORMAL";
 
-  const desc = (v: unknown): string =>
+  if (hasBasicMcu) {
+    summaries.hematologi = getAbnormalFindings(hematologyDataMap);
+    summaries.kimiaDarah = getAbnormalFindings(kimiaDarahDataMap);
+    summaries.urinRutin = getAbnormalFindings(urinalisaDataMap);
+  }
+  if (has("biomonitoring")) {
+    const resultValue = data.timbalDarah;
+    if (resultValue && resultValue !== "NORMAL") {
+      summaries.biomonitoring = String(resultValue);
+    } else {
+      summaries.biomonitoring = "NORMAL";
+    }
+  }
+  if (has("panel hepatitis")) {
+    const resultValue = data.hbsag;
+    if (resultValue && resultValue.toLowerCase() !== "negatif") {
+      summaries.hepatitis = String(resultValue);
+    } else {
+      summaries.hepatitis = "NORMAL";
+    }
+  }
+
+  const desc = (v: unknown): string | undefined =>
     !v || String(v).toLowerCase().includes("normal") ? "NORMAL" : String(v);
 
-  summaries.rontgen = desc(data?.kesanRontgen);
-  summaries.ekg = desc(data?.ekgConclusion);
-  summaries.mammae = desc(data?.usgMammaeKesimpulan);
-  summaries.abdomen = desc(data?.usgAbdomenKesimpulan);
-  summaries.fisik = "NORMAL";
+  if (has("radiologi thoraks") || hasBasicMcu)
+    summaries.rontgen = desc(data?.kesanRontgen);
+  if (has("ekg") || has("mcu eksekutif"))
+    summaries.ekg = desc(data?.ekgConclusion);
+  if (has("usg mammae") || has("mcu eksekutif"))
+    summaries.mammae = desc(data?.usgMammaeKesimpulan);
+  if (has("usg whole abdomen") || has("mcu eksekutif"))
+    summaries.abdomen = desc(data?.usgAbdomenKesimpulan);
+  if (has("audiometry") || has("mcu eksekutif"))
+    summaries.audiometry = desc(data?.audiometryKesimpulanUmum);
+  if (has("spirometry") || has("mcu eksekutif"))
+    summaries.spirometry = desc(data?.kesimpulanSpirometry);
+  if (has("treadmill") || has("mcu eksekutif"))
+    summaries.treadmill = desc(data?.treadmillHasilTest);
+  if (has("refraktometri")) {
+    if (data.refraKananSpheris || data.refraKiriSpheris) {
+      summaries.refraktometri = "Lihat lampiran hasil refraktometri.";
+    } else {
+      summaries.refraktometri = "NORMAL";
+    }
+  }
 
   return summaries;
 };
 
 const ConclusionRow: React.FC<{
-  number: string;
+  number: number;
   label: string;
   value: string | number;
 }> = ({ number, label, value }) => {
@@ -391,6 +442,15 @@ export const ConclusionDocument: React.FC<{ data: ConclusionData }> = ({
   data,
 }) => {
   const summaries = summarizeResults(data);
+  const mcuPackage = (data?.patient?.mcuPackage || []).map((p) =>
+    p.toLowerCase()
+  );
+  const has = (s: string) => mcuPackage.includes(s.toLowerCase());
+  const hasBasicMcu =
+    has("mcu regular") ||
+    has("mcu eksekutif") ||
+    has("mcu akhir") ||
+    has("mcu dmc");
 
   let saranList: string[] = [];
   if (data?.saran && typeof data.saran === "string") {
@@ -407,6 +467,75 @@ export const ConclusionDocument: React.FC<{ data: ConclusionData }> = ({
     data?.conclusionValidatorName || data?.conclusionValidatorQr
   );
 
+  const reportItems = [
+    { label: "Pemeriksaan Fisik", value: summaries.fisik, required: true },
+    {
+      label: "Lab - Hematologi Darah Rutin",
+      value: summaries.hematologi,
+      required: hasBasicMcu,
+    },
+    {
+      label: "Lab - Hasil Kimia Darah",
+      value: summaries.kimiaDarah,
+      required: hasBasicMcu,
+    },
+    {
+      label: "Lab - Urin Rutin",
+      value: summaries.urinRutin,
+      required: hasBasicMcu,
+    },
+    {
+      label: "Lab - Biomonitoring",
+      value: summaries.biomonitoring,
+      required: has("biomonitoring"),
+    },
+    {
+      label: "Lab - Panel Hepatitis",
+      value: summaries.hepatitis,
+      required: has("panel hepatitis"),
+    },
+    {
+      label: "Pemeriksaan Rontgen Thorax",
+      value: summaries.rontgen,
+      required: has("radiologi thoraks") || hasBasicMcu,
+    },
+    {
+      label: "Pemeriksaan EKG",
+      value: summaries.ekg,
+      required: has("ekg") || has("mcu eksekutif"),
+    },
+    {
+      label: "Pemeriksaan Treadmill",
+      value: summaries.treadmill,
+      required: has("treadmill") || has("mcu eksekutif"),
+    },
+    {
+      label: "Pemeriksaan Audiometri",
+      value: summaries.audiometry,
+      required: has("audiometry") || has("mcu eksekutif"),
+    },
+    {
+      label: "Pemeriksaan Spirometri",
+      value: summaries.spirometry,
+      required: has("spirometry") || has("mcu eksekutif"),
+    },
+    {
+      label: "Pemeriksaan USG Abdomen",
+      value: summaries.abdomen,
+      required: has("usg whole abdomen") || has("mcu eksekutif"),
+    },
+    {
+      label: "Pemeriksaan Mammae",
+      value: summaries.mammae,
+      required: has("usg mammae") || has("mcu eksekutif"),
+    },
+    {
+      label: "Pemeriksaan Refraktometri",
+      value: summaries.refraktometri,
+      required: has("refraktometri"),
+    },
+  ].filter((item) => item.required && item.value !== undefined);
+
   return (
     <Page size="A4" style={{ ...globalStyles.page, paddingTop: 120 }}>
       <ReportHeader />
@@ -420,46 +549,14 @@ export const ConclusionDocument: React.FC<{ data: ConclusionData }> = ({
             RESUME HASIL PEMERIKSAAN SEBAGAI BERIKUT :
           </Text>
           <View style={{ gap: 6 }}>
-            <ConclusionRow
-              number="1"
-              label="Pemeriksaan Fisik"
-              value={summaries.fisik}
-            />
-            <ConclusionRow
-              number="2"
-              label="Lab - Hematologi Darah Rutin"
-              value={summaries.hematologi}
-            />
-            <ConclusionRow
-              number="3"
-              label="Lab - Hasil Kimia Darah"
-              value={summaries.kimiaDarah}
-            />
-            <ConclusionRow
-              number="4"
-              label="Lab - Urin Rutin"
-              value={summaries.urinRutin}
-            />
-            <ConclusionRow
-              number="5"
-              label="Pemeriksaan Rontgen Thorax"
-              value={summaries.rontgen}
-            />
-            <ConclusionRow
-              number="6"
-              label="Pemeriksaan EKG"
-              value={summaries.ekg}
-            />
-            <ConclusionRow
-              number="7"
-              label="Pemeriksaan Mammae"
-              value={summaries.mammae}
-            />
-            <ConclusionRow
-              number="8"
-              label="Pemeriksaan USG Abdomen"
-              value={summaries.abdomen}
-            />
+            {reportItems.map((item, index) => (
+              <ConclusionRow
+                key={item.label}
+                number={index + 1}
+                label={item.label}
+                value={item.value || "TIDAK ADA"}
+              />
+            ))}
           </View>
         </View>
 

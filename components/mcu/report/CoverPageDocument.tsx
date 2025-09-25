@@ -109,21 +109,12 @@ function buildAttachedList(data: ReportData) {
   const lower = raw.map((x) => (x || "").toString().toLowerCase());
   const has = (s: string) => lower.includes(s.toLowerCase());
 
-  const showHematologi =
+  // Logika paket dasar
+  const hasBasicMcu =
     has("mcu regular") ||
     has("mcu eksekutif") ||
     has("mcu akhir") ||
     has("mcu dmc");
-  const showKimiaDarah = showHematologi;
-  const showUrinalisa = showHematologi;
-  const showRefraktometri = has("refraktometri");
-
-  const showRontgen = showHematologi || has("radiologi thoraks");
-  const showEkg = has("mcu eksekutif") || has("ekg") || has("treadmill");
-  const showAudiometry = has("mcu eksekutif") || has("audiometry");
-  const showSpirometry = has("mcu eksekutif") || has("spirometry");
-  const showUsgAbdomen = has("mcu eksekutif") || has("usg whole abdomen");
-  const showUsgMammae = has("mcu eksekutif") || has("usg mammae");
 
   const list: Array<{ type: "item" | "subhead"; text: string }> = [];
 
@@ -134,22 +125,44 @@ function buildAttachedList(data: ReportData) {
   list.push({ type: "item", text: "HASIL PEMERIKSAAN FISIK" });
 
   const labItems: string[] = [];
-  if (showHematologi) labItems.push("HEMATOLOGI DARAH RUTIN");
-  if (showKimiaDarah) labItems.push("KIMIA DARAH");
-  if (showUrinalisa) labItems.push("URINE RUTIN");
+  if (hasBasicMcu) {
+    labItems.push("HEMATOLOGI DARAH RUTIN");
+    labItems.push("KIMIA DARAH");
+    labItems.push("URINE RUTIN");
+  }
+  // Pemeriksaan lab tambahan (add-on)
+  if (has("panel hepatitis")) labItems.push("PANEL HEPATITIS");
+  if (has("biomonitoring")) labItems.push("BIOMONITORING");
+
   if (labItems.length) {
     list.push({ type: "subhead", text: "HASIL PEMERIKSAAN LABORATORIUM" });
     labItems.forEach((t) => list.push({ type: "item", text: t }));
   }
 
   const penunjangItems: string[] = [];
-  if (showRontgen) penunjangItems.push("HASIL PEMERIKSAAN RONTGEN");
-  if (showEkg) penunjangItems.push("HASIL PEMERIKSAAN EKG");
-  if (showAudiometry) penunjangItems.push("HASIL PEMERIKSAAN AUDIOMETRY");
-  if (showSpirometry) penunjangItems.push("HASIL PEMERIKSAAN SPIROMETRY");
-  if (showUsgMammae) penunjangItems.push("HASIL PEMERIKSAAN USG MAMMAE");
-  if (showUsgAbdomen) penunjangItems.push("HASIL PEMERIKSAAN USG ABDOMEN");
-  if (showRefraktometri) penunjangItems.push("HASIL PEMERIKSAAN REFRAKTOMETRI");
+  if (
+    has("radiologi thoraks") ||
+    has("mcu regular") ||
+    has("mcu akhir") ||
+    has("mcu dmc") ||
+    has("mcu eksekutif")
+  )
+    penunjangItems.push("HASIL PEMERIKSAAN RONTGEN");
+  if (has("ekg") || has("mcu eksekutif"))
+    penunjangItems.push("HASIL PEMERIKSAAN EKG");
+  if (has("treadmill") || has("mcu eksekutif"))
+    penunjangItems.push("HASIL PEMERIKSAAN TREADMILL");
+  if (has("audiometry") || has("mcu eksekutif"))
+    penunjangItems.push("HASIL PEMERIKSAAN AUDIOMETRY");
+  if (has("spirometry") || has("mcu eksekutif"))
+    penunjangItems.push("HASIL PEMERIKSAAN SPIROMETRY");
+  if (has("usg whole abdomen") || has("mcu eksekutif"))
+    penunjangItems.push("HASIL PEMERIKSAAN USG ABDOMEN");
+  if (has("usg mammae") || has("mcu eksekutif"))
+    penunjangItems.push("HASIL PEMERIKSAAN USG MAMMAE");
+
+  if (has("refraktometri"))
+    penunjangItems.push("HASIL PEMERIKSAAN REFRAKTOMETRI");
 
   if (penunjangItems.length) {
     list.push({ type: "subhead", text: "HASIL PEMERIKSAAN PENUNJANG MEDIS" });
