@@ -110,9 +110,13 @@ function buildAttachedList(data: ReportData) {
   const has = (s: string) => lower.includes(s.toLowerCase());
 
   const showHematologi =
-    has("mcu regular") || has("mcu eksekutif") || has("mcu akhir");
+    has("mcu regular") ||
+    has("mcu eksekutif") ||
+    has("mcu akhir") ||
+    has("mcu dmc");
   const showKimiaDarah = showHematologi;
   const showUrinalisa = showHematologi;
+  const showRefraktometri = has("refraktometri");
 
   const showRontgen = showHematologi || has("radiologi thoraks");
   const showEkg = has("mcu eksekutif") || has("ekg") || has("treadmill");
@@ -145,6 +149,8 @@ function buildAttachedList(data: ReportData) {
   if (showSpirometry) penunjangItems.push("HASIL PEMERIKSAAN SPIROMETRY");
   if (showUsgMammae) penunjangItems.push("HASIL PEMERIKSAAN USG MAMMAE");
   if (showUsgAbdomen) penunjangItems.push("HASIL PEMERIKSAAN USG ABDOMEN");
+  if (showRefraktometri) penunjangItems.push("HASIL PEMERIKSAAN REFRAKTOMETRI");
+
   if (penunjangItems.length) {
     list.push({ type: "subhead", text: "HASIL PEMERIKSAAN PENUNJANG MEDIS" });
     penunjangItems.forEach((t) => list.push({ type: "item", text: t }));
