@@ -68,7 +68,7 @@ const localStyles = StyleSheet.create({
   },
   validatorTitle: {
     fontSize: 9,
-    marginBottom: 60,
+    marginBottom: 5,
   },
   imagePage: {
     padding: 40,
