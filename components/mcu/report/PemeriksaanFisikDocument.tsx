@@ -175,7 +175,7 @@ export const PemeriksaanFisikDocument: React.FC<
 
   const pemeriksaanUmumItems = [
     { label: "Kondisi Kesehatan", value: pf.kondisiKesehatan },
-    { label: "Kesadaran", value: pf.kesadaran },
+    { label: "Kesadaran", value: pf.kesadaran || "Compos Mentis" },
     { label: "Berat Badan", value: `${display(pf.beratBadanKg)} kg` },
     { label: "Tinggi Badan", value: `${display(pf.tinggiBadanCm)} cm` },
     { label: "BMI", value: `${display(pf.bmi)} kg/m²` },
