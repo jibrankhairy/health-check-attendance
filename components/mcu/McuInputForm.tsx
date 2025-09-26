@@ -256,6 +256,7 @@ interface McuInputFormProps {
 export const McuInputForm = ({ initialData }: McuInputFormProps) => {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isFraminghamAutoSaving, setIsFraminghamAutoSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { id, patient, ...formValues } = initialData;
 
@@ -299,6 +300,7 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
     formState: { errors },
     watch,
     setValue,
+    getValues,
   } = methods;
 
   const [
@@ -310,6 +312,7 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
     framinghamGender,
     framinghamIsSmoker,
     framinghamIsOnHypertensionTreatment,
+    framinghamRiskPercentage,
   ] = watch([
     "hdl",
     "kolesterolTotal",
@@ -319,6 +322,7 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
     "framinghamGender",
     "framinghamIsSmoker",
     "framinghamIsOnHypertensionTreatment",
+    "framinghamRiskPercentage",
   ]);
 
   useEffect(() => {
@@ -389,6 +393,61 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
     framinghamGender,
     setValue,
   ]);
+
+  useEffect(() => {
+    const riskPercentage = getValues("framinghamRiskPercentage");
+    const riskCategory = getValues("framinghamRiskCategory");
+    const vascularAge = getValues("framinghamVascularAge");
+
+    if (
+      !riskPercentage ||
+      !riskCategory ||
+      !vascularAge ||
+      isNaN(parseFloat(riskPercentage))
+    )
+      return;
+
+    let timeoutId: NodeJS.Timeout;
+
+    const autoSaveFramingham = async () => {
+      setIsFraminghamAutoSaving(true);
+      const reportId = initialData.id;
+
+      const framinghamDataToSave: Partial<McuFormData> = {
+        framinghamAge: getValues("framinghamAge"),
+        framinghamGender: getValues("framinghamGender"),
+        framinghamTotalCholesterol: getValues("framinghamTotalCholesterol"),
+        framinghamHdlCholesterol: getValues("framinghamHdlCholesterol"),
+        framinghamSystolicBp: getValues("framinghamSystolicBp"),
+        framinghamIsOnHypertensionTreatment: getValues(
+          "framinghamIsOnHypertensionTreatment"
+        ),
+        framinghamIsSmoker: getValues("framinghamIsSmoker"),
+        framinghamRiskPercentage: riskPercentage,
+        framinghamRiskCategory: riskCategory,
+        framinghamVascularAge: vascularAge,
+        framinghamValidatorName: getValues("framinghamValidatorName"),
+        framinghamValidatorQr: getValues("framinghamValidatorQr"),
+      };
+
+      try {
+        await fetch(`/api/mcu/reports/${reportId}/framingham-autosave`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(framinghamDataToSave),
+        });
+        console.log("Framingham data auto-saved successfully.");
+      } catch (error) {
+        console.error("Error auto-save Framingham:", error);
+      } finally {
+        setIsFraminghamAutoSaving(false);
+      }
+    };
+
+    timeoutId = setTimeout(autoSaveFramingham, 2000);
+
+    return () => clearTimeout(timeoutId);
+  }, [framinghamRiskPercentage, initialData.id, getValues]);
 
   useEffect(() => {
     if (Object.keys(errors).length > 0) {
@@ -618,15 +677,21 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
       />
       <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-8">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Input Hasil MCU</h1>
+          <h1 className="text-2xl font-bold">Input Hasil MCU</h1>     
           <div className="flex items-center gap-2">
+            {isFraminghamAutoSaving && (
+              <div className="text-sm text-gray-500 flex items-center">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />               
+                Auto-Saving Framingham...            
+              </div>
+            )}
             <Button
               type="button"
               variant="secondary"
               onClick={handleDownloadTemplate}
             >
               <Download className="mr-2 h-4 w-4" />
-              Download Template
+               Download Template          
             </Button>
             <Button
               type="button"
@@ -634,32 +699,33 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
               onClick={() => fileInputRef.current?.click()}
             >
               <Upload className="mr-2 h-4 w-4" />
-              Import from Excel
+              Import from Excel          
             </Button>
           </div>
         </div>
         <PsikologiForm />
-        {showFramingham && <FraminghamForm />}
-        {showHematologi && <HematologiForm />}
-        {showKimiaDarah && <KimiaDarahForm />}
-        {showHepatitisPanel && <HepatitisPanelForm />}
-        {showBiomonitoring && <BiomonitoringForm />}
-        {showUrinalisa && <UrinalisaForm />}
+        {showFramingham && <FraminghamForm />}       
+        {showHematologi && <HematologiForm />}     
+        {showKimiaDarah && <KimiaDarahForm />}       
+        {showHepatitisPanel && <HepatitisPanelForm />}       
+        {showBiomonitoring && <BiomonitoringForm />}       
+        {showUrinalisa && <UrinalisaForm />}     
         {showAudioSpiro && (
           <AudiometriSpirometriForm itemsToCheck={itemsToCheck} />
         )}
-        {showUsgAbdomen && <UsgAbdomenForm />}
+        {showUsgAbdomen && <UsgAbdomenForm />}       
         {showUsgMammae && <UsgMammaeForm />}
         {showEkg && <EkgForm />}
-        {showTreadmill && <TreadmillForm />}
-        {showRontgen && <RontgenForm />}
+        {showTreadmill && <TreadmillForm />}       
+        {showRontgen && <RontgenForm />}       
         {showRefraktometri && <RefraktometriForm />}
-        <ConclusionForm />
+        <ConclusionForm />       
         {Object.keys(errors).length > 0 && (
           <div className="p-4 my-4 border-l-4 border-red-600 bg-red-50 rounded-md">
-            <h3 className="font-bold text-red-800">Error Validasi</h3>
+            <h3 className="font-bold text-red-800">Error Validasi</h3>         
             <p className="text-sm text-red-700 mt-1">
-              Form tidak bisa disimpan karena ada data yang tidak valid.
+              Form tidak bisa disimpan karena ada data yang tidak valid.        
+               
             </p>
           </div>
         )}
@@ -668,12 +734,12 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
             className="bg-[#01449D] hover:bg-[#01449D]/90 text-white md:w-auto md:px-4"
             type="submit"
             size="lg"
-            disabled={isSubmitting}
+            disabled={isSubmitting || isFraminghamAutoSaving}
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Menyimpan...
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />               
+                Menyimpan...        
               </>
             ) : (
               "Simpan & Selesaikan Laporan"
