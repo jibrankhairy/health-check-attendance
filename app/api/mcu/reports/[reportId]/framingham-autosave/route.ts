@@ -5,11 +5,11 @@ const prisma = new PrismaClient();
 
 export const dynamic = "force-dynamic";
 
-type Params = { params: { reportId: string } };
+type Params = Promise<{ reportId: string }>;
 
-export async function PUT(request: Request, { params }: Params) {
+export async function PUT(request: Request, { params }: { params: Params }) {
   try {
-    const { reportId } = params;
+    const { reportId } = await params;
     const framinghamData = await request.json();
 
     if (!reportId) {
@@ -19,7 +19,22 @@ export async function PUT(request: Request, { params }: Params) {
       );
     }
 
-    const dataToUpdate = {};
+    const dataToUpdate = {
+      framinghamAge: framinghamData.framinghamAge || null,
+      framinghamGender: framinghamData.framinghamGender || null,
+      framinghamTotalCholesterol:
+        framinghamData.framinghamTotalCholesterol || null,
+      framinghamHdlCholesterol: framinghamData.framinghamHdlCholesterol || null,
+      framinghamSystolicBp: framinghamData.framinghamSystolicBp || null,
+      framinghamIsOnHypertensionTreatment:
+        framinghamData.framinghamIsOnHypertensionTreatment || null,
+      framinghamIsSmoker: framinghamData.framinghamIsSmoker || null,
+      framinghamRiskPercentage: framinghamData.framinghamRiskPercentage || null,
+      framinghamRiskCategory: framinghamData.framinghamRiskCategory || null,
+      framinghamVascularAge: framinghamData.framinghamVascularAge || null,
+      framinghamValidatorName: framinghamData.framinghamValidatorName || null,
+      framinghamValidatorQr: framinghamData.framinghamValidatorQr || null,
+    };
 
     await prisma.mcuResult.update({
       where: { id: reportId },
