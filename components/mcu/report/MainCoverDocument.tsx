@@ -143,7 +143,7 @@ export const MainCoverDocument: React.FC<MainCoverDocumentProps> = ({
         <Text style={styles.contactText}>
           www.klinikym.com | klinikym@gmail.com
         </Text>
-        <Text style={styles.contactText}>02122105268 | 087878752222</Text>
+        <Text style={styles.contactText}>(021) 2210 5268 | 087878752222</Text>
       </View>
     </View>
   </Page>

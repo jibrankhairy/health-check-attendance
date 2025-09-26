@@ -401,17 +401,10 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
     const reportId = initialData.id;
 
     try {
-      const payload = {
-        ...data,
-        pemeriksaanFisikForm: JSON.stringify(data.pemeriksaanFisikForm),
-        healthHistoryAnswers: JSON.stringify(data.healthHistoryAnswers),
-        saran: data.saran ? JSON.stringify(data.saran) : null,
-      };
-
       const response = await fetch(`/api/mcu/reports/${reportId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(data),
       });
 
       if (!response.ok) {
@@ -485,21 +478,17 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
           let formattedValue;
 
           if (typeof value === "string") {
-            // Ganti koma dengan titik dan parse sebagai float
             const num = parseFloat(value.replace(/,/g, "."));
             if (!isNaN(num)) {
               value = num;
             }
           }
 
-          // Jika nilai berupa angka dan lebih besar dari 100 (misal 1015), bagi dengan 1000
           if (typeof value === "number" && value > 100) {
             formattedValue = (value / 1000).toFixed(3);
           } else if (typeof value === "number") {
-            // Jika sudah dalam format desimal, format ke 3 desimal
             formattedValue = value.toFixed(3);
           } else {
-            // Jika tidak bisa diproses, biarkan seperti string aslinya
             formattedValue = String(value);
           }
 

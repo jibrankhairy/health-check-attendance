@@ -96,7 +96,7 @@ export const ReportFooter: React.FC = () => (
         Jl. Raya Setu Km. 3 Cibuntu Cibitung Kab. Bekasi
       </Text>
       <Text style={styles.companyContact}>
-        www.klinikym.com | Telp: (021) 1234 5678
+        www.klinikym.com | Telp: (021) 2210 5268
       </Text>
     </View>
   </View>
