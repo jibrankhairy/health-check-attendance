@@ -77,6 +77,16 @@ export async function POST(request: Request) {
     const dataForMcuResult: Prisma.McuResultUpdateInput = {};
 
     if (pemeriksaanFisikForm) {
+      // Mengubah data QR agar hanya berisi nama petugas
+      const qrData = `Validated by: ${petugasName}`;
+
+      const validatorQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(
+        qrData
+      )}`;
+
+      pemeriksaanFisikForm.fisikValidatorName = petugasName;
+      pemeriksaanFisikForm.fisikValidatorQr = validatorQrUrl;
+
       const existingData = (mcuResult.pemeriksaanFisikForm as any) || {};
       const mergedData = { ...existingData, ...pemeriksaanFisikForm };
       dataForMcuResult.pemeriksaanFisikForm = mergedData;
@@ -96,6 +106,8 @@ export async function POST(request: Request) {
 
     const [progressLog] = await prisma.$transaction(transactionPromises);
 
+    // revalidateTag dihapus karena tidak lagi diperlukan untuk solusi Client Component
+    
     return NextResponse.json({
       message: `Check-in untuk ${checkpoint.name} oleh ${petugasName} berhasil!`,
       data: progressLog,
