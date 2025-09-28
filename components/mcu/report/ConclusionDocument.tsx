@@ -582,7 +582,7 @@ export const ConclusionDocument: React.FC<{ data: ConclusionData }> = ({
               {saranList.length > 0 ? (
                 saranList.map((saran, idx) => (
                   <Text key={idx} style={localStyles.saranItem}>
-                    {saran}
+                    - {saran}
                   </Text>
                 ))
               ) : (
