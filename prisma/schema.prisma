@@ -403,3 +403,9 @@ model McuResult {
   refraValidatorName           String?
   refraValidatorQr             String? @db.Text
 }
+
+model McuSaranTemplate {
+  id        String   @id @default(cuid())
+  text      String   @unique
+  createdAt DateTime @default(now())
+}
