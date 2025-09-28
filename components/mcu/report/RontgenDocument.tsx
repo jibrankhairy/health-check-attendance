@@ -28,7 +28,7 @@ const localStyles = StyleSheet.create({
   },
   imageContainer: {
     width: "100%",
-    height: 400,
+    height: 350,
     marginBottom: 20,
     borderWidth: 1,
     borderColor: "#ccc",
@@ -53,12 +53,12 @@ const localStyles = StyleSheet.create({
     lineHeight: 1.5,
     fontSize: 10,
   },
-
   validatorBox: {
     position: "absolute",
     right: 40,
     bottom: 72,
     alignItems: "center",
+    zIndex: 10,
   },
   validatorQr: {
     width: 80,
@@ -76,13 +76,11 @@ const localStyles = StyleSheet.create({
 
 export const RontgenDocument: React.FC<{ data: RontgenData }> = ({ data }) => {
   return (
-    <Page size="A4" style={globalStyles.page}>
+    <Page size="A4" style={globalStyles.page} wrap={false}>
       <ReportHeader />
-      <PatientInfo patient={data?.patient} />
-
+      <PatientInfo patient={data?.patient} />     
       <View style={globalStyles.body}>
-        <Text style={localStyles.headerText}>HASIL PEMERIKSAAN RONTGEN</Text>
-
+        <Text style={localStyles.headerText}>HASIL PEMERIKSAAN RONTGEN</Text>   
         {data?.rontgenImage && (
           <View style={localStyles.imageContainer}>
             <Image
@@ -91,15 +89,13 @@ export const RontgenDocument: React.FC<{ data: RontgenData }> = ({ data }) => {
             />
           </View>
         )}
-
         <View style={localStyles.reportSection}>
           <Text style={localStyles.reportLabel}>HASIL PEMERIKSAAN DOKTER:</Text>
           <Text style={localStyles.reportValue}>
-            {data?.kesanRontgen ?? "-"}
+            {data?.kesanRontgen ?? "-"}         
           </Text>
         </View>
       </View>
-
       {(data?.rontgenValidatorName || data?.rontgenValidatorQr) && (
         <View style={localStyles.validatorBox}>
           {data?.rontgenValidatorQr && (
@@ -110,14 +106,13 @@ export const RontgenDocument: React.FC<{ data: RontgenData }> = ({ data }) => {
           )}
           {data?.rontgenValidatorName && (
             <Text style={localStyles.validatorName}>
-              {data.rontgenValidatorName}
+              {data.rontgenValidatorName}         
             </Text>
           )}
-          <Text style={localStyles.validatorLabel}>Validator</Text>
+          <Text style={localStyles.validatorLabel}>Validator</Text>   
         </View>
       )}
-
-      <ReportFooter />
+      <ReportFooter />   
     </Page>
   );
 };
