@@ -284,6 +284,22 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
     defaultValues: {
       ...(formValues as Partial<McuFormData>),
       saran: Array.isArray(initialData.saran) ? initialData.saran : [],
+
+      conclusionValidatorName:
+        initialData.conclusionValidatorName ||
+        "dr. Pipit Yuliarpan, MARS, FISQua",
+
+      hematologiValidatorName:
+        initialData.hematologiValidatorName || "dr.Fitri Hamka, Sp.PK",
+      kimiaDarahValidatorName:
+        initialData.kimiaDarahValidatorName || "dr.Fitri Hamka, Sp.PK",
+      urinalisaValidatorName:
+        initialData.urinalisaValidatorName || "dr.Fitri Hamka, Sp.PK",
+      biomonitoringValidatorName:
+        initialData.biomonitoringValidatorName || "dr.Fitri Hamka, Sp.PK",
+      hepatitisValidatorName:
+        initialData.hepatitisValidatorName || "dr.Fitri Hamka, Sp.PK",
+
       framinghamAge: String(initialData.patient.age || ""),
       framinghamGender: initialData.patient.gender || "",
       framinghamHdlCholesterol: initialData.hdl || "",
