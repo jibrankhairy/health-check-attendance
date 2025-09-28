@@ -365,7 +365,6 @@ export const UrinalisaDocument: React.FC<UrinalisaDocumentProps> = ({
           const val = data?.[item.field as keyof UrinalisaData];
           let displayVal = val;
           if (item.field === "urinBeratJenis" && val != null) {
-            // Coba konversi nilai ke angka
             const num = parseFloat(String(val).replace(/,/g, "."));
             if (!isNaN(num) && num > 100) {
               displayVal = (num / 1000).toFixed(3);

@@ -1,5 +1,3 @@
-// components/mcu/forms/SummaryDisplay.tsx
-
 import React from "react";
 import {
   MetricItem,
@@ -17,6 +15,25 @@ type SummaryDisplayProps = {
   formData: SummaryConclusionData;
   summaries: Summaries;
   gender: string;
+};
+
+const formatUrineSpecificGravity = (
+  item: MetricItem,
+  resultValue: unknown
+): string => {
+  if (item.field === "urinBeratJenis" && resultValue != null) {
+    const rawValue = String(resultValue).replace(/,/g, ".");
+    let num = parseFloat(rawValue);
+
+    if (!isNaN(num)) {
+      if (Number.isInteger(num) && num > 100) {
+        num = num / 1000;
+        return num.toFixed(3);
+      }
+      return num.toFixed(3);
+    }
+  }
+  return String(resultValue ?? "");
 };
 
 const getReferenceValue = (item: MetricItem, gender: string) => {
@@ -55,6 +72,11 @@ const renderLabTable = (
 
       const isAbnormalResult = isAbnormal(item, resultValue, gender);
 
+      const displayValue =
+        item.field === "urinBeratJenis"
+          ? formatUrineSpecificGravity(item, resultValue)
+          : String(resultValue);
+
       return (
         <tr
           key={item.field}
@@ -65,7 +87,7 @@ const renderLabTable = (
           }`}
         >
           <td className="p-2">{item.label}</td>
-          <td className="p-2 text-center font-bold">{String(resultValue)}</td>
+          <td className="p-2 text-center font-bold">{displayValue}</td>
           <td className="p-2 text-xs">{getReferenceValue(item, gender)}</td>
           <td className="p-2 text-center">{item.unit}</td>
         </tr>
