@@ -157,15 +157,15 @@ const kimiaDarahDataMap: ReadonlyArray<KimiaDarahItem> = [
     ref: { all: { min: 0.5, max: 1.5 } },
   },
 
-  { no: "5", label: "PENANDA HEPATITIS", isHeader: true },
-  {
-    no: "",
-    label: "HbsAg",
-    field: "hbsag",
-    refText: "Negatif",
-    unit: "-",
-    ref: { type: "qualitative", normal: ["negatif"] },
-  },
+  // { no: "5", label: "PENANDA HEPATITIS", isHeader: true },
+  // {
+  //   no: "",
+  //   label: "HbsAg",
+  //   field: "hbsag",
+  //   refText: "Negatif",
+  //   unit: "-",
+  //   ref: { type: "qualitative", normal: ["negatif"] },
+  // },
 ];
 
 const getResultStyle = (
