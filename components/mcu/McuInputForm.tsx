@@ -29,6 +29,9 @@ import { calculateFraminghamRisk } from "./forms/framinghamCalculator";
 import type { PemeriksaanFisikFormValues } from "@/app/dashboardPetugas/components/PemeriksaanFisikForm";
 import type { HealthHistoryValues } from "@/app/form/components/HealthHistoryForm";
 
+import { SummaryDisplay } from "./forms/SummaryDisplay";
+import { summarizeResults, SummaryConclusionData } from "@/utils/mcuSummary";
+
 const formSchema = z.object({
   gologanDarah: z.string().optional().nullable(),
   hemoglobin: z.string().optional().nullable(),
@@ -303,6 +306,8 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
     getValues,
   } = methods;
 
+  const allFormValues = watch();
+
   const [
     hdl,
     kolesterolTotal,
@@ -310,9 +315,6 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
     healthHistory,
     framinghamAge,
     framinghamGender,
-    framinghamIsSmoker,
-    framinghamIsOnHypertensionTreatment,
-    framinghamRiskPercentage,
   ] = watch([
     "hdl",
     "kolesterolTotal",
@@ -324,6 +326,16 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
     "framinghamIsOnHypertensionTreatment",
     "framinghamRiskPercentage",
   ]);
+
+  const summaryData: SummaryConclusionData = {
+    ...allFormValues,
+    patient: {
+      gender: initialData.patient.gender,
+      mcuPackage: initialData.patient.mcuPackage,
+    },
+  } as SummaryConclusionData;
+
+  const summaries = summarizeResults(summaryData);
 
   useEffect(() => {
     const systolicBp = (pemeriksaanFisik as PemeriksaanFisikFormValues)
@@ -447,7 +459,7 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
     timeoutId = setTimeout(autoSaveFramingham, 2000);
 
     return () => clearTimeout(timeoutId);
-  }, [framinghamRiskPercentage, initialData.id, getValues]);
+  }, [getValues("framinghamRiskPercentage"), initialData.id, getValues]);
 
   useEffect(() => {
     if (Object.keys(errors).length > 0) {
@@ -677,12 +689,12 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
       />
       <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-8">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Input Hasil MCU</h1>     
+          <h1 className="text-2xl font-bold">Input Hasil MCU</h1>
           <div className="flex items-center gap-2">
             {isFraminghamAutoSaving && (
               <div className="text-sm text-gray-500 flex items-center">
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />               
-                Auto-Saving Framingham...            
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Auto-Saving Framingham...
               </div>
             )}
             <Button
@@ -691,7 +703,7 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
               onClick={handleDownloadTemplate}
             >
               <Download className="mr-2 h-4 w-4" />
-               Download Template          
+              Download Template
             </Button>
             <Button
               type="button"
@@ -699,33 +711,41 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
               onClick={() => fileInputRef.current?.click()}
             >
               <Upload className="mr-2 h-4 w-4" />
-              Import from Excel          
+              Import from Excel
             </Button>
           </div>
         </div>
         <PsikologiForm />
-        {showFramingham && <FraminghamForm />}       
-        {showHematologi && <HematologiForm />}     
-        {showKimiaDarah && <KimiaDarahForm />}       
-        {showHepatitisPanel && <HepatitisPanelForm />}       
-        {showBiomonitoring && <BiomonitoringForm />}       
-        {showUrinalisa && <UrinalisaForm />}     
+        {showFramingham && <FraminghamForm />}
+
+        {showHematologi && <HematologiForm />}
+        {showKimiaDarah && <KimiaDarahForm />}
+        {showHepatitisPanel && <HepatitisPanelForm />}
+        {showBiomonitoring && <BiomonitoringForm />}
+        {showUrinalisa && <UrinalisaForm />}
         {showAudioSpiro && (
           <AudiometriSpirometriForm itemsToCheck={itemsToCheck} />
         )}
-        {showUsgAbdomen && <UsgAbdomenForm />}       
+        {showUsgAbdomen && <UsgAbdomenForm />}
         {showUsgMammae && <UsgMammaeForm />}
         {showEkg && <EkgForm />}
-        {showTreadmill && <TreadmillForm />}       
-        {showRontgen && <RontgenForm />}       
+        {showTreadmill && <TreadmillForm />}
+        {showRontgen && <RontgenForm />}
         {showRefraktometri && <RefraktometriForm />}
-        <ConclusionForm />       
+
+        <SummaryDisplay
+          formData={summaryData}
+          summaries={summaries}
+          gender={initialData.patient.gender}
+        />
+
+        <ConclusionForm />
+
         {Object.keys(errors).length > 0 && (
           <div className="p-4 my-4 border-l-4 border-red-600 bg-red-50 rounded-md">
-            <h3 className="font-bold text-red-800">Error Validasi</h3>         
+            <h3 className="font-bold text-red-800">Error Validasi</h3>
             <p className="text-sm text-red-700 mt-1">
-              Form tidak bisa disimpan karena ada data yang tidak valid.        
-               
+              Form tidak bisa disimpan karena ada data yang tidak valid.
             </p>
           </div>
         )}
@@ -738,8 +758,8 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />               
-                Menyimpan...        
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Menyimpan...
               </>
             ) : (
               "Simpan & Selesaikan Laporan"
