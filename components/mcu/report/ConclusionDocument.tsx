@@ -301,6 +301,25 @@ const isQualitative = (
   ref: RefNumeric | RefQualitative
 ): ref is RefQualitative => (ref as RefQualitative).type === "qualitative";
 
+const formatUrineSpecificGravity = (
+  item: MetricItem,
+  resultValue: unknown
+): string => {
+  if (item.field === "urinBeratJenis" && resultValue != null) {
+    const rawValue = String(resultValue).replace(/,/g, ".");
+    let num = parseFloat(rawValue);
+
+    if (!isNaN(num)) {
+      if (Number.isInteger(num) && num > 100) {
+        num = num / 1000;
+        return num.toFixed(3);
+      }
+      return num.toFixed(3);
+    }
+  }
+  return String(resultValue ?? "");
+};
+
 const isAbnormal = (
   item: MetricItem,
   resultValue: unknown,
@@ -313,8 +332,13 @@ const isAbnormal = (
     return !item.ref.normal.map((n) => n.toLowerCase()).includes(lower);
   }
 
-  const num = Number(resultValue as any);
-  if (!Number.isFinite(num)) return false;
+  const rawNum = Number(resultValue as any);
+  if (!Number.isFinite(rawNum)) return false;
+
+  let num = rawNum;
+  if (item.field === "urinBeratJenis" && Number.isInteger(num) && num > 100) {
+    num = num / 1000;
+  }
 
   let range: Range | undefined = item.ref.all;
   const g = String(gender ?? "").toUpperCase();
@@ -347,9 +371,16 @@ const summarizeResults = (data: ConclusionData): Summaries => {
     const abnormalResults = dataMap
       .map((item) => {
         const resultValue = (data as Record<string, unknown>)?.[item.field];
+
         if (isAbnormal(item, resultValue, gender)) {
+          const displayValue =
+            item.field === "urinBeratJenis"
+              ? formatUrineSpecificGravity(item, resultValue)
+              : String(resultValue);
+
           const unitText = item.unit ? ` ${item.unit}` : "";
-          return `- ${item.label}: ${String(resultValue)}${unitText}`;
+
+          return `- ${item.label}: ${displayValue}${unitText}`;
         }
         return null;
       })
