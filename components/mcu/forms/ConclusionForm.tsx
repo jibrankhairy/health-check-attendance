@@ -36,6 +36,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { SignatureField } from "./SignatureField";
+import { Textarea } from "@/components/ui/textarea";
 
 export const ConclusionForm = () => {
   const { control } = useFormContext();
@@ -98,7 +99,7 @@ export const ConclusionForm = () => {
             render={({ field }) => (
               <FormItem>
                 <Select
-                  onValueage={field.onChange}
+                  onValueChange={field.onChange}
                   value={field.value || ""}
                   defaultValue={field.value || ""}
                 >
@@ -175,15 +176,24 @@ function MultiSelectCombobox({
   const [inputValue, setInputValue] = useState("");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editText, setEditText] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // BARU: State & Konstanta untuk fitur "Show More"
-  const [showAllOptions, setShowAllOptions] = useState(false);
-  const ITEM_LIMIT = 5;
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = `${textarea.scrollHeight}px`;
+      textarea.focus();
+      textarea.select();
+    }
+  }, [editingIndex]);
 
   const handleSelect = (value: string) => {
     if (!selected.includes(value)) {
       onChange([...selected, value]);
     }
+    setInputValue("");
+    inputRef.current?.focus();
   };
 
   const handleUnselect = (value: string) => {
@@ -209,15 +219,7 @@ function MultiSelectCombobox({
     setEditText("");
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    const input = inputRef.current;
-    if (!input) return;
-    if (e.key === "Delete" || e.key === "Backspace") {
-      if (input.value === "" && selected.length > 0) {
-        handleUnselect(selected[selected.length - 1]);
-      }
-    }
-    if (e.key === "Escape") input.blur();
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
       const newSaran = inputValue.trim();
@@ -227,93 +229,91 @@ function MultiSelectCombobox({
         setInputValue("");
       }
     }
+    if (e.key === "Backspace" && inputValue === "") {
+      if (selected.length > 0) {
+        handleUnselect(selected[selected.length - 1]);
+      }
+    }
   };
-
+  
+  const [showAllOptions, setShowAllOptions] = useState(false);
+  const ITEM_LIMIT = 5;
   const filteredOptions = options;
-
-  // BARU: Logika untuk memotong daftar dropdown
-  const optionsToShow = showAllOptions || inputValue
-    ? filteredOptions
-    : filteredOptions.slice(0, ITEM_LIMIT);
+  const optionsToShow = showAllOptions || inputValue ? filteredOptions : filteredOptions.slice(0, ITEM_LIMIT);
 
   return (
     <Popover 
       open={open} 
       onOpenChange={(isOpen) => {
         setOpen(isOpen);
-        // BARU: Reset "Show More" setiap kali dropdown ditutup
-        if (!isOpen) {
-          setShowAllOptions(false);
-        }
+        if (!isOpen) setShowAllOptions(false);
       }}
     >
       <PopoverTrigger asChild>
-        {/* MODIFIKASI: Mengubah layout container utama */}
         <div className="flex items-start justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 min-h-[40px]">
-          {/* MODIFIKASI: Mengubah layout badge menjadi vertikal */}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 w-full mr-2">
             {selected.map((item, index) => (
-              <Badge key={item + index} variant="secondary" className="max-w-xs">
-                {editingIndex === index ? (
-                  <input type="text" value={editText} onChange={(e) => setEditText(e.target.value)} onBlur={handleEditSave} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleEditSave(); } if (e.key === "Escape") { e.preventDefault(); setEditingIndex(null); } }} className="bg-transparent outline-none p-0 m-0 w-full" autoFocus />
+                editingIndex === index ? (
+                  <Textarea
+                    key={`editing-${index}`}
+                    ref={textareaRef}
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                    onBlur={handleEditSave}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleEditSave(); }
+                      if (e.key === "Escape") { e.preventDefault(); setEditingIndex(null); }
+                    }}
+                    className="bg-secondary outline-none p-1 w-full resize-none border-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 text-sm leading-tight rounded-md"
+                    rows={1}
+                  />
                 ) : (
-                  <>
-                    <span className="truncate min-w-0" title={item} onDoubleClick={() => handleEditStart(index, item)}>{item}</span>
-                    <button className="ml-1 flex-shrink-0 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2" onClick={() => handleUnselect(item)}>
+                  <Badge key={item + index} variant="secondary" className="flex h-auto max-w-full items-start justify-between whitespace-normal text-left">
+                    <span className="min-w-0 break-words py-0.5 pr-2" onDoubleClick={() => handleEditStart(index, item)}>
+                      {item}
+                    </span>
+                    <button className="flex-shrink-0" onClick={() => handleUnselect(item)}>
                       <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
                     </button>
-                  </>
-                )}
-              </Badge>
+                  </Badge>
+                )
             ))}
-            {/* BARU: Input untuk saran baru diletakkan di bawah badge */}
             <input
               ref={inputRef}
               type="text"
-              placeholder={selected.length > 0 ? "Ketik saran baru..." : "Pilih atau ketik saran baru..."}
-              className="bg-transparent outline-none placeholder:text-muted-foreground text-sm"
+              placeholder={selected.length > 0 ? "Ketik atau pilih saran baru..." : "Pilih atau ketik saran baru..."}
+              className="bg-transparent outline-none placeholder:text-muted-foreground text-sm h-5"
               value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={(e) => {
-                // Hanya Enter yang ditangani di sini
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  const newSaran = inputValue.trim();
-                  if (newSaran && !selected.includes(newSaran)) {
-                    onAddNewOption(newSaran);
-                    onChange([...selected, newSaran]);
-                    setInputValue("");
-                  }
-                }
+              onChange={(e) => {
+                setInputValue(e.target.value);
+                if (!open) setOpen(true);
               }}
-              onClick={() => setOpen(true)} // Buka dropdown saat input diklik
+              onKeyDown={handleInputKeyDown}
+              onFocus={() => setOpen(true)}
             />
           </div>
-          <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50 cursor-pointer" onClick={() => setOpen(prev => !prev)} />
+          <button onClick={() => setOpen(prev => !prev)} className="mt-1">
+             <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50 cursor-pointer" />
+          </button>
         </div>
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-        <Command onKeyDown={handleKeyDown}>
-          {/* Input pencarian di dalam dropdown bisa disembunyikan jika tidak perlu */}
-          <CommandInput placeholder="Cari saran..." />
+        <Command>
+          <CommandInput 
+            placeholder="Cari saran..." 
+            value={inputValue} 
+            onValueChange={setInputValue}
+          />
           <CommandList>
-            <CommandEmpty>
-              {isLoading ? "Memuat..." : "Saran tidak ditemukan."}
-            </CommandEmpty>
+            <CommandEmpty>{isLoading ? "Memuat..." : "Saran tidak ditemukan."}</CommandEmpty>
             <CommandGroup>
               {optionsToShow.map((option) => (
-                <CommandItem key={option} onSelect={() => { handleSelect(option); setInputValue(""); }} className="truncate" title={option}>
+                <CommandItem key={option} onSelect={() => handleSelect(option)} className="truncate" title={option}>
                   {option}
                 </CommandItem>
               ))}
-              {/* BARU: Render tombol "Show More" */}
               {!showAllOptions && !inputValue && filteredOptions.length > ITEM_LIMIT && (
-                <CommandItem
-                  onSelect={(e) => {
-                    setShowAllOptions(true);
-                  }}
-                  className="text-center justify-center text-muted-foreground cursor-pointer"
-                >
+                <CommandItem onSelect={() => setShowAllOptions(true)} className="text-center justify-center text-muted-foreground cursor-pointer">
                   Tampilkan {filteredOptions.length - ITEM_LIMIT} lainnya...
                 </CommandItem>
               )}
