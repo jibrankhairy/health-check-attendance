@@ -175,10 +175,9 @@ function MultiSelectCombobox({
   const [inputValue, setInputValue] = useState("");
 
   const handleSelect = (value: string) => {
-    const newSelected = selected.includes(value)
-      ? selected.filter((item) => item !== value)
-      : [...selected, value];
-    onChange(newSelected);
+    if (!selected.includes(value)) {
+      onChange([...selected, value]);
+    }
   };
 
   const handleUnselect = (value: string) => {
@@ -219,7 +218,12 @@ function MultiSelectCombobox({
         <div className="flex items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 min-h-[40px]">
           <div className="flex flex-wrap gap-1">
             {selected.map((item) => (
-              <Badge key={item} variant="secondary">
+              <Badge
+                key={item}
+                variant="secondary"
+                className="max-w-xs truncate"
+                title={item}
+              >
                 {item}
                 <button
                   className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
@@ -252,6 +256,7 @@ function MultiSelectCombobox({
                 ? "Memuat..." 
                 : (inputValue
                   ? `Tekan Enter untuk menambah "${inputValue}"`
+                  
                   : "Ketik untuk mencari atau membuat saran baru.")
               }
             </CommandEmpty>
@@ -263,6 +268,8 @@ function MultiSelectCombobox({
                     handleSelect(option);
                     setInputValue("");
                   }}
+                  className="truncate"
+                  title={option}
                 >
                   {option}
                 </CommandItem>

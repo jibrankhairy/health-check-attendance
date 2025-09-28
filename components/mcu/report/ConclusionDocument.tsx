@@ -618,6 +618,7 @@ export const ConclusionDocument: React.FC<{ data: ConclusionData }> = ({
 };
 
 const localStyles = StyleSheet.create({
+  // KUNCI UTAMA LAYOUT
   row: {
     flexDirection: "row",
     alignItems: "flex-start",
