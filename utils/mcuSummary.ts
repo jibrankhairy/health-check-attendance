@@ -1,3 +1,5 @@
+// utils/mcuSummary.ts (FULL UPDATED CODE)
+
 export type Range = { min?: number; max?: number };
 
 export type RefNumeric = {
@@ -341,8 +343,13 @@ export const isAbnormal = (
     return !item.ref.normal.map((n) => n.toLowerCase()).includes(lower);
   }
 
-  const num = Number(resultValue as any);
-  if (!Number.isFinite(num)) return false;
+  const rawNum = Number(resultValue as any);
+  if (!Number.isFinite(rawNum)) return false;
+
+  let num = rawNum;
+  if (item.field === "urinBeratJenis" && Number.isInteger(num) && num > 100) {
+    num = num / 1000;
+  }
 
   let range: Range | undefined = item.ref.all;
   const g = String(gender ?? "").toUpperCase();
@@ -377,6 +384,7 @@ export const summarizeResults = (data: SummaryConclusionData): Summaries => {
         const resultValue = (data as Record<string, unknown>)?.[item.field];
         if (isAbnormal(item, resultValue, gender)) {
           const unitText = item.unit ? ` ${item.unit}` : "";
+
           return `- ${item.label}: ${String(resultValue)}${unitText}`;
         }
         return null;
