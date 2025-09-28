@@ -1,5 +1,3 @@
-// utils/mcuSummary.ts (FULL UPDATED CODE)
-
 export type Range = { min?: number; max?: number };
 
 export type RefNumeric = {
@@ -21,6 +19,26 @@ export type MetricItem = {
   unit: string;
 };
 
+export type PemeriksaanFisikData = {
+  beratBadanKg?: string | null;
+  tinggiBadanCm?: string | null;
+  bmi?: string | null;
+  lingkarPerutCm?: string | null;
+  tensiSistol?: string | null;
+  tensiDiastol?: string | null;
+  nadiPerMenit?: string | null;
+  pernapasanPerMenit?: string | null;
+  butaWarna?: string | null;
+  visusOD?: string | null;
+  visusOS?: string | null;
+  pupilDistance?: string | number | null;
+  kacamata?: string | null;
+  ukuranOD?: string | null;
+  ukuranOS?: string | null;
+  kemampuanPendengaranAD?: string | null;
+  kemampuanPendengaranAS?: string | null;
+} & Record<string, unknown>;
+
 export type Summaries = {
   hematologi?: string;
   kimiaDarah?: string;
@@ -40,6 +58,7 @@ export type Summaries = {
 
 export type SummaryConclusionData = {
   patient?: { gender?: string; mcuPackage?: string[] } | null;
+  pemeriksaanFisikForm?: PemeriksaanFisikData;
   hemoglobin?: string | null;
   leukosit?: string | null;
   trombosit?: string | null;
@@ -363,6 +382,96 @@ export const isAbnormal = (
   return (min !== undefined && num < min) || (max !== undefined && num > max);
 };
 
+// utils/mcuSummary.ts
+
+// ... (existing types and maps)
+
+// Ambil BMI range, kita asumsikan referensi normal 18.5 - 24.9 untuk dewasa
+const getBMICategory = (bmi: number): string => {
+  if (bmi < 18.5) return "Underweight";
+  if (bmi >= 25 && bmi <= 29.9) return "Overweight (Pre-obese)";
+  if (bmi >= 30) return "Obesity";
+  return "NORMAL (18.5 - 24.9)";
+};
+
+// Ambil Tekanan Darah category
+const getBloodPressureCategory = (sistol: number, diastol: number): string => {
+  // Kriteria JNC-8/AHA (disederhanakan)
+  if (sistol >= 140 || diastol >= 90) return "Hipertensi";
+  if (sistol >= 130 || diastol >= 80) return "Elevated / Prehipertensi Stage 1";
+  return "NORMAL";
+};
+
+// Cek abnormalitas Pemeriksaan Fisik
+const getFisikAbnormalFindings = (
+  pf: PemeriksaanFisikData
+): string | undefined => {
+  const abnormalFindings: string[] = []; // 1. Cek Tekanan Darah (Tensi)
+  const sistol = Number(pf.tensiSistol);
+  const diastol = Number(pf.tensiDiastol);
+  if (Number.isFinite(sistol) && Number.isFinite(diastol)) {
+    const bpCategory = getBloodPressureCategory(sistol, diastol);
+    if (bpCategory !== "NORMAL") {
+      abnormalFindings.push(
+        `Tekanan Darah: ${sistol}/${diastol} mmHg (${bpCategory})`
+      );
+    }
+  } // 2. Cek BMI
+  const bmi = Number(pf.bmi);
+  if (Number.isFinite(bmi)) {
+    const bmiCategory = getBMICategory(bmi);
+    if (!bmiCategory.startsWith("NORMAL")) {
+      abnormalFindings.push(`BMI: ${bmi.toFixed(2)} kg/m² (${bmiCategory})`);
+    }
+  } // 3. Cek Buta Warna
+  const butaWarna = String(pf.butaWarna).toLowerCase();
+  if (butaWarna.includes("parsial") || butaWarna.includes("total")) {
+    abnormalFindings.push(`Buta Warna: ${pf.butaWarna}`);
+  } // 4. Cek Visus (Ketajaman Penglihatan) - Asumsi abnormal jika visus tidak 6/6 (20/20) dan tanpa kacamata
+
+  const hasGlasses = String(pf.kacamata).toLowerCase() === "ya";
+  const visusOD = String(pf.visusOD);
+  const visusOS = String(pf.visusOS);
+
+  const isVisusAbnormal = (visus: string): boolean => {
+    if (
+      !visus ||
+      visus.toLowerCase().includes("normal") ||
+      visus === "6/6" ||
+      visus === "20/20"
+    ) {
+      return false;
+    }
+    return true;
+  };
+
+  if (!hasGlasses && (isVisusAbnormal(visusOD) || isVisusAbnormal(visusOS))) {
+    abnormalFindings.push(`Visus Tanpa Koreksi: OD ${visusOD} / OS ${visusOS}`);
+  } else if (
+    hasGlasses &&
+    (isVisusAbnormal(visusOD) || isVisusAbnormal(visusOS))
+  ) {
+    abnormalFindings.push(
+      `Visus Dengan Koreksi: OD ${visusOD} / OS ${visusOS}`
+    );
+  } // 5. Cek Pendengaran (Audiometri/Test Bisik) - Asumsi abnormal jika ada nilai "Kurang" atau sejenisnya
+
+  const pendengaranAD = String(pf.kemampuanPendengaranAD).toLowerCase();
+  const pendengaranAS = String(pf.kemampuanPendengaranAS).toLowerCase();
+  if (
+    pendengaranAD.includes("kurang") ||
+    pendengaranAS.includes("kurang") ||
+    pendengaranAD.includes("tuli") ||
+    pendengaranAS.includes("tuli")
+  ) {
+    abnormalFindings.push(
+      `Pendengaran: AD ${pf.kemampuanPendengaranAD} / AS ${pf.kemampuanPendengaranAS}`
+    );
+  } // Jika ada temuan, gabungkan dan kembalikan.
+
+  return abnormalFindings.length > 0 ? abnormalFindings.join("\n") : "NORMAL";
+};
+
 export const summarizeResults = (data: SummaryConclusionData): Summaries => {
   const gender = data?.patient?.gender;
   const mcuPackage = (data?.patient?.mcuPackage || []).map((p) =>
@@ -393,7 +502,9 @@ export const summarizeResults = (data: SummaryConclusionData): Summaries => {
     return abnormalResults.length > 0 ? abnormalResults.join("\n") : "NORMAL";
   };
 
-  summaries.fisik = "NORMAL";
+  summaries.fisik = getFisikAbnormalFindings(
+    (data?.pemeriksaanFisikForm as PemeriksaanFisikData) || {} // Asumsikan pemeriksaanFisikForm ada di SummaryConclusionData
+  );
 
   if (hasBasicMcu) {
     summaries.hematologi = getAbnormalFindings(hematologyDataMap);

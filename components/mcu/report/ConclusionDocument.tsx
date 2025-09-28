@@ -43,6 +43,18 @@ type Summaries = {
   refraktometri?: string;
 };
 
+type FisikSummaryData = {
+  tensiSistol?: string | null;
+  tensiDiastol?: string | null;
+  bmi?: string | null;
+  butaWarna?: string | null;
+  visusOD?: string | null;
+  visusOS?: string | null;
+  kacamata?: string | null;
+  kemampuanPendengaranAD?: string | null;
+  kemampuanPendengaranAS?: string | null;
+};
+
 type ConclusionData = {
   patient?: { gender?: string; mcuPackage?: string[] } | null;
   saran?: string | string[] | null;
@@ -352,6 +364,87 @@ const isAbnormal = (
   return (min !== undefined && num < min) || (max !== undefined && num > max);
 };
 
+const getBMICategory = (bmi: number): string => {
+  if (bmi < 18.5) return "Underweight";
+  if (bmi >= 25 && bmi <= 29.9) return "Overweight (Pre-obese)";
+  if (bmi >= 30) return "Obesity";
+  return "NORMAL (18.5 - 24.9)";
+};
+
+const getBloodPressureCategory = (sistol: number, diastol: number): string => {
+  if (sistol >= 140 || diastol >= 90) return "Hipertensi";
+  if (sistol >= 130 || diastol >= 80) return "Elevated / Prehipertensi Stage 1";
+  return "NORMAL";
+};
+
+const getFisikAbnormalFindings = (pf: FisikSummaryData): string | undefined => {
+  const abnormalFindings: string[] = []; // 1. Cek Tekanan Darah (Tensi)
+
+  const sistol = Number(pf.tensiSistol);
+  const diastol = Number(pf.tensiDiastol);
+  if (Number.isFinite(sistol) && Number.isFinite(diastol)) {
+    const bpCategory = getBloodPressureCategory(sistol, diastol);
+    if (bpCategory !== "NORMAL") {
+      abnormalFindings.push(
+        `Tekanan Darah: ${sistol}/${diastol} mmHg (${bpCategory})`
+      );
+    }
+  } // 2. Cek BMI
+
+  const bmi = Number(pf.bmi);
+  if (Number.isFinite(bmi)) {
+    const bmiCategory = getBMICategory(bmi);
+    if (!bmiCategory.startsWith("NORMAL")) {
+      abnormalFindings.push(`BMI: ${bmi.toFixed(2)} kg/m² (${bmiCategory})`);
+    }
+  } // 3. Cek Buta Warna
+
+  const butaWarna = String(pf.butaWarna).toLowerCase();
+  if (butaWarna.includes("parsial") || butaWarna.includes("total")) {
+    abnormalFindings.push(`Buta Warna: ${pf.butaWarna}`);
+  } // 4. Cek Visus
+  const hasGlasses = String(pf.kacamata).toLowerCase() === "ya";
+  const visusOD = String(pf.visusOD);
+  const visusOS = String(pf.visusOS);
+
+  const isVisusAbnormal = (visus: string): boolean => {
+    if (
+      !visus ||
+      visus.toLowerCase().includes("normal") ||
+      visus === "6/6" ||
+      visus === "20/20"
+    ) {
+      return false;
+    }
+    return true;
+  };
+
+  if (!hasGlasses && (isVisusAbnormal(visusOD) || isVisusAbnormal(visusOS))) {
+    abnormalFindings.push(`Visus Tanpa Koreksi: OD ${visusOD} / OS ${visusOS}`);
+  } else if (
+    hasGlasses &&
+    (isVisusAbnormal(visusOD) || isVisusAbnormal(visusOS))
+  ) {
+    abnormalFindings.push(
+      `Visus Dengan Koreksi: OD ${visusOD} / OS ${visusOS}`
+    );
+  } // 5. Cek Pendengaran
+  const pendengaranAD = String(pf.kemampuanPendengaranAD).toLowerCase();
+  const pendengaranAS = String(pf.kemampuanPendengaranAS).toLowerCase();
+  if (
+    pendengaranAD.includes("kurang") ||
+    pendengaranAS.includes("kurang") ||
+    pendengaranAD.includes("tuli") ||
+    pendengaranAS.includes("tuli")
+  ) {
+    abnormalFindings.push(
+      `Pendengaran: AD ${pf.kemampuanPendengaranAD} / AS ${pf.kemampuanPendengaranAS}`
+    );
+  }
+
+  return abnormalFindings.length > 0 ? abnormalFindings.join("\n") : "NORMAL";
+};
+
 const summarizeResults = (data: ConclusionData): Summaries => {
   const gender = data?.patient?.gender;
   const mcuPackage = (data?.patient?.mcuPackage || []).map((p) =>
@@ -388,7 +481,9 @@ const summarizeResults = (data: ConclusionData): Summaries => {
     return abnormalResults.length > 0 ? abnormalResults.join("\n") : "NORMAL";
   };
 
-  summaries.fisik = "NORMAL";
+  summaries.fisik = getFisikAbnormalFindings(
+    (data?.pemeriksaanFisikForm || {}) as FisikSummaryData
+  );
 
   if (hasBasicMcu) {
     summaries.hematologi = getAbnormalFindings(hematologyDataMap);
