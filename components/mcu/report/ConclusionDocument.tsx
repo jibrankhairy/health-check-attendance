@@ -544,7 +544,7 @@ export const ConclusionDocument: React.FC<{ data: ConclusionData }> = ({
       <View style={globalStyles.body}>
         <Text style={globalStyles.mainTitle}>KESIMPULAN DAN REKOMENDASI</Text>
 
-        <View style={globalStyles.conclusionContainer}>
+        <View style={[globalStyles.conclusionContainer, { marginTop: -5 }]}>
           <Text style={globalStyles.sectionTitle}>
             RESUME HASIL PEMERIKSAAN SEBAGAI BERIKUT :
           </Text>

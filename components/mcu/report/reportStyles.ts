@@ -132,7 +132,7 @@ export const styles = StyleSheet.create({
   },
 
   conclusionContainer: {
-    marginTop: 20,
+    marginTop: 5,
   },
   sectionTitle: {
     fontSize: 10,
