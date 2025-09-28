@@ -77,6 +77,15 @@ export async function POST(request: Request) {
     const dataForMcuResult: Prisma.McuResultUpdateInput = {};
 
     if (pemeriksaanFisikForm) {
+      const qrData = `Validated by: ${petugasName}`;
+
+      const validatorQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(
+        qrData
+      )}`;
+
+      pemeriksaanFisikForm.fisikValidatorName = petugasName;
+      pemeriksaanFisikForm.fisikValidatorQr = validatorQrUrl;
+
       const existingData = (mcuResult.pemeriksaanFisikForm as any) || {};
       const mergedData = { ...existingData, ...pemeriksaanFisikForm };
       dataForMcuResult.pemeriksaanFisikForm = mergedData;

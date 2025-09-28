@@ -32,7 +32,10 @@ const ViewReportPage = () => {
     const fetchReportData = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/mcu/reports/${reportId}`);
+        const response = await fetch(`/api/mcu/reports/${reportId}`, {
+          cache: "no-cache",
+        });
+
         if (!response.ok) {
           throw new Error("Gagal memuat data untuk laporan.");
         }

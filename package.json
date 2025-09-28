@@ -7,7 +7,8 @@
     "build": "prisma generate && next build",
     "start": "pnpm prisma migrate deploy && pnpm prisma generate && node index.js",
     "lint": "next lint",
-    "db:seed": "ts-node --project tsconfig.seed.json prisma/seed.ts"
+    "db:seed": "ts-node --project tsconfig.seed.json prisma/seed.ts",
+    "db:backfill": "tsx scripts/backfill-validator.ts"
   },
   "prisma": {
     "seed": "ts-node --project tsconfig.seed.json prisma/seed.ts"
@@ -80,6 +81,7 @@
     "eslint-config-next": "15.4.5",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
+    "tsx": "^4.20.6",
     "tw-animate-css": "^1.3.6",
     "typescript": "^5"
   }

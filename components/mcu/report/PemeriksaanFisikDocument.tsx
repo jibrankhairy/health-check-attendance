@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
 import { ReportHeader, PatientInfo, ReportFooter } from "./ReportLayout";
 import { styles as globalStyles } from "./reportStyles";
 
@@ -83,6 +83,9 @@ interface PemeriksaanFisikForm {
   psikis?: Nullable<string>;
   sikap?: Nullable<string>;
   dayaIngat?: Nullable<string>;
+
+  fisikValidatorName?: Nullable<string>;
+  fisikValidatorQr?: Nullable<string>;
 }
 
 type PemeriksaanFisikDocumentProps = {
@@ -123,6 +126,25 @@ const localStyles = StyleSheet.create({
   dataItemLabel: { width: "55%" },
   dataItemColon: { width: "5%" },
   dataItemValue: { flex: 1, fontFamily: "Helvetica-Bold" },
+
+  validatorBox: {
+    position: "absolute",
+    right: 40,
+    bottom: 72,
+    alignItems: "center",
+  },
+  validatorQr: {
+    width: 80,
+    height: 80,
+    marginBottom: 8,
+  },
+  validatorName: {
+    fontSize: 8,
+    fontFamily: "Helvetica-Bold",
+  },
+  validatorLabel: {
+    fontSize: 5,
+  },
 });
 
 const display = (v: unknown): string =>
@@ -175,7 +197,7 @@ export const PemeriksaanFisikDocument: React.FC<
 
   const pemeriksaanUmumItems = [
     { label: "Kondisi Kesehatan", value: pf.kondisiKesehatan },
-    { label: "Kesadaran", value: pf.kesadaran || "Compos Mentis" },
+    { label: "Kesadaran", value: pf.kesadaran },
     { label: "Berat Badan", value: `${display(pf.beratBadanKg)} kg` },
     { label: "Tinggi Badan", value: `${display(pf.tinggiBadanCm)} cm` },
     { label: "BMI", value: `${display(pf.bmi)} kg/m²` },
@@ -332,6 +354,23 @@ export const PemeriksaanFisikDocument: React.FC<
         />
         <TwoColumnSection title="H. EKSTREMITAS" items={ekstremitasItems} />
       </View>
+
+      {(pf.fisikValidatorName || pf.fisikValidatorQr) && (
+        <View style={localStyles.validatorBox}>
+          {pf.fisikValidatorQr && (
+            <Image
+              src={pf.fisikValidatorQr as string}
+              style={localStyles.validatorQr}
+            />
+          )}
+          {pf.fisikValidatorName && (
+            <Text style={localStyles.validatorName}>
+              {pf.fisikValidatorName}
+            </Text>
+          )}
+          <Text style={localStyles.validatorLabel}>Dokter Pemeriksa</Text>
+        </View>
+      )}
 
       <ReportFooter />
     </Page>
