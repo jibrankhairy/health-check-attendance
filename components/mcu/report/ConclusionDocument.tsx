@@ -618,25 +618,30 @@ export const ConclusionDocument: React.FC<{ data: ConclusionData }> = ({
 };
 
 const localStyles = StyleSheet.create({
+  // KUNCI UTAMA LAYOUT
   row: {
     flexDirection: "row",
     alignItems: "flex-start",
-    flexWrap: "wrap",
+    flexWrap: "nowrap", // 1. PASTIKAN BARIS TIDAK PERNAH TURUN
     fontSize: 9,
   },
-  num: { width: "5%" },
+  num: {
+    width: "5%",
+  },
   labelDynamic: {
-    minWidth: "40%",
-    flexShrink: 0,
+    width: "40%", // 2. BERI LEBAR TETAP UNTUK KOLOM LABEL
   },
   colon: {
     width: 8,
     textAlign: "center",
   },
   valueFlex: {
-    flexGrow: 1,
+    flex: 1, // 3. BIARKAN KOLOM VALUE MENGISI SISA RUANG
     flexDirection: "column",
   },
+  // Dengan 3 aturan di atas, teks di dalam 'valueFlex' akan otomatis wrap
+  // jika lebih panjang dari sisa ruang yang tersedia.
+
   valueLine: {
     fontFamily: "Helvetica-Bold",
     lineHeight: 1.2,
