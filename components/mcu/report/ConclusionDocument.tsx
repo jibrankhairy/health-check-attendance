@@ -621,22 +621,24 @@ const localStyles = StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "flex-start",
-    flexWrap: "wrap",
+    flexWrap: "nowrap",
     fontSize: 9,
   },
-  num: { width: "5%" },
+  num: {
+    width: "5%",
+  },
   labelDynamic: {
-    minWidth: "40%",
-    flexShrink: 0,
+    width: "40%",
   },
   colon: {
     width: 8,
     textAlign: "center",
   },
   valueFlex: {
-    flexGrow: 1,
+    flex: 1,
     flexDirection: "column",
   },
+
   valueLine: {
     fontFamily: "Helvetica-Bold",
     lineHeight: 1.2,

@@ -1,12 +1,10 @@
-// components/mcu/forms/ConclusionForm.tsx
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import { X, ChevronsUpDown } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -39,17 +37,49 @@ import {
 } from "@/components/ui/command";
 import { SignatureField } from "./SignatureField";
 
-const saranOptions = [
-  "Tidak ada saran tambahan.",
-  "Rutin berolahraga minimal 30 menit setiap hari.",
-  "Jaga pola makan seimbang, kurangi makanan berlemak dan tinggi gula.",
-  "Lakukan pemeriksaan lanjutan ke dokter spesialis.",
-  "Manajemen stres dengan baik dan istirahat yang cukup.",
-  "Disarankan untuk berhenti merokok dan mengurangi konsumsi alkohol.",
-];
-
 export const ConclusionForm = () => {
   const { control } = useFormContext();
+  
+  const [saranOptions, setSaranOptions] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSaran = async () => {
+      try {
+        const response = await fetch('/api/mcu/saran');
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        setSaranOptions(data);
+      } catch (error) {
+        console.error("Gagal mengambil data saran:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSaran();
+  }, []);
+
+  const handleAddNewSaran = async (newSaran: string) => {
+    if (!saranOptions.includes(newSaran)) {
+      setSaranOptions((prev) => [newSaran, ...prev]);
+    }
+
+    try {
+      await fetch('/api/mcu/saran', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: newSaran }),
+      });
+    } catch (error) {
+      console.error("Gagal menyimpan saran baru:", error);
+      setSaranOptions((prev) => prev.filter(s => s !== newSaran));
+    }
+  };
 
   return (
     <Card>
@@ -106,9 +136,18 @@ export const ConclusionForm = () => {
                   options={saranOptions}
                   selected={Array.isArray(field.value) ? field.value : []}
                   onChange={field.onChange}
+                  onAddNewOption={handleAddNewSaran}
+                  isLoading={isLoading} 
                 />
               </FormItem>
             )}
+          />
+        </div>
+
+        <div>
+          <SignatureField
+            nameFieldName="conclusionValidatorName"
+            qrFieldName="conclusionValidatorQr"
           />
         </div>
       </CardContent>
@@ -120,12 +159,16 @@ interface MultiSelectComboboxProps {
   options: string[];
   selected: string[];
   onChange: (value: string[]) => void;
+  onAddNewOption: (value: string) => void;
+  isLoading: boolean;
 }
 
 function MultiSelectCombobox({
   options,
   selected,
   onChange,
+  onAddNewOption,
+  isLoading,
 }: MultiSelectComboboxProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
@@ -161,11 +204,14 @@ function MultiSelectCombobox({
       const newSaran = inputValue.trim();
 
       if (newSaran && !selected.includes(newSaran)) {
+        onAddNewOption(newSaran);
         onChange([...selected, newSaran]);
         setInputValue("");
       }
     }
   };
+
+  const filteredOptions = options;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -195,18 +241,22 @@ function MultiSelectCombobox({
         <Command onKeyDown={handleKeyDown}>
           <CommandInput
             ref={inputRef}
-            placeholder="Pilih atau ketik saran baru..."
+            placeholder={isLoading ? "Memuat saran..." : "Pilih atau ketik saran baru..."}
+            disabled={isLoading}
             value={inputValue}
             onValueChange={setInputValue}
           />
           <CommandList>
             <CommandEmpty>
-              {inputValue
-                ? `Tekan Enter untuk menambah "${inputValue}"`
-                : "Ketik untuk mencari atau membuat saran baru."}
+              {isLoading 
+                ? "Memuat..." 
+                : (inputValue
+                  ? `Tekan Enter untuk menambah "${inputValue}"`
+                  : "Ketik untuk mencari atau membuat saran baru.")
+              }
             </CommandEmpty>
             <CommandGroup>
-              {options.map((option) => (
+              {filteredOptions.map((option) => (
                 <CommandItem
                   key={option}
                   onSelect={() => {
@@ -220,12 +270,6 @@ function MultiSelectCombobox({
             </CommandGroup>
           </CommandList>
         </Command>
-        <div className="p-4 border-t mt-1">
-          <SignatureField
-            nameFieldName="conclusionValidatorName"
-            qrFieldName="conclusionValidatorQr"
-          />
-        </div>
       </PopoverContent>
     </Popover>
   );
