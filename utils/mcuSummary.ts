@@ -382,11 +382,6 @@ export const isAbnormal = (
   return (min !== undefined && num < min) || (max !== undefined && num > max);
 };
 
-// utils/mcuSummary.ts
-
-// ... (existing types and maps)
-
-// Ambil BMI range, kita asumsikan referensi normal 18.5 - 24.9 untuk dewasa
 const getBMICategory = (bmi: number): string => {
   if (bmi < 18.5) return "Underweight";
   if (bmi >= 25 && bmi <= 29.9) return "Overweight (Pre-obese)";
@@ -394,11 +389,20 @@ const getBMICategory = (bmi: number): string => {
   return "NORMAL (18.5 - 24.9)";
 };
 
-// Ambil Tekanan Darah category
 const getBloodPressureCategory = (sistol: number, diastol: number): string => {
-  // Kriteria JNC-8/AHA (disederhanakan)
-  if (sistol >= 140 || diastol >= 90) return "Hipertensi";
-  if (sistol >= 130 || diastol >= 80) return "Elevated / Prehipertensi Stage 1";
+  // 1. Hipertensi Stage 2 / Krisis
+  if (sistol >= 180 || diastol >= 120) {
+    return "Hipertensi Stage 2 / Krisis";
+  } // 2. Hipertensi Stage 2
+  if (sistol >= 140 || diastol >= 90) {
+    return "Hipertensi Stage 2";
+  } // 3. Hipertensi Stage 1
+  if (sistol >= 130 || diastol >= 80) {
+    return "Hipertensi Stage 1";
+  } // 4. Elevated (Prehipertensi)
+  if (sistol >= 120 && diastol < 80) {
+    return "Elevated (Prehipertensi)";
+  } // 5. Normal
   return "NORMAL";
 };
 
@@ -428,7 +432,6 @@ const getFisikAbnormalFindings = (
   if (butaWarna.includes("parsial") || butaWarna.includes("total")) {
     abnormalFindings.push(`Buta Warna: ${pf.butaWarna}`);
   } // 4. Cek Visus (Ketajaman Penglihatan) - Asumsi abnormal jika visus tidak 6/6 (20/20) dan tanpa kacamata
-
   const hasGlasses = String(pf.kacamata).toLowerCase() === "ya";
   const visusOD = String(pf.visusOD);
   const visusOS = String(pf.visusOS);
@@ -455,7 +458,6 @@ const getFisikAbnormalFindings = (
       `Visus Dengan Koreksi: OD ${visusOD} / OS ${visusOS}`
     );
   } // 5. Cek Pendengaran (Audiometri/Test Bisik) - Asumsi abnormal jika ada nilai "Kurang" atau sejenisnya
-
   const pendengaranAD = String(pf.kemampuanPendengaranAD).toLowerCase();
   const pendengaranAS = String(pf.kemampuanPendengaranAS).toLowerCase();
   if (
@@ -503,7 +505,7 @@ export const summarizeResults = (data: SummaryConclusionData): Summaries => {
   };
 
   summaries.fisik = getFisikAbnormalFindings(
-    (data?.pemeriksaanFisikForm as PemeriksaanFisikData) || {} // Asumsikan pemeriksaanFisikForm ada di SummaryConclusionData
+    (data?.pemeriksaanFisikForm as PemeriksaanFisikData) || {}
   );
 
   if (hasBasicMcu) {

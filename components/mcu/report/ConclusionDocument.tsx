@@ -372,8 +372,19 @@ const getBMICategory = (bmi: number): string => {
 };
 
 const getBloodPressureCategory = (sistol: number, diastol: number): string => {
-  if (sistol >= 140 || diastol >= 90) return "Hipertensi";
-  if (sistol >= 130 || diastol >= 80) return "Elevated / Prehipertensi Stage 1";
+  // 1. Hipertensi Stage 2 / Krisis
+  if (sistol >= 180 || diastol >= 120) {
+    return "Hipertensi Stage 2 / Krisis";
+  } // 2. Hipertensi Stage 2
+  if (sistol >= 140 || diastol >= 90) {
+    return "Hipertensi Stage 2";
+  } // 3. Hipertensi Stage 1
+  if (sistol >= 130 || diastol >= 80) {
+    return "Hipertensi Stage 1";
+  } // 4. Elevated (Prehipertensi)
+  if (sistol >= 120 && diastol < 80) {
+    return "Elevated (Prehipertensi)";
+  } // 5. Normal
   return "NORMAL";
 };
 
