@@ -372,20 +372,23 @@ const getBMICategory = (bmi: number): string => {
 };
 
 const getBloodPressureCategory = (sistol: number, diastol: number): string => {
-  // 1. Hipertensi Stage 2 / Krisis
-  if (sistol >= 180 || diastol >= 120) {
-    return "Hipertensi Stage 2 / Krisis";
-  } // 2. Hipertensi Stage 2
+  // 1. Stage 2 hypertension (Sistolik >= 160 ATAU Diastolik >= 100)
+  if (sistol >= 160 || diastol >= 100) {
+    return "Stage 2 hypertension";
+  }
+
+  // 2. Stage 1 hypertension (Sistolik 140-159 ATAU Diastolik 90-99)
   if (sistol >= 140 || diastol >= 90) {
-    return "Hipertensi Stage 2";
-  } // 3. Hipertensi Stage 1
-  if (sistol >= 130 || diastol >= 80) {
-    return "Hipertensi Stage 1";
-  } // 4. Elevated (Prehipertensi)
-  if (sistol >= 120 && diastol < 80) {
-    return "Elevated (Prehipertensi)";
-  } // 5. Normal
-  return "NORMAL";
+    return "Stage 1 hypertension";
+  }
+
+  // 3. Prehypertension (Sistolik 120-139 ATAU Diastolik 80-89)
+  if (sistol >= 120 || diastol >= 80) {
+    return "Prehypertension";
+  }
+
+  // 4. Normal (Sistolik < 120 DAN Diastolik < 80)
+  return "Normal";
 };
 
 const getFisikAbnormalFindings = (pf: FisikSummaryData): string | undefined => {
