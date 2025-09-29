@@ -391,17 +391,17 @@ const getBMICategory = (bmi: number): string => {
 
 const getBloodPressureCategory = (sistol: number, diastol: number): string => {
   // 1. Stage 2 hypertension (Sistolik >= 160 ATAU Diastolik >= 100)
-  if (sistol >= 160 || diastol >= 100) {
+  if (sistol >= 161 || diastol >= 101) {
     return "Stage 2 hypertension";
   }
 
   // 2. Stage 1 hypertension (Sistolik 140-159 ATAU Diastolik 90-99)
-  if (sistol >= 140 || diastol >= 90) {
+  if (sistol >= 141 || diastol >= 91) {
     return "Stage 1 hypertension";
   }
 
   // 3. Prehypertension (Sistolik 120-139 ATAU Diastolik 80-89)
-  if (sistol >= 120 || diastol >= 80) {
+  if (sistol >= 121 || diastol >= 81) {
     return "Prehypertension";
   }
 
