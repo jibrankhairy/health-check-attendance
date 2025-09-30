@@ -78,6 +78,9 @@ type ReportData = {
     dob: string;
     age: number;
     gender: string;
+    nik: string;
+    division: string;
+    position: string;
     company: { name: string };
     mcuPackage?: string[];
     photoUrl?: string;
@@ -205,6 +208,30 @@ export const CoverPageDocument = ({ data }: { data: ReportData }) => {
             <Text style={localStyles.colon}>:</Text>
             <Text style={localStyles.value}>
               {formatDate(data.patient.dob)} / {data.patient.age} Tahun
+            </Text>
+          </View>
+
+          <View style={localStyles.row}>
+            <Text style={localStyles.label}>NIK</Text>
+            <Text style={localStyles.colon}>:</Text>
+            <Text style={localStyles.value}>
+              {data.patient.nik?.toUpperCase() || "-"}
+            </Text>
+          </View>
+
+          <View style={localStyles.row}>
+            <Text style={localStyles.label}>DIVISI</Text>
+            <Text style={localStyles.colon}>:</Text>
+            <Text style={localStyles.value}>
+              {data.patient.division?.toUpperCase() || "-"}
+            </Text>
+          </View>
+
+          <View style={localStyles.row}>
+            <Text style={localStyles.label}>POSISI</Text>
+            <Text style={localStyles.colon}>:</Text>
+            <Text style={localStyles.value}>
+              {data.patient.position?.toUpperCase() || "-"}
             </Text>
           </View>
 
