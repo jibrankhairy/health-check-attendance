@@ -243,6 +243,19 @@ const validatorStyles = {
   },
 };
 
+const formatTruncate2Decimals = (value: unknown): string => {
+  if (value === null || value === undefined || String(value) === "") {
+    return "-";
+  }
+
+  const num = Number(value);
+  if (isNaN(num)) {
+    return String(value);
+  }
+  const truncatedNum = Math.trunc(num * 100) / 100;
+  return truncatedNum.toFixed(2);
+};
+
 export const HematologiDocument: React.FC<{ data: HematologiData }> = ({
   data,
 }) => {
@@ -291,13 +304,20 @@ export const HematologiDocument: React.FC<{ data: HematologiData }> = ({
             const hasilStyle: any[] = [styles.tableCol, styles.colHasil];
             if (abnormal) hasilStyle.push(styles.resultAbnormal);
 
+            let displayedResult: string;
+            if (item.field === 'hematokrit' || item.field === 'eritrosit') {
+              displayedResult = formatTruncate2Decimals(resultValue);
+            } else {
+              displayedResult = displayValue(resultValue);
+            }
+
             return (
               <View key={item.no} style={rowStyle}>
                 <Text style={[styles.tableCol, styles.colNo]}>{item.no}</Text>
                 <Text style={[styles.tableCol, styles.colJenis]}>
                   {item.label}
                 </Text>
-                <Text style={hasilStyle}>{displayValue(resultValue)}</Text>
+                <Text style={hasilStyle}>{displayedResult}</Text>
                 <Text style={[styles.tableCol, styles.colRujukan]}>
                   {item.refText}
                 </Text>

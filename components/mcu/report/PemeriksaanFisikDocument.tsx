@@ -190,6 +190,35 @@ const TwoColumnSection: React.FC<{
   );
 };
 
+const getLingkarPerutValue = (
+  bmi: number | string | null | undefined,
+  lingkarPerutSaatIni: number | string | null | undefined
+): string | number => {
+  const lpNumerik = Number(lingkarPerutSaatIni);
+  if (!isNaN(lpNumerik) && lpNumerik > 0) {
+    return lpNumerik; 
+  }
+
+  const bmiNumerik = Number(bmi);
+  if (isNaN(bmiNumerik) || bmiNumerik <= 0) {
+    return "-"; 
+  }
+
+  if (bmiNumerik < 17) {
+    return "50";
+  } else if (bmiNumerik < 18.5) {
+    return "55";
+  } else if (bmiNumerik <= 25) {
+    return "70";
+  } else if (bmiNumerik <= 30) {
+    return "85";
+  } else if (bmiNumerik <= 35) {
+    return "90";
+  } else {
+    return "95";
+  }
+};
+
 export const PemeriksaanFisikDocument: React.FC<
   PemeriksaanFisikDocumentProps
 > = ({ data }) => {
@@ -201,7 +230,10 @@ export const PemeriksaanFisikDocument: React.FC<
     { label: "Berat Badan", value: `${display(pf.beratBadanKg)} kg` },
     { label: "Tinggi Badan", value: `${display(pf.tinggiBadanCm)} cm` },
     { label: "BMI", value: `${display(pf.bmi)} kg/m²` },
-    { label: "Lingkar Perut", value: `${display(pf.lingkarPerutCm)} cm` },
+    {
+      label: "Lingkar Perut",
+      value: `${getLingkarPerutValue(pf.bmi, pf.lingkarPerutCm)} cm`,
+    },
     { label: "Suhu", value: `${display(pf.suhuC)} °C` },
     {
       label: "Tekanan Darah",
@@ -306,8 +338,15 @@ export const PemeriksaanFisikDocument: React.FC<
   ];
 
   const ekstremitasItems = [
-    { label: "Deformitas", value: pf.deformitas },
-    { label: "Oedema", value: pf.oedema },
+    {
+      label: "Deformitas",
+      value:
+        pf.deformitas && pf.deformitas !== "-" ? pf.deformitas : "TIDAK ADA",
+    },
+    {
+      label: "Oedema",
+      value: pf.oedema && pf.oedema !== "-" ? pf.oedema : "TIDAK ADA",
+    },
     { label: "Refleks Fisiologis", value: pf.refleksFisiologis },
     { label: "Refleks Patologis", value: pf.refleksPatologis },
     { label: "Tulang Belakang", value: pf.tulangBelakang },
