@@ -5,7 +5,7 @@ import fs from "fs/promises";
 import { put } from "@vercel/blob";
 
 // Tambahkan ini untuk Vercel agar tidak cepat timeout
-export const maxDuration = 300; // 5 menit, bisa disesuaikan
+export const maxDuration = 60; // 5 menit, bisa disesuaikan
 
 const prisma = new PrismaClient();
 

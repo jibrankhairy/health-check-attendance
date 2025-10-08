@@ -351,6 +351,7 @@ export const ReportTable = () => {
     setCurrentImageType(null);
   };
 
+  // --- FUNGSI INI YANG DIGANTI DENGAN LOGIKA BATCH ---
   const handleImageImport = async (
     files: File[],
     companyId: string,
@@ -358,55 +359,81 @@ export const ReportTable = () => {
   ) => {
     setIsImportingImages(true);
     const toastId = toast.loading(
-      `Mengunggah ${files.length} file ${IMAGE_TYPES[imageType].label}...`,
-      {
-        description: "Proses ini mungkin memerlukan waktu beberapa saat...",
-      }
+      `Mempersiapkan ${files.length} file ${IMAGE_TYPES[imageType].label}...`
     );
 
-    try {
-      const formData = new FormData();
-      formData.append("companyId", companyId);
-      formData.append("imageType", imageType);
-      files.forEach((file) => {
-        formData.append("files", file);
-      });
+    const BATCH_SIZE = 10; // Ukuran batch, bisa disesuaikan
+    let totalSuccessCount = 0;
+    const totalFiles = files.length;
+    const allErrors: string[] = [];
 
-      const res = await fetch("/api/mcu/reports/import-images", {
-        method: "POST",
-        body: formData,
-      });
-      const result = await res.json();
-      if (!res.ok) {
-        throw new Error(result.message || "Gagal mengimpor gambar.");
+    try {
+      for (let i = 0; i < totalFiles; i += BATCH_SIZE) {
+        const batch = files.slice(i, i + BATCH_SIZE);
+        const currentBatchNumber = Math.floor(i / BATCH_SIZE) + 1;
+        const totalBatches = Math.ceil(totalFiles / BATCH_SIZE);
+
+        toast.loading(
+          `Mengunggah batch ${currentBatchNumber} dari ${totalBatches}...`,
+          {
+            id: toastId,
+            description: `${i + batch.length} dari ${totalFiles} file sedang diproses.`,
+          }
+        );
+
+        const formData = new FormData();
+        formData.append("companyId", companyId);
+        formData.append("imageType", imageType);
+        batch.forEach((file) => {
+          formData.append("files", file);
+        });
+
+        const res = await fetch("/api/mcu/reports/import-images", {
+          method: "POST",
+          body: formData,
+        });
+
+        const result = await res.json();
+        if (!res.ok) {
+          // Jika satu batch gagal, catat errornya dan lanjut ke batch berikutnya
+          throw new Error(`Batch ${currentBatchNumber} gagal: ${result.message || 'Error tidak diketahui'}`);
+        }
+
+        totalSuccessCount += result.successCount || 0;
+        if (result.errors && result.errors.length > 0) {
+          allErrors.push(...result.errors);
+        }
       }
+
       toast.success("Impor Gambar Selesai!", {
         id: toastId,
-        description: `${result.successCount} file berhasil diproses.`,
+        description: `Berhasil mengunggah ${totalSuccessCount} dari ${totalFiles} file.`,
       });
-      if (result.errors && result.errors.length > 0) {
+
+      if (allErrors.length > 0) {
         toast.warning("Beberapa file gagal diimpor:", {
           description: (
             <ul className="list-disc list-inside max-h-40 overflow-y-auto">
-              {result.errors.slice(0, 10).map((e: string, i: number) => (
+              {allErrors.slice(0, 10).map((e: string, i: number) => (
                 <li key={i}>{e}</li>
               ))}
-              {result.errors.length > 10 && <li>...dan lainnya.</li>}
+              {allErrors.length > 10 && <li>...dan lainnya.</li>}
             </ul>
           ),
           duration: 10000,
         });
       }
-      fetchReports();
     } catch (e: any) {
-      toast.error("Impor Gambar Gagal!", {
+      toast.error("Impor Gambar Gagal Total!", {
         id: toastId,
         description: e.message,
       });
     } finally {
       setIsImportingImages(false);
+      fetchReports(); // Refresh tabel setelah semua batch selesai
     }
   };
+
 
   const renderTableContent = () => {
     if (loading) {
