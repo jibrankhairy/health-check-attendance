@@ -43,6 +43,7 @@ const slugToExaminationMap: { [key: string]: string[] } = {
   tes_psikologi: ["Pemeriksaan psikologis (FAS dan SDS)"],
   pemeriksaan_lab: [
     "Hematologi (darah lengkap, golongan darah & rhesus)",
+    "Hematologi (darah lengkap, golongan darah & rhesus) + HbsAg",
     "Profil lemak (kolesterol total, HDL, LDL, trigliserida)",
     "Panel diabetes (gula darah puasa, gula darah 2 jam PP)",
     "Fungsi hati (SGOT, SGPT)",
