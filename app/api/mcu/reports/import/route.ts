@@ -11,23 +11,67 @@ function mapExcelToPrisma(row: any): { [key: string]: any } {
   const allKeys = Object.keys(row);
 
   const integerFields = new Set([
-    "audioAcKanan250", "audioAcKanan500", "audioAcKanan1000", "audioAcKanan2000", "audioAcKanan3000", "audioAcKanan4000", "audioAcKanan6000", "audioAcKanan8000",
-    "audioAcKiri250", "audioAcKiri500", "audioAcKiri1000", "audioAcKiri2000", "audioAcKiri3000", "audioAcKiri4000", "audioAcKiri6000", "audioAcKiri8000",
-    "audioBcKanan250", "audioBcKanan500", "audioBcKanan1000", "audioBcKanan2000", "audioBcKanan3000", "audioBcKanan4000", "audioBcKanan6000", "audioBcKanan8000",
-    "audioBcKiri250", "audioBcKiri500", "audioBcKiri1000", "audioBcKiri2000", "audioBcKiri3000", "audioBcKiri4000", "audioBcKiri6000", "audioBcKiri8000",
+    "audioAcKanan250",
+    "audioAcKanan500",
+    "audioAcKanan1000",
+    "audioAcKanan2000",
+    "audioAcKanan3000",
+    "audioAcKanan4000",
+    "audioAcKanan6000",
+    "audioAcKanan8000",
+    "audioAcKiri250",
+    "audioAcKiri500",
+    "audioAcKiri1000",
+    "audioAcKiri2000",
+    "audioAcKiri3000",
+    "audioAcKiri4000",
+    "audioAcKiri6000",
+    "audioAcKiri8000",
+    "audioBcKanan250",
+    "audioBcKanan500",
+    "audioBcKanan1000",
+    "audioBcKanan2000",
+    "audioBcKanan3000",
+    "audioBcKanan4000",
+    "audioBcKanan6000",
+    "audioBcKanan8000",
+    "audioBcKiri250",
+    "audioBcKiri500",
+    "audioBcKiri1000",
+    "audioBcKiri2000",
+    "audioBcKiri3000",
+    "audioBcKiri4000",
+    "audioBcKiri6000",
+    "audioBcKiri8000",
   ]);
 
   const floatFields = new Set([
-    "beratBadan", "tinggiBadan",
-    "spirometryFvc", "spirometryFvcPred", "spirometryFvcPost",
-    "spirometryFev1", "spirometryFev1Pred", "spirometryFev1Post",
-    "spirometryFev1Fvc", "spirometryFev1FvcPred",
-    "spirometryFev6", "spirometryFev6Pred",
-    "spirometryPef", "spirometryPefPred", "spirometryPefPost",
-    "spirometryFef2575", "spirometryFef2575Pred",
-    "spirometryFef25", "spirometryFef25Pred", "spirometryFef25Post",
-    "spirometryFef50", "spirometryFef50Pred", "spirometryFef50Post",
-    "spirometryFef75", "spirometryFef75Pred", "spirometryFef75Post",
+    "beratBadan",
+    "tinggiBadan",
+    "spirometryFvc",
+    "spirometryFvcPred",
+    "spirometryFvcPost",
+    "spirometryFev1",
+    "spirometryFev1Pred",
+    "spirometryFev1Post",
+    "spirometryFev1Fvc",
+    "spirometryFev1FvcPred",
+    "spirometryFev6",
+    "spirometryFev6Pred",
+    "spirometryPef",
+    "spirometryPefPred",
+    "spirometryPefPost",
+    "spirometryFef2575",
+    "spirometryFef2575Pred",
+    "spirometryFef25",
+    "spirometryFef25Pred",
+    "spirometryFef25Post",
+    "spirometryFef50",
+    "spirometryFef50Pred",
+    "spirometryFef50Post",
+    "spirometryFef75",
+    "spirometryFef75Pred",
+    "spirometryFef75Post",
   ]);
 
   for (const key of allKeys) {
@@ -92,22 +136,22 @@ export async function POST(request: Request) {
     const errors: string[] = [];
 
     const validatorMap: { [key: string]: string } = {
-        hematologiValidatorName: "hematologiValidatorQr",
-        kimiaDarahValidatorName: "kimiaDarahValidatorQr",
-        hepatitisValidatorName: "hepatitisValidatorQr",
-        biomonitoringValidatorName: "biomonitoringValidatorQr",
-        urinalisaValidatorName: "urinalisaValidatorQr",
-        audiometryValidatorName: "audiometryValidatorQr",
-        spirometryValidatorName: "spirometryValidatorQr",
-        usgAbdomenValidatorName: "usgAbdomenValidatorQr",
-        usgMammaeValidatorName: "usgMammaeValidatorQr",
-        ekgValidatorName: "ekgValidatorQr",
-        treadmillValidatorName: "treadmillValidatorQr",
-        rontgenValidatorName: "rontgenValidatorQr",
-        conclusionValidatorName: "conclusionValidatorQr",
-        dassFasValidatorName: "dassFasValidatorQr",
-        framinghamValidatorName: "framinghamValidatorQr",
-        refraValidatorName: "refraValidatorQr",
+      hematologiValidatorName: "hematologiValidatorQr",
+      kimiaDarahValidatorName: "kimiaDarahValidatorQr",
+      hepatitisValidatorName: "hepatitisValidatorQr",
+      biomonitoringValidatorName: "biomonitoringValidatorQr",
+      urinalisaValidatorName: "urinalisaValidatorQr",
+      audiometryValidatorName: "audiometryValidatorQr",
+      spirometryValidatorName: "spirometryValidatorQr",
+      usgAbdomenValidatorName: "usgAbdomenValidatorQr",
+      usgMammaeValidatorName: "usgMammaeValidatorQr",
+      ekgValidatorName: "ekgValidatorQr",
+      treadmillValidatorName: "treadmillValidatorQr",
+      rontgenValidatorName: "rontgenValidatorQr",
+      conclusionValidatorName: "conclusionValidatorQr",
+      dassFasValidatorName: "dassFasValidatorQr",
+      framinghamValidatorName: "framinghamValidatorQr",
+      refraValidatorName: "refraValidatorQr",
     };
 
     for (const [index, row] of jsonData.entries()) {
@@ -141,25 +185,20 @@ export async function POST(request: Request) {
           );
           continue;
         }
-        
-        const dataToUpdate = mapExcelToPrisma(row);
-        dataToUpdate.isExcelDataImported = true; // Set bahwa excel sudah diimpor
 
-        // Cek apakah gambar sudah diunggah sebelumnya
+        const dataToUpdate = mapExcelToPrisma(row);
+        dataToUpdate.isExcelDataImported = true;
+
         const isImagesAlreadyUploaded = mcuResult.isImagesUploaded;
 
-        // Tentukan status berdasarkan kondisi Excel (selalu true di sini) DAN gambar
         if (isImagesAlreadyUploaded) {
-            // Jika gambar SUDAH ada, langsung set status menjadi COMPLETED
-            dataToUpdate.status = "COMPLETED";
-            dataToUpdate.fileUrl = `/dashboard/reports/view/${mcuResult.id}`;
-            // Hanya set completedAt jika status sebelumnya BUKAN COMPLETED
-            if (mcuResult.status !== "COMPLETED") {
-                dataToUpdate.completedAt = new Date();
-            }
+          dataToUpdate.status = "COMPLETED";
+          dataToUpdate.fileUrl = `/dashboard/reports/view/${mcuResult.id}`;
+          if (mcuResult.status !== "COMPLETED") {
+            dataToUpdate.completedAt = new Date();
+          }
         } else {
-            // Jika gambar BELUM diunggah, status tetap IN_PROGRESS
-            dataToUpdate.status = "IN_PROGRESS";
+          dataToUpdate.status = "IN_PROGRESS";
         }
 
         for (const nameField in validatorMap) {

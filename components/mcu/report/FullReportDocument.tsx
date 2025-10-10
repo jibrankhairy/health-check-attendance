@@ -227,15 +227,11 @@ export const FullReportDocument: React.FC<FullReportDocumentProps> = ({
     sectionHasData(d, RONTGEN_FIELDS);
 
   const showEkg =
-    (hasItem("mcu eksekutif") || hasItem("ekg") || hasItem("treadmill")) &&
+    (hasItem("mcu eksekutif") || hasItem("ekg")) &&
     sectionHasData(d, EKG_FIELDS);
 
   const showTreadmill =
-    (hasItem("mcu regular") ||
-      hasItem("mcu eksekutif") ||
-      hasItem("mcu akhir") ||
-      hasItem("mcu dmc") ||
-      hasItem("treadmill")) &&
+    (hasItem("mcu eksekutif") || hasItem("treadmill")) &&
     sectionHasData(d, TREADMILL_FIELDS);
 
   const showAudiometry =
