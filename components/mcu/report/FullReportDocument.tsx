@@ -231,8 +231,7 @@ export const FullReportDocument: React.FC<FullReportDocumentProps> = ({
     sectionHasData(d, EKG_FIELDS);
 
   const showTreadmill =
-    (hasItem("mcu regular") ||
-      hasItem("mcu eksekutif") ||
+    (hasItem("mcu eksekutif") ||
       hasItem("mcu akhir") ||
       hasItem("mcu dmc") ||
       hasItem("treadmill")) &&
