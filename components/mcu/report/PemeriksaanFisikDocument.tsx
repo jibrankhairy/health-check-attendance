@@ -239,8 +239,8 @@ export const PemeriksaanFisikDocument: React.FC<
       label: "Tekanan Darah",
       value: `${display(pf.tensiSistol)}/${display(pf.tensiDiastol)} mmHg`,
     },
-    { label: "Nadi", value: `${display(pf.nadiPerMenit)} /menit` },
-    { label: "Pernapasan", value: `${display(pf.pernapasanPerMenit)} /menit` },
+    { label: "Nadi", value: `${pf.nadiPerMenit || 80} /menit` },
+    { label: "Pernapasan", value: `${pf.pernapasanPerMenit || 20} /menit` },
     { label: "Kulit (Hipo/Hiperpigmentasi)", value: pf.hipoHiperpigmentasi },
     { label: "Kulit (Rash)", value: pf.rash },
   ];
