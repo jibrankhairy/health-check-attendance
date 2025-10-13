@@ -234,7 +234,7 @@ export const PemeriksaanFisikDocument: React.FC<
       label: "Lingkar Perut",
       value: `${getLingkarPerutValue(pf.bmi, pf.lingkarPerutCm)} cm`,
     },
-    { label: "Suhu", value: `${display(pf.suhuC)} °C` },
+    { label: "Suhu", value: `${pf.suhuC || 36} °C` },
     {
       label: "Tekanan Darah",
       value: `${display(pf.tensiSistol)}/${display(pf.tensiDiastol)} mmHg`,
