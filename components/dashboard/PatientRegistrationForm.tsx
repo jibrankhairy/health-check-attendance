@@ -79,34 +79,19 @@ export const PatientRegistrationForm = (props: PatientFormProps) => {
         onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-4 max-h-[80vh] overflow-y-auto p-1 pr-2 md:pr-4"
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="patientId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>ID Pasien</FormLabel>
-                <FormControl>
-                  <Input {...field} readOnly className="bg-gray-100" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="nik"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>NIK</FormLabel>
-                <FormControl>
-                  <Input placeholder="Masukkan NIK Karyawan" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        <FormField
+          control={form.control}
+          name="nik"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>NIK</FormLabel>
+              <FormControl>
+                <Input placeholder="Masukkan NIK Karyawan" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="fullName"

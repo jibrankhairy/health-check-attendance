@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { mcuPackages } from "@/lib/mcu-data";
 
 const formSchema = z.object({
-  patientId: z.string().min(1, "ID Pasien tidak boleh kosong."),
+  patientId: z.string().optional(),
   nik: z.string().min(1, "NIK tidak boleh kosong."),
   fullName: z.string().min(3, { message: "Nama lengkap minimal 3 karakter." }),
   email: z
@@ -66,7 +66,6 @@ export const usePatientForm = ({
       };
     }
     return {
-      patientId: `MCU-${Math.floor(1000 + Math.random() * 9000)}`,
       nik: "",
       fullName: "",
       email: "",

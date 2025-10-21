@@ -1,13 +1,39 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import { z } from "zod";
 import nodemailer from "nodemailer";
 import QRCode from "qrcode";
 
 const prisma = new PrismaClient();
 
+async function generateUniquePatientId(tx: Prisma.TransactionClient) {
+  let uniqueId = "";
+  let isUnique = false;
+  let attempts = 0;
+
+  while (!isUnique && attempts < 10) {
+    uniqueId = `MCU-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    const existingPatient = await tx.patient.findUnique({
+      where: { patientId: uniqueId },
+      select: { id: true },
+    });
+
+    if (!existingPatient) {
+      isUnique = true;
+    }
+
+    attempts++;
+  }
+
+  if (!isUnique) {
+    throw new Error("Gagal membuat ID Pasien unik setelah 10x percobaan.");
+  }
+
+  return uniqueId;
+}
+
 const createPatientSchema = z.object({
-  patientId: z.string(),
   nik: z.string().min(1, "NIK tidak boleh kosong."),
   fullName: z.string().min(3, "Nama lengkap minimal 3 karakter"),
   email: z
@@ -41,7 +67,10 @@ const transporter = nodemailer.createTransport({
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const validation = createPatientSchema.safeParse(body);
+
+    const { patientId: frontendId, ...payload } = body;
+
+    const validation = createPatientSchema.safeParse(payload);
 
     if (!validation.success) {
       return NextResponse.json(
@@ -64,10 +93,13 @@ export async function POST(request: Request) {
     }
 
     const result = await prisma.$transaction(async (tx) => {
+      const newPatientId = await generateUniquePatientId(tx);
+
       const newPatient = await tx.patient.create({
         data: {
           nik,
           ...restOfData,
+          patientId: newPatientId,
           dob: new Date(restOfData.dob),
           email: restOfData.email || null,
           qrCode: "",
@@ -150,10 +182,19 @@ export async function POST(request: Request) {
     return NextResponse.json(result.patient, { status: 201 });
   } catch (error) {
     console.error("Create Patient Error:", error);
-    return NextResponse.json(
-      { message: "Internal Server Error" },
-      { status: 500 }
-    );
+
+    let errorMessage = "Internal Server Error";
+    if (error instanceof z.ZodError) {
+      errorMessage = "Validasi data gagal";
+    } else if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2002") {
+        errorMessage = `Data duplikat: ${error.meta?.target}`;
+      }
+    } else if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+
+    return NextResponse.json({ message: errorMessage }, { status: 500 });
   }
 }
 
