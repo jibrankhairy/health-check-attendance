@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import * as ExcelJS from "exceljs";
 
 const prisma = new PrismaClient();
@@ -9,6 +9,13 @@ const flattenAnswers = (answers: any): Record<string, any> => {
     return answers;
   }
   return {};
+};
+
+const getBMICategory = (bmi: number): string => {
+  if (bmi < 18.5) return "Underweight";
+  if (bmi >= 25 && bmi <= 29.9) return "Overweight (Pre-obese)";
+  if (bmi >= 30) return "Obesity";
+  return "NORMAL (18.5 - 24.9)";
 };
 
 type FasId =
@@ -57,7 +64,6 @@ const calculateFasResult = (
   fas_explanation?: string;
 } => {
   if (!answers || Object.keys(answers).length === 0)
-    // FIX 1: Mengubah 'category' menjadi 'fas_category'
     return {
       fas_raw_total: null,
       fas_score_1_to_10: null,
@@ -78,7 +84,6 @@ const calculateFasResult = (
   });
 
   if (answered < fasQuestions.length)
-    // FIX 2: Mengubah 'category' menjadi 'fas_category'
     return {
       fas_raw_total: null,
       fas_score_1_to_10: null,
@@ -97,7 +102,6 @@ const calculateFasResult = (
   const explanation =
     category === "N/A" ? undefined : categoryExplanation[category];
 
-  // Bagian ini sudah benar dari awal
   return {
     fas_raw_total: total,
     fas_score_1_to_10: score1to10,
@@ -121,14 +125,200 @@ export async function GET(request: Request) {
     const reports = await prisma.mcuResult.findMany({
       where: {
         patient: { companyId: companyId },
-        formSubmittedAt: { not: null },
+        pemeriksaanFisikForm: { not: Prisma.DbNull },
       },
       select: {
         healthHistoryAnswers: true,
         dassTestAnswers: true,
         fasTestAnswers: true,
         pemeriksaanFisikForm: true,
-        patient: { select: { nik: true, fullName: true } },
+        kesimpulan: true,
+        saran: true,
+        conclusionValidatorName: true,
+        dassFasValidatorName: true,
+        hematologiValidatorName: true,
+        kimiaDarahValidatorName: true,
+        hepatitisValidatorName: true,
+        biomonitoringValidatorName: true,
+        framinghamValidatorName: true,
+        urinalisaValidatorName: true,
+        audiometryValidatorName: true,
+        spirometryValidatorName: true,
+        refraValidatorName: true,
+        usgAbdomenValidatorName: true,
+        usgMammaeValidatorName: true,
+        ekgValidatorName: true,
+        treadmillValidatorName: true,
+        rontgenValidatorName: true,
+        patient: { select: { nik: true, fullName: true, patientId: true } },
+        golonganDarah: true,
+        hemoglobin: true,
+        leukosit: true,
+        trombosit: true,
+        hematokrit: true,
+        eritrosit: true,
+        led: true,
+        mcv: true,
+        mch: true,
+        mchc: true,
+        rdw: true,
+        mpv: true,
+        pdw: true,
+        hitungJenisEosinofil: true,
+        hitungJenisBasofil: true,
+        hitungJenisNeutrofilStab: true,
+        hitungJenisNeutrofilSegmen: true,
+        hitungJenisLimfosit: true,
+        hitungJenisMonosit: true,
+        gulaDarahPuasa: true,
+        gulaDarah2JamPP: true,
+        hbsag: true,
+        antiHbs: true,
+        sgot: true,
+        sgpt: true,
+        ureum: true,
+        kreatinin: true,
+        asamUrat: true,
+        kolesterolTotal: true,
+        trigliserida: true,
+        hdl: true,
+        ldl: true,
+        bilirubinTotal: true,
+        bilirubinDirect: true,
+        alkaliPhosphatase: true,
+        timbalDarah: true,
+        arsenikUrin: true,
+        framinghamGender: true,
+        framinghamAge: true,
+        framinghamTotalCholesterol: true,
+        framinghamHdlCholesterol: true,
+        framinghamSystolicBp: true,
+        framinghamIsOnHypertensionTreatment: true,
+        framinghamIsSmoker: true,
+        framinghamRiskPercentage: true,
+        framinghamRiskCategory: true,
+        framinghamVascularAge: true,
+        urinWarna: true,
+        urinKejernihan: true,
+        urinBau: true,
+        urinBeratJenis: true,
+        urinPh: true,
+        urinProtein: true,
+        urinBilirubin: true,
+        urinGlukosa: true,
+        urinUrobilinogen: true,
+        urinKeton: true,
+        urinNitrit: true,
+        urinLeukositEsterase: true,
+        urinBlood: true,
+        urinSedimenEritrosit: true,
+        urinSedimenLeukosit: true,
+        urinSedimenEpitel: true,
+        urinCaOxalat: true,
+        urinUridAcid: true,
+        urinGranulaCast: true,
+        audioAcKanan250: true,
+        audioAcKanan500: true,
+        audioAcKanan1000: true,
+        audioAcKanan2000: true,
+        audioAcKanan3000: true,
+        audioAcKanan4000: true,
+        audioAcKanan6000: true,
+        audioAcKanan8000: true,
+        audioAcKiri250: true,
+        audioAcKiri500: true,
+        audioAcKiri1000: true,
+        audioAcKiri2000: true,
+        audioAcKiri3000: true,
+        audioAcKiri4000: true,
+        audioAcKiri6000: true,
+        audioAcKiri8000: true,
+        audioBcKanan250: true,
+        audioBcKanan500: true,
+        audioBcKanan1000: true,
+        audioBcKanan2000: true,
+        audioBcKanan3000: true,
+        audioBcKanan4000: true,
+        audioBcKanan6000: true,
+        audioBcKanan8000: true,
+        audioBcKiri250: true,
+        audioBcKiri500: true,
+        audioBcKiri1000: true,
+        audioBcKiri2000: true,
+        audioBcKiri3000: true,
+        audioBcKiri4000: true,
+        audioBcKiri6000: true,
+        audioBcKiri8000: true,
+        audiometryKesimpulanTelingaKanan: true,
+        audiometryKesimpulanTelingaKiri: true,
+        audiometryKesimpulanUmum: true,
+        audiometrySaran: true,
+        spirometryFvc: true,
+        spirometryFvcPred: true,
+        spirometryFvcPost: true,
+        spirometryFev1: true,
+        spirometryFev1Pred: true,
+        spirometryFev1Post: true,
+        spirometryFev1Fvc: true,
+        spirometryFev1FvcPred: true,
+        spirometryFev6: true,
+        spirometryFev6Pred: true,
+        spirometryPef: true,
+        spirometryPefPred: true,
+        spirometryPefPost: true,
+        spirometryFef2575: true,
+        spirometryFef2575Pred: true,
+        spirometryFef25: true,
+        spirometryFef25Pred: true,
+        spirometryFef25Post: true,
+        spirometryFef50: true,
+        spirometryFef50Pred: true,
+        spirometryFef50Post: true,
+        spirometryFef75: true,
+        spirometryFef75Pred: true,
+        spirometryFef75Post: true,
+        spirometryPostBdNote: true,
+        spirometryQualityAccept: true,
+        spirometryQualityRepeat: true,
+        spirometryEffortCount: true,
+        kesimpulanSpirometry: true,
+        refraKananSpheris: true,
+        refraKananChylinder: true,
+        refraKananAxis: true,
+        refraKananAdd: true,
+        refraKiriSpheris: true,
+        refraKiriChylinder: true,
+        refraKiriAxis: true,
+        refraKiriAdd: true,
+        refraValidatorQr: true,
+        usgAbdomenHepar: true,
+        usgAbdomenGallBladder: true,
+        usgAbdomenLien: true,
+        usgAbdomenPancreas: true,
+        usgAbdomenGinjalDekstra: true,
+        usgAbdomenGinjalSinistra: true,
+        usgAbdomenKesimpulan: true,
+        usgMammaeLaporan: true,
+        usgMammaeKesimpulan: true,
+        ekgRhythm: true,
+        ekgQrsRate: true,
+        ekgAxis: true,
+        ekgPWave: true,
+        ekgPrInterval: true,
+        ekgQrsDuration: true,
+        ekgQWave: true,
+        ekgTWave: true,
+        ekgStChanges: true,
+        ekgOthers: true,
+        ekgConclusion: true,
+        ekgAdvice: true,
+        treadmillLamaLatihan: true,
+        treadmillKlasifikasiKebugaran: true,
+        treadmillKerjaFisik: true,
+        treadmillKelasFungsional: true,
+        treadmillHasilTest: true,
+        treadmillSaran: true,
+        kesanRontgen: true,
       },
     });
 
@@ -148,6 +338,7 @@ export async function GET(request: Request) {
     worksheet.columns = [
       { header: "nik", key: "nik", width: 20 },
       { header: "fullName", key: "fullName", width: 30 },
+      { header: "patientId", key: "patientId", width: 15 },
 
       // Hasil DASS
       {
@@ -164,14 +355,12 @@ export async function GET(request: Request) {
       { header: "dass_anxiety_level", key: "dass_anxiety_level", width: 22 },
       { header: "dass_stress_score", key: "dass_stress_score", width: 22 },
       { header: "dass_stress_level", key: "dass_stress_level", width: 22 },
-
       // Hasil FAS
       { header: "fas_raw_total", key: "fas_raw_total", width: 22 },
       { header: "fas_score_1_to_10", key: "fas_score_1_to_10", width: 22 },
       { header: "fas_category", key: "fas_category", width: 22 },
       { header: "fas_explanation", key: "fas_explanation", width: 40 },
-
-      // Data Form Lainnya
+      // Health History
       { header: "merasaSehat", key: "merasaSehat", width: 25 },
       { header: "keluhanKesehatan", key: "keluhanKesehatan", width: 25 },
       { header: "keluhanDetail", key: "keluhanDetail", width: 35 },
@@ -212,6 +401,7 @@ export async function GET(request: Request) {
       { header: "beratBadanKg", key: "beratBadanKg", width: 20 },
       { header: "tinggiBadanCm", key: "tinggiBadanCm", width: 20 },
       { header: "bmi", key: "bmi", width: 15 },
+      { header: "bmi_category", key: "bmi_category", width: 25 },
       { header: "lingkarPerutCm", key: "lingkarPerutCm", width: 20 },
       { header: "suhuC", key: "suhuC", width: 15 },
       { header: "tensiSistol", key: "tensiSistol", width: 15 },
@@ -289,6 +479,386 @@ export async function GET(request: Request) {
       { header: "sikap", key: "sikap", width: 20 },
       { header: "dayaIngat", key: "dayaIngat", width: 20 },
       { header: "orientasi", key: "orientasi", width: 20 },
+
+      // HASIL LAB & PENUNJANG DARI MCU RESULT (SESUAI TEMPLATE REPORT)
+      // Hematologi
+      { header: "golonganDarah", key: "golonganDarah", width: 20 },
+      { header: "hemoglobin", key: "hemoglobin", width: 20 },
+      { header: "leukosit", key: "leukosit", width: 20 },
+      { header: "trombosit", key: "trombosit", width: 20 },
+      { header: "hematokrit", key: "hematokrit", width: 20 },
+      { header: "eritrosit", key: "eritrosit", width: 20 },
+      { header: "led", key: "led", width: 20 },
+      { header: "mcv", key: "mcv", width: 20 },
+      { header: "mch", key: "mch", width: 20 },
+      { header: "mchc", key: "mchc", width: 20 },
+      { header: "rdw", key: "rdw", width: 20 },
+      { header: "mpv", key: "mpv", width: 20 },
+      { header: "pdw", key: "pdw", width: 20 },
+      {
+        header: "hitungJenisEosinofil",
+        key: "hitungJenisEosinofil",
+        width: 20,
+      },
+      { header: "hitungJenisBasofil", key: "hitungJenisBasofil", width: 20 },
+      {
+        header: "hitungJenisNeutrofilStab",
+        key: "hitungJenisNeutrofilStab",
+        width: 25,
+      },
+      {
+        header: "hitungJenisNeutrofilSegmen",
+        key: "hitungJenisNeutrofilSegmen",
+        width: 25,
+      },
+      { header: "hitungJenisLimfosit", key: "hitungJenisLimfosit", width: 20 },
+      { header: "hitungJenisMonosit", key: "hitungJenisMonosit", width: 20 },
+      {
+        header: "hematologiValidatorName",
+        key: "hematologiValidatorName",
+        width: 25,
+      },
+
+      // Kimia Darah
+      { header: "gulaDarahPuasa", key: "gulaDarahPuasa", width: 20 },
+      { header: "gulaDarah2JamPP", key: "gulaDarah2JamPP", width: 20 },
+      { header: "hbsag", key: "hbsag", width: 20 },
+      { header: "antiHbs", key: "antiHbs", width: 20 },
+      { header: "sgot", key: "sgot", width: 20 },
+      { header: "sgpt", key: "sgpt", width: 20 },
+      { header: "ureum", key: "ureum", width: 20 },
+      { header: "kreatinin", key: "kreatinin", width: 20 },
+      { header: "asamUrat", key: "asamUrat", width: 20 },
+      { header: "kolesterolTotal", key: "kolesterolTotal", width: 20 },
+      { header: "trigliserida", key: "trigliserida", width: 20 },
+      { header: "hdl", key: "hdl", width: 20 },
+      { header: "ldl", key: "ldl", width: 20 },
+      { header: "bilirubinTotal", key: "bilirubinTotal", width: 20 },
+      { header: "bilirubinDirect", key: "bilirubinDirect", width: 20 },
+      { header: "alkaliPhosphatase", key: "alkaliPhosphatase", width: 20 },
+      {
+        header: "kimiaDarahValidatorName",
+        key: "kimiaDarahValidatorName",
+        width: 25,
+      },
+      {
+        header: "hepatitisValidatorName",
+        key: "hepatitisValidatorName",
+        width: 25,
+      },
+
+      // Biomonitoring
+      { header: "timbalDarah", key: "timbalDarah", width: 20 },
+      { header: "arsenikUrin", key: "arsenikUrin", width: 20 },
+      {
+        header: "biomonitoringValidatorName",
+        key: "biomonitoringValidatorName",
+        width: 25,
+      },
+
+      // Framingham Score
+      { header: "framinghamGender", key: "framinghamGender", width: 20 },
+      { header: "framinghamAge", key: "framinghamAge", width: 20 },
+      {
+        header: "framinghamTotalCholesterol",
+        key: "framinghamTotalCholesterol",
+        width: 25,
+      },
+      {
+        header: "framinghamHdlCholesterol",
+        key: "framinghamHdlCholesterol",
+        width: 25,
+      },
+      {
+        header: "framinghamSystolicBp",
+        key: "framinghamSystolicBp",
+        width: 20,
+      },
+      {
+        header: "framinghamIsOnHypertensionTreatment",
+        key: "framinghamIsOnHypertensionTreatment",
+        width: 30,
+      },
+      { header: "framinghamIsSmoker", key: "framinghamIsSmoker", width: 20 },
+      {
+        header: "framinghamRiskPercentage",
+        key: "framinghamRiskPercentage",
+        width: 25,
+      },
+      {
+        header: "framinghamRiskCategory",
+        key: "framinghamRiskCategory",
+        width: 25,
+      },
+      {
+        header: "framinghamVascularAge",
+        key: "framinghamVascularAge",
+        width: 20,
+      },
+      {
+        header: "framinghamValidatorName",
+        key: "framinghamValidatorName",
+        width: 25,
+      },
+
+      // Urinalisa
+      { header: "urinWarna", key: "urinWarna", width: 20 },
+      { header: "urinKejernihan", key: "urinKejernihan", width: 20 },
+      { header: "urinBau", key: "urinBau", width: 20 },
+      { header: "urinBeratJenis", key: "urinBeratJenis", width: 20 },
+      { header: "urinPh", key: "urinPh", width: 20 },
+      { header: "urinProtein", key: "urinProtein", width: 20 },
+      { header: "urinBilirubin", key: "urinBilirubin", width: 20 },
+      { header: "urinGlukosa", key: "urinGlukosa", width: 20 },
+      { header: "urinUrobilinogen", key: "urinUrobilinogen", width: 20 },
+      { header: "urinKeton", key: "urinKeton", width: 20 },
+      { header: "urinNitrit", key: "urinNitrit", width: 20 },
+      {
+        header: "urinLeukositEsterase",
+        key: "urinLeukositEsterase",
+        width: 20,
+      },
+      { header: "urinBlood", key: "urinBlood", width: 20 },
+      {
+        header: "urinSedimenEritrosit",
+        key: "urinSedimenEritrosit",
+        width: 20,
+      },
+      { header: "urinSedimenLeukosit", key: "urinSedimenLeukosit", width: 20 },
+      { header: "urinSedimenEpitel", key: "urinSedimenEpitel", width: 20 },
+      { header: "urinCaOxalat", key: "urinCaOxalat", width: 20 },
+      { header: "urinUridAcid", key: "urinUridAcid", width: 20 },
+      { header: "urinGranulaCast", key: "urinGranulaCast", width: 20 },
+      {
+        header: "urinalisaValidatorName",
+        key: "urinalisaValidatorName",
+        width: 25,
+      },
+
+      // Audiometry
+      { header: "audioAcKanan250", key: "audioAcKanan250", width: 20 },
+      { header: "audioAcKanan500", key: "audioAcKanan500", width: 20 },
+      { header: "audioAcKanan1000", key: "audioAcKanan1000", width: 20 },
+      { header: "audioAcKanan2000", key: "audioAcKanan2000", width: 20 },
+      { header: "audioAcKanan3000", key: "audioAcKanan3000", width: 20 },
+      { header: "audioAcKanan4000", key: "audioAcKanan4000", width: 20 },
+      { header: "audioAcKanan6000", key: "audioAcKanan6000", width: 20 },
+      { header: "audioAcKanan8000", key: "audioAcKanan8000", width: 20 },
+      { header: "audioAcKiri250", key: "audioAcKiri250", width: 20 },
+      { header: "audioAcKiri500", key: "audioAcKiri500", width: 20 },
+      { header: "audioAcKiri1000", key: "audioAcKiri1000", width: 20 },
+      { header: "audioAcKiri2000", key: "audioAcKiri2000", width: 20 },
+      { header: "audioAcKiri3000", key: "audioAcKiri3000", width: 20 },
+      { header: "audioAcKiri4000", key: "audioAcKiri4000", width: 20 },
+      { header: "audioAcKiri6000", key: "audioAcKiri6000", width: 20 },
+      { header: "audioAcKiri8000", key: "audioAcKiri8000", width: 20 },
+      { header: "audioBcKanan250", key: "audioBcKanan250", width: 20 },
+      { header: "audioBcKanan500", key: "audioBcKanan500", width: 20 },
+      { header: "audioBcKanan1000", key: "audioBcKanan1000", width: 20 },
+      { header: "audioBcKanan2000", key: "audioBcKanan2000", width: 20 },
+      { header: "audioBcKanan3000", key: "audioBcKanan3000", width: 20 },
+      { header: "audioBcKanan4000", key: "audioBcKanan4000", width: 20 },
+      { header: "audioBcKanan6000", key: "audioBcKanan6000", width: 20 },
+      { header: "audioBcKanan8000", key: "audioBcKanan8000", width: 20 },
+      { header: "audioBcKiri250", key: "audioBcKiri250", width: 20 },
+      { header: "audioBcKiri500", key: "audioBcKiri500", width: 20 },
+      { header: "audioBcKiri1000", key: "audioBcKiri1000", width: 20 },
+      { header: "audioBcKiri2000", key: "audioBcKiri2000", width: 20 },
+      { header: "audioBcKiri3000", key: "audioBcKiri3000", width: 20 },
+      { header: "audioBcKiri4000", key: "audioBcKiri4000", width: 20 },
+      { header: "audioBcKiri6000", key: "audioBcKiri6000", width: 20 },
+      { header: "audioBcKiri8000", key: "audioBcKiri8000", width: 20 },
+      {
+        header: "audiometryKesimpulanTelingaKanan",
+        key: "audiometryKesimpulanTelingaKanan",
+        width: 30,
+      },
+      {
+        header: "audiometryKesimpulanTelingaKiri",
+        key: "audiometryKesimpulanTelingaKiri",
+        width: 30,
+      },
+      {
+        header: "audiometryKesimpulanUmum",
+        key: "audiometryKesimpulanUmum",
+        width: 30,
+      },
+      { header: "audiometrySaran", key: "audiometrySaran", width: 40 },
+      {
+        header: "audiometryValidatorName",
+        key: "audiometryValidatorName",
+        width: 25,
+      },
+
+      // Spirometry
+      { header: "spirometryFvc", key: "spirometryFvc", width: 15 },
+      { header: "spirometryFvcPred", key: "spirometryFvcPred", width: 15 },
+      { header: "spirometryFvcPost", key: "spirometryFvcPost", width: 15 },
+      { header: "spirometryFev1", key: "spirometryFev1", width: 15 },
+      { header: "spirometryFev1Pred", key: "spirometryFev1Pred", width: 15 },
+      { header: "spirometryFev1Post", key: "spirometryFev1Post", width: 15 },
+      { header: "spirometryFev1Fvc", key: "spirometryFev1Fvc", width: 15 },
+      {
+        header: "spirometryFev1FvcPred",
+        key: "spirometryFev1FvcPred",
+        width: 15,
+      },
+      { header: "spirometryFev6", key: "spirometryFev6", width: 15 },
+      { header: "spirometryFev6Pred", key: "spirometryFev6Pred", width: 15 },
+      { header: "spirometryPef", key: "spirometryPef", width: 15 },
+      { header: "spirometryPefPred", key: "spirometryPefPred", width: 15 },
+      { header: "spirometryPefPost", key: "spirometryPefPost", width: 15 },
+      { header: "spirometryFef2575", key: "spirometryFef2575", width: 15 },
+      {
+        header: "spirometryFef2575Pred",
+        key: "spirometryFef2575Pred",
+        width: 15,
+      },
+      { header: "spirometryFef25", key: "spirometryFef25", width: 15 },
+      { header: "spirometryFef25Pred", key: "spirometryFef25Pred", width: 15 },
+      { header: "spirometryFef25Post", key: "spirometryFef25Post", width: 15 },
+      { header: "spirometryFef50", key: "spirometryFef50", width: 15 },
+      { header: "spirometryFef50Pred", key: "spirometryFef50Pred", width: 15 },
+      { header: "spirometryFef50Post", key: "spirometryFef50Post", width: 15 },
+      { header: "spirometryFef75", key: "spirometryFef75", width: 15 },
+      { header: "spirometryFef75Pred", key: "spirometryFef75Pred", width: 15 },
+      { header: "spirometryFef75Post", key: "spirometryFef75Post", width: 15 },
+      {
+        header: "spirometryPostBdNote",
+        key: "spirometryPostBdNote",
+        width: 25,
+      },
+      {
+        header: "spirometryQualityAccept",
+        key: "spirometryQualityAccept",
+        width: 20,
+      },
+      {
+        header: "spirometryQualityRepeat",
+        key: "spirometryQualityRepeat",
+        width: 20,
+      },
+      {
+        header: "spirometryEffortCount",
+        key: "spirometryEffortCount",
+        width: 20,
+      },
+      {
+        header: "kesimpulanSpirometry",
+        key: "kesimpulanSpirometry",
+        width: 30,
+      },
+      {
+        header: "spirometryValidatorName",
+        key: "spirometryValidatorName",
+        width: 25,
+      },
+
+      // Refraktometri
+      { header: "refraKananSpheris", key: "refraKananSpheris", width: 15 },
+      { header: "refraKananChylinder", key: "refraKananChylinder", width: 15 },
+      { header: "refraKananAxis", key: "refraKananAxis", width: 15 },
+      { header: "refraKananAdd", key: "refraKananAdd", width: 15 },
+      { header: "refraKiriSpheris", key: "refraKiriSpheris", width: 15 },
+      { header: "refraKiriChylinder", key: "refraKiriChylinder", width: 15 },
+      { header: "refraKiriAxis", key: "refraKiriAxis", width: 15 },
+      { header: "refraKiriAdd", key: "refraKiriAdd", width: 15 },
+      { header: "refraValidatorName", key: "refraValidatorName", width: 25 },
+      { header: "refraValidatorQr", key: "refraValidatorQr", width: 20 },
+
+      // USG Abdomen & Mammae
+      { header: "usgAbdomenHepar", key: "usgAbdomenHepar", width: 25 },
+      {
+        header: "usgAbdomenGallBladder",
+        key: "usgAbdomenGallBladder",
+        width: 25,
+      },
+      { header: "usgAbdomenLien", key: "usgAbdomenLien", width: 25 },
+      { header: "usgAbdomenPancreas", key: "usgAbdomenPancreas", width: 25 },
+      {
+        header: "usgAbdomenGinjalDekstra",
+        key: "usgAbdomenGinjalDekstra",
+        width: 25,
+      },
+      {
+        header: "usgAbdomenGinjalSinistra",
+        key: "usgAbdomenGinjalSinistra",
+        width: 25,
+      },
+      {
+        header: "usgAbdomenKesimpulan",
+        key: "usgAbdomenKesimpulan",
+        width: 40,
+      },
+      { header: "usgMammaeLaporan", key: "usgMammaeLaporan", width: 40 },
+      { header: "usgMammaeKesimpulan", key: "usgMammaeKesimpulan", width: 40 },
+      {
+        header: "usgAbdomenValidatorName",
+        key: "usgAbdomenValidatorName",
+        width: 25,
+      },
+      {
+        header: "usgMammaeValidatorName",
+        key: "usgMammaeValidatorName",
+        width: 25,
+      },
+
+      // EKG
+      { header: "ekgRhythm", key: "ekgRhythm", width: 20 },
+      { header: "ekgQrsRate", key: "ekgQrsRate", width: 20 },
+      { header: "ekgAxis", key: "ekgAxis", width: 20 },
+      { header: "ekgPWave", key: "ekgPWave", width: 20 },
+      { header: "ekgPrInterval", key: "ekgPrInterval", width: 20 },
+      { header: "ekgQrsDuration", key: "ekgQrsDuration", width: 20 },
+      { header: "ekgQWave", key: "ekgQWave", width: 20 },
+      { header: "ekgTWave", key: "ekgTWave", width: 20 },
+      { header: "ekgStChanges", key: "ekgStChanges", width: 20 },
+      { header: "ekgOthers", key: "ekgOthers", width: 30 },
+      { header: "ekgConclusion", key: "ekgConclusion", width: 30 },
+      { header: "ekgAdvice", key: "ekgAdvice", width: 30 },
+      { header: "ekgValidatorName", key: "ekgValidatorName", width: 25 },
+
+      // Treadmill
+      {
+        header: "treadmillLamaLatihan",
+        key: "treadmillLamaLatihan",
+        width: 20,
+      },
+      {
+        header: "treadmillKlasifikasiKebugaran",
+        key: "treadmillKlasifikasiKebugaran",
+        width: 25,
+      },
+      { header: "treadmillKerjaFisik", key: "treadmillKerjaFisik", width: 20 },
+      {
+        header: "treadmillKelasFungsional",
+        key: "treadmillKelasFungsional",
+        width: 25,
+      },
+      { header: "treadmillHasilTest", key: "treadmillHasilTest", width: 30 },
+      { header: "treadmillSaran", key: "treadmillSaran", width: 30 },
+      {
+        header: "treadmillValidatorName",
+        key: "treadmillValidatorName",
+        width: 25,
+      },
+
+      // Rontgen
+      { header: "kesanRontgen", key: "kesanRontgen", width: 40 },
+      {
+        header: "rontgenValidatorName",
+        key: "rontgenValidatorName",
+        width: 25,
+      },
+
+      // Kesimpulan Akhir
+      { header: "kesimpulan", key: "kesimpulan", width: 40 },
+      { header: "saran", key: "saran", width: 40 },
+      {
+        header: "conclusionValidatorName",
+        key: "conclusionValidatorName",
+        width: 25,
+      },
     ];
 
     worksheet.getRow(1).font = { bold: true };
@@ -307,12 +877,34 @@ export async function GET(request: Request) {
 
       const fisik = flattenAnswers(report.pemeriksaanFisikForm);
 
+      let bmiCategory = "";
+      const bmiValue = Number(fisik.bmi);
+
+      if (!isNaN(bmiValue) && bmiValue > 0) {
+        bmiCategory = getBMICategory(bmiValue);
+      }
+
+      const { nik, fullName, patientId } = report.patient;
+
+      const reportData = (({
+        healthHistoryAnswers,
+        dassTestAnswers,
+        fasTestAnswers,
+        pemeriksaanFisikForm,
+        // patient,
+        ...rest
+      }) => rest)(report);
+
       worksheet.addRow({
-        ...report.patient,
+        nik,
+        fullName,
+        patientId,
+        ...reportData,
         ...dassResult,
         ...fasResult,
         ...healthHistory,
         ...fisik,
+        bmi_category: bmiCategory,
       });
     });
 

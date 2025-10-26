@@ -40,7 +40,7 @@ export async function GET(request: Request) {
       where: {
         AND: [
           {
-            completedAt: {
+            examinationStartedAt: {
               gte: startOfDay,
               lte: endOfDay,
             },

@@ -605,7 +605,7 @@ export const ReportTable = () => {
               ) : (
                 <Download className="mr-2 h-4 w-4" />
               )}
-              Export Hasil DAS FAS Health
+              Export Hasil
             </Button>
 
             <Button
