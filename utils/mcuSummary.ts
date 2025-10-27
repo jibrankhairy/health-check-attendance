@@ -434,7 +434,7 @@ const getFisikAbnormalFindings = (
   const butaWarna = String(pf.butaWarna).toLowerCase();
   if (butaWarna.includes("parsial") || butaWarna.includes("total")) {
     abnormalFindings.push(`Buta Warna: ${pf.butaWarna}`);
-  } // 4. Cek Visus (Ketajaman Penglihatan) - Asumsi abnormal jika visus tidak 6/6 (20/20) dan tanpa kacamata
+  } 
   const hasGlasses = String(pf.kacamata).toLowerCase() === "ya";
   const visusOD = String(pf.visusOD);
   const visusOS = String(pf.visusOS);
@@ -443,8 +443,8 @@ const getFisikAbnormalFindings = (
     if (
       !visus ||
       visus.toLowerCase().includes("normal") ||
-      visus === "6/6" ||
-      visus === "20/20"
+      visus === "25/20" ||
+      visus === "20/20" || visus === "15/20"
     ) {
       return false;
     }

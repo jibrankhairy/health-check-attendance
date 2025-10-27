@@ -237,6 +237,7 @@ export async function GET(request: Request) {
             id: true,
             fileUrl: true,
             progress: true,
+            pemeriksaanFisikForm: true,
           },
         },
       },

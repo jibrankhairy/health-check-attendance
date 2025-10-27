@@ -425,8 +425,8 @@ const getFisikAbnormalFindings = (pf: FisikSummaryData): string | undefined => {
     if (
       !visus ||
       visus.toLowerCase().includes("normal") ||
-      visus === "6/6" ||
-      visus === "20/20"
+      visus === "25/20" ||
+      visus === "20/20" || visus === "15/20"
     ) {
       return false;
     }

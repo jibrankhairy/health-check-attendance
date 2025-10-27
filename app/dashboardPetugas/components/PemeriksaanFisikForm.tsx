@@ -159,8 +159,8 @@ const normalDefaultValues: Partial<PemeriksaanFisikFormValues> = {
   kacamata: "TIDAK",
   ukuranOD: "-",
   ukuranOS: "-",
-  visusOD: "6/6",
-  visusOS: "6/6",
+  visusOD: "30/20",
+  visusOS: "30/20",
   lapangPandang: "NORMAL",
   ketajaman: "NORMAL",
 
