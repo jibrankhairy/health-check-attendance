@@ -196,12 +196,12 @@ const getLingkarPerutValue = (
 ): string | number => {
   const lpNumerik = Number(lingkarPerutSaatIni);
   if (!isNaN(lpNumerik) && lpNumerik > 0) {
-    return lpNumerik; 
+    return lpNumerik;
   }
 
   const bmiNumerik = Number(bmi);
   if (isNaN(bmiNumerik) || bmiNumerik <= 0) {
-    return "-"; 
+    return "-";
   }
 
   if (bmiNumerik < 17) {
@@ -219,17 +219,33 @@ const getLingkarPerutValue = (
   }
 };
 
+const getBMICategory = (bmi: number): string => {
+  if (bmi < 18.5) return "Underweight";
+  if (bmi >= 25 && bmi <= 29.9) return "Overweight (Pre-obese)";
+  if (bmi >= 30) return "Obesity";
+  return "Normal (18.5 - 24.9)";
+};
+
 export const PemeriksaanFisikDocument: React.FC<
   PemeriksaanFisikDocumentProps
 > = ({ data }) => {
   const pf = data?.pemeriksaanFisikForm ?? {};
+
+  const bmiValue = Number(pf.bmi);
+  const displayBmi = display(pf.bmi);
+  let bmiDisplayValue = `${displayBmi} kg/m²`;
+
+  if (!isNaN(bmiValue) && bmiValue > 0) {
+    const category = getBMICategory(bmiValue);
+    bmiDisplayValue = `${displayBmi} kg/m² (${category})`;
+  }
 
   const pemeriksaanUmumItems = [
     { label: "Kondisi Kesehatan", value: pf.kondisiKesehatan },
     { label: "Kesadaran", value: pf.kesadaran || "COMPOS MENTIS" },
     { label: "Berat Badan", value: `${display(pf.beratBadanKg)} kg` },
     { label: "Tinggi Badan", value: `${display(pf.tinggiBadanCm)} cm` },
-    { label: "BMI", value: `${display(pf.bmi)} kg/m²` },
+    { label: "BMI", value: bmiDisplayValue },
     {
       label: "Lingkar Perut",
       value: `${getLingkarPerutValue(pf.bmi, pf.lingkarPerutCm)} cm`,
