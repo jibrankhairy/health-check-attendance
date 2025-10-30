@@ -20,6 +20,7 @@ export interface KimiaDarahData {
   };
   gulaDarahPuasa?: number | string | null;
   gulaDarah2JamPP?: number | string | null;
+  gulaDarahSewaktu?: number | string | null;
   kolesterolTotal?: number | string | null;
   hdl?: number | string | null;
   ldl?: number | string | null;
@@ -77,6 +78,14 @@ const kimiaDarahDataMap: ReadonlyArray<KimiaDarahItem> = [
     refText: "< 140",
     unit: "mg/dL",
     ref: { all: { max: 140 } },
+  },
+  {
+    no: "",
+    label: "GULA DARAH SEWAKTU",
+    field: "gulaDarahSewaktu",
+    refText: "< 180",
+    unit: "mg/dL",
+    ref: { all: { max: 180 } },
   },
 
   { no: "2", label: "PROFIL LEMAK", isHeader: true },

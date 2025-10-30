@@ -30,6 +30,7 @@ export async function GET() {
     // Kimia Darah
     "gulaDarahPuasa",
     "gulaDarah2JamPP",
+    "gulaDarahSewaktu",
     "hbsag",
     "sgot",
     "sgpt",

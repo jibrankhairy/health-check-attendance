@@ -43,6 +43,14 @@ export const KimiaDarahForm = () => {
               />
             </div>
             <div className="space-y-2">
+              <Label htmlFor="gulaDarah2JamPP">Gula Darah Sewaktu</Label>
+              <Input
+                id="gulaDarahSewaktu"
+                {...register("gulaDarahSewaktu")}
+                placeholder="cth: 100"
+              />
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="kolesterolTotal">Kolesterol Total</Label>
               <Input
                 id="kolesterolTotal"

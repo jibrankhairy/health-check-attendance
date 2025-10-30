@@ -172,6 +172,7 @@ export async function GET(request: Request) {
         hitungJenisMonosit: true,
         gulaDarahPuasa: true,
         gulaDarah2JamPP: true,
+        gulaDarahSewaktu: true,
         hbsag: true,
         antiHbs: true,
         sgot: true,
@@ -522,6 +523,7 @@ export async function GET(request: Request) {
       // Kimia Darah
       { header: "gulaDarahPuasa", key: "gulaDarahPuasa", width: 20 },
       { header: "gulaDarah2JamPP", key: "gulaDarah2JamPP", width: 20 },
+      { header: "gulaDarahSewaktu", key: "gulaDarahSewaktu", width: 20 },
       { header: "hbsag", key: "hbsag", width: 20 },
       { header: "antiHbs", key: "antiHbs", width: 20 },
       { header: "sgot", key: "sgot", width: 20 },

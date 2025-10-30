@@ -326,6 +326,12 @@ const KimiaDarahResultBioLab = ({ data }: { data: ReportData }) => {
       unit: "mg/dl",
     },
     {
+      test: "GULA DARAH SEWAKTU",
+      result: data.gulaDarahSewaktu,
+      reference: "< 180",
+      unit: "mg/dl",
+    },
+    {
       isHeader: true,
       test: "LIPID PROFILE - PROFIL LEMAK",
       reference: "",

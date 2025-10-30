@@ -55,6 +55,7 @@ const formSchema = z.object({
 
   gulaDarahPuasa: z.string().optional().nullable(),
   gulaDarah2JamPP: z.string().optional().nullable(),
+  gulaDarahSewaktu: z.string().optional().nullable(),
   hbsag: z.string().optional().nullable(),
   sgot: z.string().optional().nullable(),
   sgpt: z.string().optional().nullable(),

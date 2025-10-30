@@ -183,6 +183,7 @@ model McuResult {
   // --- Kimia Darah ---
   gulaDarahPuasa             String? @db.Text
   gulaDarah2JamPP            String? @db.Text
+  gulaDarahSewaktu           String? @db.Text
   sgot                       String? @db.Text
   sgpt                       String? @db.Text
   asamUrat                   String? @db.Text

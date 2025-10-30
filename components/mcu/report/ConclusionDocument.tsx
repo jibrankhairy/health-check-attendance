@@ -201,6 +201,12 @@ const kimiaDarahDataMap: MetricItem[] = [
     unit: "mg/dL",
   },
   {
+    label: "GULA DARAH SEWAKTU",
+    field: "gulaDarahSewaktu",
+    ref: { all: { max: 180 } },
+    unit: "mg/dL",
+  },
+  {
     label: "CHOLESTEROL TOTAL",
     field: "kolesterolTotal",
     ref: { all: { max: 200 } },
@@ -426,7 +432,8 @@ const getFisikAbnormalFindings = (pf: FisikSummaryData): string | undefined => {
       !visus ||
       visus.toLowerCase().includes("normal") ||
       visus === "25/20" ||
-      visus === "20/20" || visus === "15/20"
+      visus === "20/20" ||
+      visus === "15/20"
     ) {
       return false;
     }

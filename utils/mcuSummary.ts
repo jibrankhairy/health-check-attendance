@@ -80,6 +80,7 @@ export type SummaryConclusionData = {
 
   gulaDarahPuasa?: string | null;
   gulaDarah2JamPP?: string | null;
+  gulaDarahSewaktu?: string | null;
   kolesterolTotal?: string | null;
   hdl?: string | null;
   ldl?: string | null;
@@ -235,6 +236,12 @@ export const kimiaDarahDataMap: MetricItem[] = [
     label: "GULA DARAH - 2 JAM PP",
     field: "gulaDarah2JamPP",
     ref: { all: { max: 140 } },
+    unit: "mg/dL",
+  },
+  {
+    label: "GULA DARA SEWAKTU",
+    field: "gulaDarahSewaktu",
+    ref: { all: { max: 180 } },
     unit: "mg/dL",
   },
   {
@@ -434,7 +441,7 @@ const getFisikAbnormalFindings = (
   const butaWarna = String(pf.butaWarna).toLowerCase();
   if (butaWarna.includes("parsial") || butaWarna.includes("total")) {
     abnormalFindings.push(`Buta Warna: ${pf.butaWarna}`);
-  } 
+  }
   const hasGlasses = String(pf.kacamata).toLowerCase() === "ya";
   const visusOD = String(pf.visusOD);
   const visusOS = String(pf.visusOS);
@@ -444,7 +451,8 @@ const getFisikAbnormalFindings = (
       !visus ||
       visus.toLowerCase().includes("normal") ||
       visus === "25/20" ||
-      visus === "20/20" || visus === "15/20"
+      visus === "20/20" ||
+      visus === "15/20"
     ) {
       return false;
     }

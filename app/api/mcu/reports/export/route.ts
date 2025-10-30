@@ -39,6 +39,7 @@ const templateHeaders = [
   // Kimia Darah
   "gulaDarahPuasa",
   "gulaDarah2JamPP",
+  "gulaDarahSewaktu",
   "hbsag",
   "antiHbs", // <-- TAMBAHAN
   "sgot",
