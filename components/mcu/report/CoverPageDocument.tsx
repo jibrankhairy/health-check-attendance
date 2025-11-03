@@ -15,7 +15,7 @@ const localStyles = StyleSheet.create({
     flexGrow: 1,
   },
   photoContainer: {
-    marginTop: 14,
+    marginTop: 8,
     alignItems: "center",
     marginBottom: 6,
   },
@@ -27,17 +27,17 @@ const localStyles = StyleSheet.create({
   },
   coverHeader: {
     textAlign: "center",
-    marginTop: 12,
-    marginBottom: 20,
+    marginTop: 8,
+    marginBottom: 15,
     fontFamily: "Helvetica-Bold",
     fontSize: 16,
   },
   section: {
-    marginBottom: 10,
+    marginBottom: 5,
   },
   row: {
     flexDirection: "row",
-    marginBottom: 8,
+    marginBottom: 5,
   },
   label: {
     width: "38%",
@@ -57,7 +57,7 @@ const localStyles = StyleSheet.create({
     fontSize: 12,
     fontFamily: "Helvetica-Bold",
     textDecoration: "underline",
-    marginTop: 20,
+    marginTop: 15,
     marginBottom: 8,
   },
   listWrap: { marginTop: 3 },
