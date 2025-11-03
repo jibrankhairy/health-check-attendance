@@ -150,7 +150,18 @@ export async function GET(request: Request) {
         ekgValidatorName: true,
         treadmillValidatorName: true,
         rontgenValidatorName: true,
-        patient: { select: { nik: true, fullName: true, patientId: true } },
+        patient: {
+          select: {
+            nik: true,
+            fullName: true,
+            patientId: true,
+            age: true,
+            gender: true,
+            position: true,
+            division: true,
+            location: true,
+          },
+        },
         golonganDarah: true,
         hemoglobin: true,
         leukosit: true,
@@ -340,6 +351,11 @@ export async function GET(request: Request) {
       { header: "nik", key: "nik", width: 20 },
       { header: "fullName", key: "fullName", width: 30 },
       { header: "patientId", key: "patientId", width: 15 },
+      { header: "age", key: "age", width: 15 },
+      { header: "gender", key: "gender", width: 20 },
+      { header: "position", key: "position", width: 25 },
+      { header: "division", key: "division", width: 30 },
+      { header: "location", key: "location", width: 30 },
 
       // Hasil DASS
       {
@@ -886,7 +902,16 @@ export async function GET(request: Request) {
         bmiCategory = getBMICategory(bmiValue);
       }
 
-      const { nik, fullName, patientId } = report.patient;
+      const {
+        nik,
+        fullName,
+        patientId,
+        age,
+        gender,
+        position,
+        division,
+        location,
+      } = report.patient;
 
       const reportData = (({
         healthHistoryAnswers,
@@ -901,6 +926,11 @@ export async function GET(request: Request) {
         nik,
         fullName,
         patientId,
+        age,
+        gender,
+        position,
+        division,
+        location,
         ...reportData,
         ...dassResult,
         ...fasResult,
