@@ -374,7 +374,7 @@ const getBMICategory = (bmi: number): string => {
   if (bmi < 18.5) return "Underweight";
   if (bmi >= 25 && bmi <= 29.9) return "Overweight (Pre-obese)";
   if (bmi >= 30) return "Obesity";
-  return "NORMAL (18.5 - 24.9)";
+  return "NORMAL"; // Diubah ke 'Normal' agar konsisten dengan pengecekan
 };
 
 const getBloodPressureCategory = (sistol: number, diastol: number): string => {
@@ -398,8 +398,7 @@ const getBloodPressureCategory = (sistol: number, diastol: number): string => {
 };
 
 const getFisikAbnormalFindings = (pf: FisikSummaryData): string | undefined => {
-  const abnormalFindings: string[] = []; // 1. Cek Tekanan Darah (Tensi)
-
+  const abnormalFindings: string[] = [];
   const sistol = Number(pf.tensiSistol);
   const diastol = Number(pf.tensiDiastol);
   if (Number.isFinite(sistol) && Number.isFinite(diastol)) {
@@ -409,20 +408,18 @@ const getFisikAbnormalFindings = (pf: FisikSummaryData): string | undefined => {
         `Tekanan Darah: ${sistol}/${diastol} mmHg (${bpCategory})`
       );
     }
-  } // 2. Cek BMI
-
+  }
   const bmi = Number(pf.bmi);
   if (Number.isFinite(bmi)) {
     const bmiCategory = getBMICategory(bmi);
     if (!bmiCategory.startsWith("NORMAL")) {
       abnormalFindings.push(`BMI: ${bmi.toFixed(2)} kg/m² (${bmiCategory})`);
     }
-  } // 3. Cek Buta Warna
-
+  }
   const butaWarna = String(pf.butaWarna).toLowerCase();
   if (butaWarna.includes("parsial") || butaWarna.includes("total")) {
     abnormalFindings.push(`Buta Warna: ${pf.butaWarna}`);
-  } // 4. Cek Visus
+  }
   const hasGlasses = String(pf.kacamata).toLowerCase() === "ya";
   const visusOD = String(pf.visusOD);
   const visusOS = String(pf.visusOS);
@@ -431,8 +428,10 @@ const getFisikAbnormalFindings = (pf: FisikSummaryData): string | undefined => {
     if (
       !visus ||
       visus.toLowerCase().includes("normal") ||
-      visus === "25/20" ||
       visus === "20/20" ||
+      visus === "20/15" ||
+      visus === "20/25" ||
+      visus === "25/20" ||
       visus === "15/20"
     ) {
       return false;
@@ -449,7 +448,7 @@ const getFisikAbnormalFindings = (pf: FisikSummaryData): string | undefined => {
     abnormalFindings.push(
       `Visus Dengan Koreksi: OD ${visusOD} / OS ${visusOS}`
     );
-  } // 5. Cek Pendengaran
+  }
   const pendengaranAD = String(pf.kemampuanPendengaranAD).toLowerCase();
   const pendengaranAS = String(pf.kemampuanPendengaranAS).toLowerCase();
   if (
@@ -559,27 +558,38 @@ const summarizeResults = (data: ConclusionData): Summaries => {
 const ConclusionRow: React.FC<{
   number: number;
   label: string;
-  value: string | number;
+  value: string | number | undefined | null;
 }> = ({ number, label, value }) => {
-  const lines = String(value).split("\n");
+  const displayValue = String(value || "TIDAK ADA");
+
+  const lines = displayValue.split("\n");
+
+  const isAbnormalValue =
+    displayValue !== "NORMAL" &&
+    displayValue !== "TIDAK ADA" &&
+    !displayValue.toLowerCase().includes("lihat lampiran hasil");
+
+  const baseStyle = localStyles.valueLine;
+  const abnormalStyle = isAbnormalValue ? localStyles.abnormalText : {};
+
   return (
     <View style={localStyles.row}>
       <Text style={localStyles.num}>{number}.</Text>
       <Text style={localStyles.labelDynamic}>{label}</Text>
       <Text style={localStyles.colon}>:</Text>
       <View style={localStyles.valueFlex}>
-        {lines.map((line, idx) => (
-          <Text
-            key={idx}
-            style={
-              idx < lines.length - 1
-                ? [localStyles.valueLine, localStyles.mb1]
-                : localStyles.valueLine
-            }
-          >
-            {line}
-          </Text>
-        ))}
+        {lines.map((line, idx) => {
+          const stylesArray: any[] = [baseStyle, abnormalStyle];
+          if (idx < lines.length - 1) {
+            stylesArray.push(localStyles.mb1);
+          }
+
+          return (
+            <Text key={idx} style={stylesArray}>
+              {line}
+            </Text>
+          );
+        })}
       </View>
     </View>
   );
@@ -765,7 +775,6 @@ export const ConclusionDocument: React.FC<{ data: ConclusionData }> = ({
 };
 
 const localStyles = StyleSheet.create({
-  // KUNCI UTAMA LAYOUT
   row: {
     flexDirection: "row",
     alignItems: "flex-start",
@@ -793,6 +802,10 @@ const localStyles = StyleSheet.create({
     fontSize: 9,
   },
   mb1: { marginBottom: 1 },
+
+  abnormalText: {
+    color: "red",
+  },
 
   saranItem: { marginBottom: 3, fontSize: 9 },
   saranRow: { flexDirection: "row", justifyContent: "space-between", gap: 12 },

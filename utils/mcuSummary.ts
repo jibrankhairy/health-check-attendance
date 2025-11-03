@@ -393,7 +393,7 @@ const getBMICategory = (bmi: number): string => {
   if (bmi < 18.5) return "Underweight";
   if (bmi >= 25 && bmi <= 29.9) return "Overweight (Pre-obese)";
   if (bmi >= 30) return "Obesity";
-  return "NORMAL (18.5 - 24.9)";
+  return "NORMAL";
 };
 
 const getBloodPressureCategory = (sistol: number, diastol: number): string => {
@@ -420,7 +420,7 @@ const getBloodPressureCategory = (sistol: number, diastol: number): string => {
 const getFisikAbnormalFindings = (
   pf: PemeriksaanFisikData
 ): string | undefined => {
-  const abnormalFindings: string[] = []; // 1. Cek Tekanan Darah (Tensi)
+  const abnormalFindings: string[] = [];
   const sistol = Number(pf.tensiSistol);
   const diastol = Number(pf.tensiDiastol);
   if (Number.isFinite(sistol) && Number.isFinite(diastol)) {
@@ -430,14 +430,14 @@ const getFisikAbnormalFindings = (
         `Tekanan Darah: ${sistol}/${diastol} mmHg (${bpCategory})`
       );
     }
-  } // 2. Cek BMI
+  }
   const bmi = Number(pf.bmi);
   if (Number.isFinite(bmi)) {
     const bmiCategory = getBMICategory(bmi);
     if (!bmiCategory.startsWith("NORMAL")) {
       abnormalFindings.push(`BMI: ${bmi.toFixed(2)} kg/m² (${bmiCategory})`);
     }
-  } // 3. Cek Buta Warna
+  }
   const butaWarna = String(pf.butaWarna).toLowerCase();
   if (butaWarna.includes("parsial") || butaWarna.includes("total")) {
     abnormalFindings.push(`Buta Warna: ${pf.butaWarna}`);
@@ -449,9 +449,11 @@ const getFisikAbnormalFindings = (
   const isVisusAbnormal = (visus: string): boolean => {
     if (
       !visus ||
-      visus.toLowerCase().includes("normal") ||
-      visus === "25/20" ||
+      visus.toLowerCase().includes("NORMAL") ||
       visus === "20/20" ||
+      visus === "20/15" ||
+      visus === "20/25" ||
+      visus === "25/20" ||
       visus === "15/20"
     ) {
       return false;
@@ -468,7 +470,7 @@ const getFisikAbnormalFindings = (
     abnormalFindings.push(
       `Visus Dengan Koreksi: OD ${visusOD} / OS ${visusOS}`
     );
-  } // 5. Cek Pendengaran (Audiometri/Test Bisik) - Asumsi abnormal jika ada nilai "Kurang" atau sejenisnya
+  }
   const pendengaranAD = String(pf.kemampuanPendengaranAD).toLowerCase();
   const pendengaranAS = String(pf.kemampuanPendengaranAS).toLowerCase();
   if (
@@ -480,7 +482,7 @@ const getFisikAbnormalFindings = (
     abnormalFindings.push(
       `Pendengaran: AD ${pf.kemampuanPendengaranAD} / AS ${pf.kemampuanPendengaranAS}`
     );
-  } // Jika ada temuan, gabungkan dan kembalikan.
+  }
 
   return abnormalFindings.length > 0 ? abnormalFindings.join("\n") : "NORMAL";
 };
