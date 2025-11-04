@@ -19,6 +19,19 @@ const flattenAnswers = (answers: any): Record<string, any> => {
   return {};
 };
 
+const formatExcelDate = (
+  dateInput: string | Date | null | undefined
+): string => {
+  if (!dateInput) return "-";
+  const d = new Date(dateInput);
+  if (isNaN(d.getTime())) return "Invalid Date";
+
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
+};
+
 const getBMICategory = (bmi: number): string => {
   if (bmi < 18.5) return "Underweight";
   if (bmi >= 25 && bmi <= 29.9) return "Overweight (Pre-obese)";
@@ -189,6 +202,7 @@ export async function GET(request: Request) {
         pemeriksaanFisikForm: { not: Prisma.DbNull },
       },
       select: {
+        examinationStartedAt: true,
         healthHistoryAnswers: true,
         dassTestAnswers: true,
         fasTestAnswers: true,
@@ -396,6 +410,7 @@ export async function GET(request: Request) {
       { header: "position", key: "position", width: 25 },
       { header: "division", key: "division", width: 30 },
       { header: "location", key: "location", width: 30 },
+      { header: "examinationDate", key: "examinationDate", width: 25 },
       // Hasil DASS
       {
         header: "dass_depression_score",
@@ -900,6 +915,8 @@ export async function GET(request: Request) {
         ...rest
       }) => rest)(report);
 
+      const examinationDate = formatExcelDate(report.examinationStartedAt);
+
       const newRow = worksheet.addRow({
         nik,
         fullName,
@@ -909,6 +926,7 @@ export async function GET(request: Request) {
         position,
         division,
         location,
+        examinationDate,
         ...reportData,
         ...dassResult,
         ...fasResult,
