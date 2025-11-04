@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
 import { PrismaClient, Prisma } from "@prisma/client";
 import * as ExcelJS from "exceljs";
+import {
+  hematologyDataMap,
+  isQualitative,
+  kimiaDarahDataMap,
+  MetricItem,
+  RefNumeric,
+  urinalisaDataMap,
+} from "@/utils/mcuSummary";
 
 const prisma = new PrismaClient();
 
@@ -15,7 +23,7 @@ const getBMICategory = (bmi: number): string => {
   if (bmi < 18.5) return "Underweight";
   if (bmi >= 25 && bmi <= 29.9) return "Overweight (Pre-obese)";
   if (bmi >= 30) return "Obesity";
-  return "NORMAL (18.5 - 24.9)";
+  return "NORMAL";
 };
 
 type FasId =
@@ -110,6 +118,59 @@ const calculateFasResult = (
   };
 };
 
+const getLabAnomaly = (
+  item: MetricItem,
+  resultValue: unknown,
+  gender?: unknown
+): "HIGH" | "LOW" | "NORMAL" => {
+  if (resultValue == null || resultValue === "") return "NORMAL";
+
+  if (isQualitative(item.ref)) {
+    const lower = String(resultValue).toLowerCase();
+    const isAbnormal = !item.ref.normal
+      .map((n) => n.toLowerCase())
+      .includes(lower);
+
+    return isAbnormal ? "HIGH" : "NORMAL";
+  }
+
+  const rawNum = Number(resultValue as any);
+  if (!Number.isFinite(rawNum)) return "NORMAL";
+
+  let num = rawNum;
+  if (item.field === "urinBeratJenis" && Number.isInteger(num) && num > 100) {
+    num = num / 1000;
+  }
+
+  let range: any = item.ref.all;
+  const g = String(gender ?? "").toUpperCase();
+  if ((item.ref as RefNumeric).male && g === "LAKI-LAKI")
+    range = (item.ref as RefNumeric).male;
+  else if ((item.ref as RefNumeric).female && g === "PEREMPUAN")
+    range = (item.ref as RefNumeric).female;
+
+  if (!range || (range.min === undefined && range.max === undefined))
+    return "NORMAL";
+
+  const { min, max } = range as { min?: number; max?: number };
+
+  if (min !== undefined && num < min) return "LOW";
+  if (max !== undefined && num > max) return "HIGH";
+
+  return "NORMAL";
+};
+
+const allLabDataMap: MetricItem[] = [
+  ...hematologyDataMap,
+  ...kimiaDarahDataMap,
+  ...urinalisaDataMap,
+];
+
+const labFieldMap = new Map<string, MetricItem>();
+allLabDataMap.forEach((item) => {
+  labFieldMap.set(item.field, item);
+});
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -144,9 +205,6 @@ export async function GET(request: Request) {
         urinalisaValidatorName: true,
         audiometryValidatorName: true,
         spirometryValidatorName: true,
-        refraValidatorName: true,
-        usgAbdomenValidatorName: true,
-        usgMammaeValidatorName: true,
         ekgValidatorName: true,
         treadmillValidatorName: true,
         rontgenValidatorName: true,
@@ -294,24 +352,6 @@ export async function GET(request: Request) {
         spirometryQualityRepeat: true,
         spirometryEffortCount: true,
         kesimpulanSpirometry: true,
-        refraKananSpheris: true,
-        refraKananChylinder: true,
-        refraKananAxis: true,
-        refraKananAdd: true,
-        refraKiriSpheris: true,
-        refraKiriChylinder: true,
-        refraKiriAxis: true,
-        refraKiriAdd: true,
-        refraValidatorQr: true,
-        usgAbdomenHepar: true,
-        usgAbdomenGallBladder: true,
-        usgAbdomenLien: true,
-        usgAbdomenPancreas: true,
-        usgAbdomenGinjalDekstra: true,
-        usgAbdomenGinjalSinistra: true,
-        usgAbdomenKesimpulan: true,
-        usgMammaeLaporan: true,
-        usgMammaeKesimpulan: true,
         ekgRhythm: true,
         ekgQrsRate: true,
         ekgAxis: true,
@@ -356,7 +396,6 @@ export async function GET(request: Request) {
       { header: "position", key: "position", width: 25 },
       { header: "division", key: "division", width: 30 },
       { header: "location", key: "location", width: 30 },
-
       // Hasil DASS
       {
         header: "dass_depression_score",
@@ -496,7 +535,6 @@ export async function GET(request: Request) {
       { header: "sikap", key: "sikap", width: 20 },
       { header: "dayaIngat", key: "dayaIngat", width: 20 },
       { header: "orientasi", key: "orientasi", width: 20 },
-
       // HASIL LAB & PENUNJANG DARI MCU RESULT (SESUAI TEMPLATE REPORT)
       // Hematologi
       { header: "golonganDarah", key: "golonganDarah", width: 20 },
@@ -535,7 +573,6 @@ export async function GET(request: Request) {
         key: "hematologiValidatorName",
         width: 25,
       },
-
       // Kimia Darah
       { header: "gulaDarahPuasa", key: "gulaDarahPuasa", width: 20 },
       { header: "gulaDarah2JamPP", key: "gulaDarah2JamPP", width: 20 },
@@ -564,7 +601,6 @@ export async function GET(request: Request) {
         key: "hepatitisValidatorName",
         width: 25,
       },
-
       // Biomonitoring
       { header: "timbalDarah", key: "timbalDarah", width: 20 },
       { header: "arsenikUrin", key: "arsenikUrin", width: 20 },
@@ -573,7 +609,6 @@ export async function GET(request: Request) {
         key: "biomonitoringValidatorName",
         width: 25,
       },
-
       // Framingham Score
       { header: "framinghamGender", key: "framinghamGender", width: 20 },
       { header: "framinghamAge", key: "framinghamAge", width: 20 },
@@ -618,7 +653,6 @@ export async function GET(request: Request) {
         key: "framinghamValidatorName",
         width: 25,
       },
-
       // Urinalisa
       { header: "urinWarna", key: "urinWarna", width: 20 },
       { header: "urinKejernihan", key: "urinKejernihan", width: 20 },
@@ -652,7 +686,6 @@ export async function GET(request: Request) {
         key: "urinalisaValidatorName",
         width: 25,
       },
-
       // Audiometry
       { header: "audioAcKanan250", key: "audioAcKanan250", width: 20 },
       { header: "audioAcKanan500", key: "audioAcKanan500", width: 20 },
@@ -707,7 +740,6 @@ export async function GET(request: Request) {
         key: "audiometryValidatorName",
         width: 25,
       },
-
       // Spirometry
       { header: "spirometryFvc", key: "spirometryFvc", width: 15 },
       { header: "spirometryFvcPred", key: "spirometryFvcPred", width: 15 },
@@ -771,56 +803,6 @@ export async function GET(request: Request) {
         key: "spirometryValidatorName",
         width: 25,
       },
-
-      // Refraktometri
-      { header: "refraKananSpheris", key: "refraKananSpheris", width: 15 },
-      { header: "refraKananChylinder", key: "refraKananChylinder", width: 15 },
-      { header: "refraKananAxis", key: "refraKananAxis", width: 15 },
-      { header: "refraKananAdd", key: "refraKananAdd", width: 15 },
-      { header: "refraKiriSpheris", key: "refraKiriSpheris", width: 15 },
-      { header: "refraKiriChylinder", key: "refraKiriChylinder", width: 15 },
-      { header: "refraKiriAxis", key: "refraKiriAxis", width: 15 },
-      { header: "refraKiriAdd", key: "refraKiriAdd", width: 15 },
-      { header: "refraValidatorName", key: "refraValidatorName", width: 25 },
-      { header: "refraValidatorQr", key: "refraValidatorQr", width: 20 },
-
-      // USG Abdomen & Mammae
-      { header: "usgAbdomenHepar", key: "usgAbdomenHepar", width: 25 },
-      {
-        header: "usgAbdomenGallBladder",
-        key: "usgAbdomenGallBladder",
-        width: 25,
-      },
-      { header: "usgAbdomenLien", key: "usgAbdomenLien", width: 25 },
-      { header: "usgAbdomenPancreas", key: "usgAbdomenPancreas", width: 25 },
-      {
-        header: "usgAbdomenGinjalDekstra",
-        key: "usgAbdomenGinjalDekstra",
-        width: 25,
-      },
-      {
-        header: "usgAbdomenGinjalSinistra",
-        key: "usgAbdomenGinjalSinistra",
-        width: 25,
-      },
-      {
-        header: "usgAbdomenKesimpulan",
-        key: "usgAbdomenKesimpulan",
-        width: 40,
-      },
-      { header: "usgMammaeLaporan", key: "usgMammaeLaporan", width: 40 },
-      { header: "usgMammaeKesimpulan", key: "usgMammaeKesimpulan", width: 40 },
-      {
-        header: "usgAbdomenValidatorName",
-        key: "usgAbdomenValidatorName",
-        width: 25,
-      },
-      {
-        header: "usgMammaeValidatorName",
-        key: "usgMammaeValidatorName",
-        width: 25,
-      },
-
       // EKG
       { header: "ekgRhythm", key: "ekgRhythm", width: 20 },
       { header: "ekgQrsRate", key: "ekgQrsRate", width: 20 },
@@ -835,7 +817,6 @@ export async function GET(request: Request) {
       { header: "ekgConclusion", key: "ekgConclusion", width: 30 },
       { header: "ekgAdvice", key: "ekgAdvice", width: 30 },
       { header: "ekgValidatorName", key: "ekgValidatorName", width: 25 },
-
       // Treadmill
       {
         header: "treadmillLamaLatihan",
@@ -860,7 +841,6 @@ export async function GET(request: Request) {
         key: "treadmillValidatorName",
         width: 25,
       },
-
       // Rontgen
       { header: "kesanRontgen", key: "kesanRontgen", width: 40 },
       {
@@ -868,7 +848,6 @@ export async function GET(request: Request) {
         key: "rontgenValidatorName",
         width: 25,
       },
-
       // Kesimpulan Akhir
       { header: "kesimpulan", key: "kesimpulan", width: 40 },
       { header: "saran", key: "saran", width: 40 },
@@ -918,11 +897,10 @@ export async function GET(request: Request) {
         dassTestAnswers,
         fasTestAnswers,
         pemeriksaanFisikForm,
-        // patient,
         ...rest
       }) => rest)(report);
 
-      worksheet.addRow({
+      const newRow = worksheet.addRow({
         nik,
         fullName,
         patientId,
@@ -938,7 +916,63 @@ export async function GET(request: Request) {
         ...fisik,
         bmi_category: bmiCategory,
       });
+
+      const labColumnsToStyle = allLabDataMap.map((item) => item.field);
+
+      labColumnsToStyle.forEach((fieldKey) => {
+        const column = worksheet.getColumn(fieldKey);
+        if (!column) return;
+
+        const item = labFieldMap.get(fieldKey);
+        if (!item) return;
+
+        const cell = newRow.getCell(column.number);
+        const resultValue = (reportData as Record<string, unknown>)[fieldKey];
+
+        if (resultValue == null) return;
+
+        const anomaly = getLabAnomaly(item, resultValue, gender);
+
+        if (anomaly === "HIGH") {
+          cell.font = { color: { argb: "FFFF0000" }, bold: true };
+        } else if (anomaly === "LOW") {
+          cell.font = { color: { argb: "FF0000FF" }, bold: true };
+        }
+      });
     });
+
+    const lastRowNumber = worksheet.rowCount + 2;
+
+    const legendTitleRow = worksheet.getRow(lastRowNumber);
+    legendTitleRow.getCell(1).value = "KETERANGAN WARNA HASIL LABORATORIUM:";
+    legendTitleRow.getCell(1).font = { bold: true, size: 10 };
+    worksheet.mergeCells(lastRowNumber, 1, lastRowNumber, 5);
+
+    const legendDetailRow = worksheet.getRow(lastRowNumber + 1);
+
+    legendDetailRow.getCell(1).value = "Hasil HIGH (Abnormal)";
+    legendDetailRow.getCell(1).font = {
+      color: { argb: "FFFF0000" },
+      bold: true,
+      size: 9,
+    };
+    worksheet.mergeCells(lastRowNumber + 1, 1, lastRowNumber + 1, 2);
+
+    legendDetailRow.getCell(3).value = "Hasil LOW (Abnormal)";
+    legendDetailRow.getCell(3).font = {
+      color: { argb: "FF0000FF" },
+      bold: true,
+      size: 9,
+    };
+    worksheet.mergeCells(lastRowNumber + 1, 3, lastRowNumber + 1, 4);
+
+    legendDetailRow.getCell(5).value = "Hasil NORMAL";
+    legendDetailRow.getCell(5).font = {
+      color: { argb: "FF000000" },
+      bold: true,
+      size: 9,
+    };
+    worksheet.mergeCells(lastRowNumber + 1, 5, lastRowNumber + 1, 6);
 
     const buffer = await workbook.xlsx.writeBuffer();
     const fileName = `hasil-mcu-${companyId}-${
