@@ -89,12 +89,15 @@ type ApiResp = {
   meta: ApiMeta;
 };
 
+type ReportStatus = "ALL" | "COMPLETED" | "PENDING";
+
 export const ReportTable = () => {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [companyId, setCompanyId] = useState<string | null>(null);
   const [rows, setRows] = useState<ReportRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useState<ReportStatus>("ALL");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [meta, setMeta] = useState<ApiMeta>({
@@ -138,12 +141,22 @@ export const ReportTable = () => {
       return;
     }
     try {
-      const qs = new URLSearchParams({
+      const queryParams: Record<string, string> = {
         companyId,
         page: String(page),
         pageSize: String(pageSize),
-        ...(searchQuery ? { search: searchQuery } : {}),
-      }).toString();
+      };
+
+      if (filterStatus !== "ALL") {
+        queryParams.status = filterStatus;
+      }
+
+      if (searchQuery) {
+        queryParams.search = searchQuery;
+      }
+
+      const qs = new URLSearchParams(queryParams).toString();
+
       const res = await fetch(`/api/mcu/reports?${qs}`, { cache: "no-store" });
       if (!res.ok) throw new Error("Gagal memuat data laporan.");
       const json: ApiResp = await res.json();
@@ -154,11 +167,26 @@ export const ReportTable = () => {
     } finally {
       setLoading(false);
     }
-  }, [companyId, page, pageSize, searchQuery, isImporting, isImportingImages]);
+  }, [
+    companyId,
+    page,
+    pageSize,
+    searchQuery,
+    filterStatus,
+    isImporting,
+    isImportingImages,
+  ]);
 
   useEffect(() => {
     fetchCompanies();
   }, [fetchCompanies]);
+
+  useEffect(() => {
+    if (companyId) {
+      setFilterStatus("ALL");
+    }
+  }, [companyId]);
+
   useEffect(() => {
     fetchReports();
   }, [fetchReports]);
@@ -683,18 +711,43 @@ export const ReportTable = () => {
             </DropdownMenu>
           </div>
         </div>
-        <div className="relative w-full max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Cari nama atau ID pasien…"
-            className="pl-9"
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setPage(1);
-            }}
-            disabled={isActionDisabled}
-          />
+
+        <div className="flex items-center gap-4 w-full sm:w-auto">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">Status:</span>
+            <Select
+              value={filterStatus}
+              onValueChange={(v: ReportStatus) => {
+                setFilterStatus(v);
+                setPage(1);
+              }}
+              disabled={isActionDisabled}
+            >
+              <SelectTrigger className="w-36">
+                <SelectValue placeholder="Semua Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">Semua</SelectItem>
+                <SelectItem value="COMPLETED">Selesai</SelectItem>
+                <SelectItem value="PENDING">Menunggu Input</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Search Bar */}
+          <div className="relative w-full max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Cari nama atau ID pasien…"
+              className="pl-9"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setPage(1);
+              }}
+              disabled={isActionDisabled}
+            />
+          </div>
         </div>
       </div>
       <div className="rounded-lg border bg-white">

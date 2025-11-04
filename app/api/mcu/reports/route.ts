@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +11,7 @@ export async function GET(request: Request) {
 
     const companyId = searchParams.get("companyId") || undefined;
     const search = searchParams.get("search") || undefined;
+    const status = searchParams.get("status") || undefined;
     const page = Number(searchParams.get("page") || 1);
     const pageSize = Number(searchParams.get("pageSize") || 10);
 
@@ -21,25 +22,30 @@ export async function GET(request: Request) {
       });
     }
 
-    const where = {
+    let statusCondition: Prisma.McuResultWhereInput = {};
+
+    if (status === "COMPLETED") {
+      statusCondition = { status: "COMPLETED" };
+    } else if (status === "PENDING") {
+      statusCondition = {
+        status: { not: "COMPLETED" },
+      };
+    }
+    let searchCondition: Prisma.McuResultWhereInput = {};
+    if (search) {
+      searchCondition = {
+        patient: {
+          OR: [
+            { fullName: { contains: search } },
+            { patientId: { contains: search } },
+          ],
+        },
+      };
+    }
+
+    const where: Prisma.McuResultWhereInput = {
       patient: { companyId },
-      ...(search
-        ? {
-            OR: [
-              {
-                patient: {
-                  fullName: { contains: search },
-                },
-              },
-              {
-                patient: {
-                  patientId: { contains: search },
-                },
-              },
-              { status: { contains: search } },
-            ],
-          }
-        : {}),
+      AND: [statusCondition, searchCondition],
     };
 
     const [total, reports] = await Promise.all([
