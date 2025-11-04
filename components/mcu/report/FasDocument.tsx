@@ -122,7 +122,7 @@ export const FasDocument: React.FC<{ data: FasData }> = ({ data }) => {
   const categoryDisplay = result.category === "N/A" ? "-" : result.category;
 
   // Definisi “rowspan” per rentang skor
-  const ROW_H = 15; // tinggi 1 baris skor (kompak)
+  const ROW_H = 20; // tinggi 1 baris skor (kompak)
   const scoreRows = Array.from({ length: 10 }, (_, i) => 10 - i); // 10..1
 
   const groups: Array<{
