@@ -5,6 +5,7 @@ import { Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
 import { ReportHeader, PatientInfo, ReportFooter } from "./ReportLayout";
 import { styles as globalStyles } from "./reportStyles";
 
+// Definisikan ulang tipe-tipe yang dibutuhkan di file ini (Bisa juga di-import dari file utils jika ada)
 type Range = { min?: number; max?: number };
 
 type RefNumeric = {
@@ -74,6 +75,7 @@ type ConclusionData = {
   refraKiriSpheris?: string | null;
   timbalDarah?: string | null;
   hbsag?: string | null;
+  pemeriksaanFisikForm?: FisikSummaryData;
 } & Record<string, unknown>;
 
 const hematologyDataMap: MetricItem[] = [
@@ -374,7 +376,7 @@ const getBMICategory = (bmi: number): string => {
   if (bmi < 18.5) return "Underweight";
   if (bmi >= 25 && bmi <= 29.9) return "Overweight (Pre-obese)";
   if (bmi >= 30) return "Obesity";
-  return "NORMAL"; // Diubah ke 'Normal' agar konsisten dengan pengecekan
+  return "Normal";
 };
 
 const getBloodPressureCategory = (sistol: number, diastol: number): string => {
@@ -399,41 +401,48 @@ const getBloodPressureCategory = (sistol: number, diastol: number): string => {
 
 const getFisikAbnormalFindings = (pf: FisikSummaryData): string | undefined => {
   const abnormalFindings: string[] = [];
+
   const sistol = Number(pf.tensiSistol);
   const diastol = Number(pf.tensiDiastol);
   if (Number.isFinite(sistol) && Number.isFinite(diastol)) {
     const bpCategory = getBloodPressureCategory(sistol, diastol);
-    if (bpCategory !== "NORMAL") {
+    if (bpCategory !== "Normal") {
       abnormalFindings.push(
         `Tekanan Darah: ${sistol}/${diastol} mmHg (${bpCategory})`
       );
     }
   }
+
   const bmi = Number(pf.bmi);
   if (Number.isFinite(bmi)) {
     const bmiCategory = getBMICategory(bmi);
-    if (!bmiCategory.startsWith("NORMAL")) {
+    if (bmiCategory !== "Normal") {
       abnormalFindings.push(`BMI: ${bmi.toFixed(2)} kg/m² (${bmiCategory})`);
     }
   }
+
   const butaWarna = String(pf.butaWarna).toLowerCase();
   if (butaWarna.includes("parsial") || butaWarna.includes("total")) {
     abnormalFindings.push(`Buta Warna: ${pf.butaWarna}`);
   }
+
   const hasGlasses = String(pf.kacamata).toLowerCase() === "ya";
   const visusOD = String(pf.visusOD);
   const visusOS = String(pf.visusOS);
 
   const isVisusAbnormal = (visus: string): boolean => {
-    if (
-      !visus ||
-      visus.toLowerCase().includes("normal") ||
-      visus === "20/20" ||
-      visus === "20/15" ||
-      visus === "20/25" ||
-      visus === "25/20" ||
-      visus === "15/20"
-    ) {
+    const normalVisus = [
+      "20/20",
+      "20/15",
+      "15/20",
+      "20/25",
+      "25/20",
+      "normal",
+      "normal,",
+    ];
+    const v = visus.toLowerCase().trim().replace(/,/g, "");
+
+    if (!v || normalVisus.includes(v)) {
       return false;
     }
     return true;
@@ -570,6 +579,7 @@ const ConclusionRow: React.FC<{
     !displayValue.toLowerCase().includes("lihat lampiran hasil");
 
   const baseStyle = localStyles.valueLine;
+
   const abnormalStyle = isAbnormalValue ? localStyles.abnormalText : {};
 
   return (
@@ -691,7 +701,7 @@ export const ConclusionDocument: React.FC<{ data: ConclusionData }> = ({
       value: summaries.refraktometri,
       required: has("refraktometri"),
     },
-  ].filter((item) => item.required && item.value !== undefined);
+  ].filter((item) => item.required && item.value !== undefined && true);
 
   return (
     <Page size="A4" style={{ ...globalStyles.page, paddingTop: 120 }}>

@@ -393,7 +393,7 @@ const getBMICategory = (bmi: number): string => {
   if (bmi < 18.5) return "Underweight";
   if (bmi >= 25 && bmi <= 29.9) return "Overweight (Pre-obese)";
   if (bmi >= 30) return "Obesity";
-  return "NORMAL";
+  return "Normal";
 };
 
 const getBloodPressureCategory = (sistol: number, diastol: number): string => {
@@ -421,11 +421,12 @@ const getFisikAbnormalFindings = (
   pf: PemeriksaanFisikData
 ): string | undefined => {
   const abnormalFindings: string[] = [];
+
   const sistol = Number(pf.tensiSistol);
   const diastol = Number(pf.tensiDiastol);
   if (Number.isFinite(sistol) && Number.isFinite(diastol)) {
     const bpCategory = getBloodPressureCategory(sistol, diastol);
-    if (bpCategory !== "NORMAL") {
+    if (bpCategory !== "Normal") {
       abnormalFindings.push(
         `Tekanan Darah: ${sistol}/${diastol} mmHg (${bpCategory})`
       );
@@ -434,7 +435,7 @@ const getFisikAbnormalFindings = (
   const bmi = Number(pf.bmi);
   if (Number.isFinite(bmi)) {
     const bmiCategory = getBMICategory(bmi);
-    if (!bmiCategory.startsWith("NORMAL")) {
+    if (!bmiCategory.startsWith("Normal")) {
       abnormalFindings.push(`BMI: ${bmi.toFixed(2)} kg/m² (${bmiCategory})`);
     }
   }
@@ -447,15 +448,18 @@ const getFisikAbnormalFindings = (
   const visusOS = String(pf.visusOS);
 
   const isVisusAbnormal = (visus: string): boolean => {
-    if (
-      !visus ||
-      visus.toLowerCase().includes("NORMAL") ||
-      visus === "20/20" ||
-      visus === "20/15" ||
-      visus === "20/25" ||
-      visus === "25/20" ||
-      visus === "15/20"
-    ) {
+    const normalVisus = [
+      "20/20",
+      "20/15",
+      "15/20",
+      "20/25",
+      "25/20",
+      "normal",
+      "normal,",
+    ];
+    const v = visus.toLowerCase().trim().replace(/,/g, "");
+
+    if (!v || normalVisus.includes(v)) {
       return false;
     }
     return true;
