@@ -33,7 +33,7 @@ import { SummaryDisplay } from "./forms/SummaryDisplay";
 import { summarizeResults, SummaryConclusionData } from "@/utils/mcuSummary";
 
 const formSchema = z.object({
-  gologanDarah: z.string().optional().nullable(),
+  golonganDarah: z.string().optional().nullable(),
   hemoglobin: z.string().optional().nullable(),
   leukosit: z.string().optional().nullable(),
   trombosit: z.string().optional().nullable(),
