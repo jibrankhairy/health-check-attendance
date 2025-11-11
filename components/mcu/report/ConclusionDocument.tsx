@@ -573,8 +573,12 @@ const ConclusionRow: React.FC<{
   const lines = displayValue.split("\n");
 
   const isTreadmillNormal =
-    label === "Pemeriksaan Treadmill" &&
-    displayValue.toLowerCase().includes("negative ischemic response");
+    (label === "Pemeriksaan Treadmill" &&
+      displayValue.toLowerCase().includes("negative ischemic response")) ||
+    (label === "Pemeriksaan Treadmill" &&
+      displayValue.toLowerCase().includes("negative stress test")) ||
+    (label === "Pemeriksaan Treadmill" &&
+      displayValue.toLowerCase().includes("negative strees test"));
 
   const isAbnormalValue =
     displayValue !== "NORMAL" &&

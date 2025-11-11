@@ -156,21 +156,22 @@ export const SummaryDisplay = ({
       const isNormal =
         valueUpper === "NORMAL" ||
         valueUpper.includes("NORMAL") ||
-        valueUpper.includes("NEGATIVE ISCHEMIC RESPONSE");
+        valueUpper.includes("NEGATIVE ISCHEMIC RESPONSE") ||
+        valueUpper.includes("NEGATIVE STRESS TEST");
 
       let textColorClass = "text-red-600";
 
       if (isNormal) {
         if (
           key === "treadmill" &&
-          valueUpper.includes("NEGATIVE ISCHEMIC RESPONSE")
+          (valueUpper.includes("NEGATIVE ISCHEMIC RESPONSE") ||
+            valueUpper.includes("NEGATIVE STRESS TEST"))
         ) {
           textColorClass = "text-black";
         } else {
           textColorClass = "text-primary";
         }
       }
-
       return (
         <div
           key={key}
