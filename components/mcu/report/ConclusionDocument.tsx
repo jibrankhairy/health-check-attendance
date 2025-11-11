@@ -5,7 +5,6 @@ import { Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
 import { ReportHeader, PatientInfo, ReportFooter } from "./ReportLayout";
 import { styles as globalStyles } from "./reportStyles";
 
-// Definisikan ulang tipe-tipe yang dibutuhkan di file ini (Bisa juga di-import dari file utils jika ada)
 type Range = { min?: number; max?: number };
 
 type RefNumeric = {
@@ -380,22 +379,15 @@ const getBMICategory = (bmi: number): string => {
 };
 
 const getBloodPressureCategory = (sistol: number, diastol: number): string => {
-  // 1. Stage 2 hypertension (Sistolik >= 160 ATAU Diastolik >= 100)
   if (sistol >= 161 || diastol >= 101) {
     return "Stage 2 hypertension";
   }
-
-  // 2. Stage 1 hypertension (Sistolik 140-159 ATAU Diastolik 90-99)
   if (sistol >= 141 || diastol >= 91) {
     return "Stage 1 hypertension";
   }
-
-  // 3. Prehypertension (Sistolik 120-139 ATAU Diastolik 80-89)
   if (sistol >= 121 || diastol >= 81) {
     return "Prehypertension";
   }
-
-  // 4. Normal (Sistolik < 120 DAN Diastolik < 80)
   return "Normal";
 };
 
@@ -441,10 +433,7 @@ const getFisikAbnormalFindings = (pf: FisikSummaryData): string | undefined => {
       "normal,",
     ];
     const v = visus.toLowerCase().trim().replace(/,/g, "");
-
-    if (!v || normalVisus.includes(v)) {
-      return false;
-    }
+    if (!v || normalVisus.includes(v)) return false;
     return true;
   };
 
@@ -499,14 +488,13 @@ const summarizeResults = (data: ConclusionData): Summaries => {
             item.field === "urinBeratJenis"
               ? formatUrineSpecificGravity(item, resultValue)
               : String(resultValue);
-
           const unitText = item.unit ? ` ${item.unit}` : "";
-
           return `- ${item.label}: ${displayValue}${unitText}`;
         }
         return null;
       })
       .filter((v): v is string => Boolean(v));
+
     return abnormalResults.length > 0 ? abnormalResults.join("\n") : "NORMAL";
   };
 
@@ -519,21 +507,22 @@ const summarizeResults = (data: ConclusionData): Summaries => {
     summaries.kimiaDarah = getAbnormalFindings(kimiaDarahDataMap);
     summaries.urinRutin = getAbnormalFindings(urinalisaDataMap);
   }
+
   if (has("biomonitoring")) {
     const resultValue = data.timbalDarah;
-    if (resultValue && resultValue !== "NORMAL") {
-      summaries.biomonitoring = String(resultValue);
-    } else {
-      summaries.biomonitoring = "NORMAL";
-    }
+    summaries.biomonitoring =
+      resultValue && String(resultValue).toUpperCase() !== "NORMAL"
+        ? String(resultValue)
+        : "NORMAL";
   }
+
+  // Panel hepatitis (HbsAg)
   if (has("panel hepatitis")) {
     const resultValue = data.hbsag;
-    if (resultValue && resultValue.toLowerCase() !== "negatif") {
-      summaries.hepatitis = String(resultValue);
-    } else {
-      summaries.hepatitis = "NORMAL";
-    }
+    summaries.hepatitis =
+      resultValue && String(resultValue).toLowerCase() !== "negatif"
+        ? String(resultValue)
+        : "NORMAL";
   }
 
   const desc = (v: unknown): string | undefined =>
@@ -551,8 +540,23 @@ const summarizeResults = (data: ConclusionData): Summaries => {
     summaries.audiometry = desc(data?.audiometryKesimpulanUmum);
   if (has("spirometry") || has("mcu eksekutif"))
     summaries.spirometry = desc(data?.kesimpulanSpirometry);
-  if (has("treadmill") || has("mcu eksekutif"))
-    summaries.treadmill = desc(data?.treadmillHasilTest);
+
+  if (has("treadmill") || has("mcu eksekutif")) {
+    const treadmillResult = data?.treadmillHasilTest;
+    const resultUpper = String(treadmillResult || "").toUpperCase();
+
+    if (
+      resultUpper.includes("NEGATIVE ISCHEMIC RESPONSE") ||
+      resultUpper.includes("NEGATIVE STRESS TEST") ||
+      resultUpper.includes("NEGATIVE STREES TEST") ||
+      resultUpper.includes("NORMAL")
+    ) {
+      summaries.treadmill = "NORMAL";
+    } else {
+      summaries.treadmill = desc(treadmillResult);
+    }
+  }
+
   if (has("refraktometri")) {
     if (data.refraKananSpheris || data.refraKiriSpheris) {
       summaries.refraktometri = "Lihat lampiran hasil refraktometri.";
@@ -572,22 +576,12 @@ const ConclusionRow: React.FC<{
   const displayValue = String(value || "TIDAK ADA");
   const lines = displayValue.split("\n");
 
-  const isTreadmillNormal =
-    (label === "Pemeriksaan Treadmill" &&
-      displayValue.toLowerCase().includes("negative ischemic response")) ||
-    (label === "Pemeriksaan Treadmill" &&
-      displayValue.toLowerCase().includes("negative stress test")) ||
-    (label === "Pemeriksaan Treadmill" &&
-      displayValue.toLowerCase().includes("negative strees test"));
-
   const isAbnormalValue =
     displayValue !== "NORMAL" &&
     displayValue !== "TIDAK ADA" &&
-    !displayValue.toLowerCase().includes("lihat lampiran hasil") &&
-    !isTreadmillNormal;
+    !displayValue.toLowerCase().includes("lihat lampiran hasil");
 
   const baseStyle = localStyles.valueLine;
-
   const abnormalStyle = isAbnormalValue ? localStyles.abnormalText : {};
 
   return (
@@ -598,9 +592,7 @@ const ConclusionRow: React.FC<{
       <View style={localStyles.valueFlex}>
         {lines.map((line, idx) => {
           const stylesArray: any[] = [baseStyle, abnormalStyle];
-          if (idx < lines.length - 1) {
-            stylesArray.push(localStyles.mb1);
-          }
+          if (idx < lines.length - 1) stylesArray.push(localStyles.mb1);
 
           return (
             <Text key={idx} style={stylesArray}>
