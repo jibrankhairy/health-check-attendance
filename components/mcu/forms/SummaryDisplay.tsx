@@ -38,12 +38,14 @@ const formatUrineSpecificGravity = (
 
 const getReferenceValue = (item: MetricItem, gender: string) => {
   const ref = item.ref;
+
   if (isQualitative(ref)) {
     return `Normal: ${ref.normal.join(", ")}`;
   }
 
   let range = ref.all;
   const g = gender.toUpperCase();
+
   if (ref.male && g === "LAKI-LAKI") range = ref.male;
   else if (ref.female && g === "PEREMPUAN") range = ref.female;
 
@@ -149,11 +151,25 @@ export const SummaryDisplay = ({
       };
 
       const label = labelMap[key as keyof Summaries] || key;
+      const valueUpper = String(value).toUpperCase();
 
       const isNormal =
-        value === "NORMAL" ||
-        String(value).toUpperCase().includes("NORMAL") ||
-        String(value).toUpperCase().includes("NEGATIVE ISCHEMIC RESPONSES");
+        valueUpper === "NORMAL" ||
+        valueUpper.includes("NORMAL") ||
+        valueUpper.includes("NEGATIVE ISCHEMIC RESPONSE");
+
+      let textColorClass = "text-red-600";
+
+      if (isNormal) {
+        if (
+          key === "treadmill" &&
+          valueUpper.includes("NEGATIVE ISCHEMIC RESPONSE")
+        ) {
+          textColorClass = "text-black";
+        } else {
+          textColorClass = "text-primary";
+        }
+      }
 
       return (
         <div
@@ -169,11 +185,7 @@ export const SummaryDisplay = ({
             </span>
             <span className="font-bold mr-2">:</span>
             <div className="flex-grow">
-              <span
-                className={`font-bold ${
-                  isNormal ? "text-green-600" : "text-red-600"
-                }`}
-              >
+              <span className={`font-bold ${textColorClass}`}>
                 {value || "TIDAK ADA"}
               </span>
             </div>

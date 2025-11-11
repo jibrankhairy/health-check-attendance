@@ -570,13 +570,17 @@ const ConclusionRow: React.FC<{
   value: string | number | undefined | null;
 }> = ({ number, label, value }) => {
   const displayValue = String(value || "TIDAK ADA");
-
   const lines = displayValue.split("\n");
+
+  const isTreadmillNormal =
+    label === "Pemeriksaan Treadmill" &&
+    displayValue.toLowerCase().includes("negative ischemic response");
 
   const isAbnormalValue =
     displayValue !== "NORMAL" &&
     displayValue !== "TIDAK ADA" &&
-    !displayValue.toLowerCase().includes("lihat lampiran hasil");
+    !displayValue.toLowerCase().includes("lihat lampiran hasil") &&
+    !isTreadmillNormal;
 
   const baseStyle = localStyles.valueLine;
 

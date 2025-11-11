@@ -184,6 +184,22 @@ allLabDataMap.forEach((item) => {
   labFieldMap.set(item.field, item);
 });
 
+// Daftar semua Kunci (keys) yang berisi data MCU/Fisik/Lab,
+// ini digunakan untuk membuat object kosong saat "TIDAK MCU"
+const mcuDataKeys: string[] = [];
+// Tambahkan semua key dari daftar kolom kecuali data pasien dasar
+const basePatientKeys = [
+  "nik",
+  "fullName",
+  "patientId",
+  "age",
+  "gender",
+  "position",
+  "division",
+  "location",
+  "examinationDate",
+];
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -196,17 +212,17 @@ export async function GET(request: Request) {
       );
     }
 
+    // Ambil data pasien (mcuResult) tanpa filter pemeriksaanFisikForm
     const reports = await prisma.mcuResult.findMany({
       where: {
         patient: { companyId: companyId },
-        pemeriksaanFisikForm: { not: Prisma.DbNull },
       },
       select: {
         examinationStartedAt: true,
         healthHistoryAnswers: true,
         dassTestAnswers: true,
         fasTestAnswers: true,
-        pemeriksaanFisikForm: true,
+        pemeriksaanFisikForm: true, // Wajib ada untuk cek kondisi
         kesimpulan: true,
         saran: true,
         conclusionValidatorName: true,
@@ -392,16 +408,29 @@ export async function GET(request: Request) {
       return NextResponse.json(
         {
           message:
-            "Tidak ada data form yang bisa diekspor untuk perusahaan ini.",
+            "Tidak ada data pasien yang bisa diekspor untuk perusahaan ini.",
         },
         { status: 404 }
       );
     }
 
+    // Sortir data: Yang ada pemeriksaanFisikForm di atas, yang NULL di bawah.
+    const sortedReports = reports.sort((a, b) => {
+      const hasFisikA =
+        a.pemeriksaanFisikForm !== null && a.pemeriksaanFisikForm !== undefined;
+      const hasFisikB =
+        b.pemeriksaanFisikForm !== null && b.pemeriksaanFisikForm !== undefined;
+
+      if (hasFisikA && !hasFisikB) return -1; // A (ada) di atas B (tidak ada)
+      if (!hasFisikA && hasFisikB) return 1; // B (ada) di atas A (tidak ada)
+      return 0; // Urutan tetap jika sama-sama ada atau sama-sama tidak ada
+    });
+
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Hasil MCU");
 
-    worksheet.columns = [
+    // Definisikan kolom dan simpan daftarnya
+    const allColumns = [
       { header: "nik", key: "nik", width: 20 },
       { header: "fullName", key: "fullName", width: 30 },
       { header: "patientId", key: "patientId", width: 15 },
@@ -410,8 +439,8 @@ export async function GET(request: Request) {
       { header: "position", key: "position", width: 25 },
       { header: "division", key: "division", width: 30 },
       { header: "location", key: "location", width: 30 },
-      { header: "examinationDate", key: "examinationDate", width: 25 },
-      // Hasil DASS
+      { header: "examinationDate", key: "examinationDate", width: 25 }, // Kolom terakhir data dasar (Kolom ke-9)
+      // HASIL MCU/FISIK/LAB DIMULAI DARI SINI (Kolom ke-10)
       {
         header: "dass_depression_score",
         key: "dass_depression_score",
@@ -467,6 +496,7 @@ export async function GET(request: Request) {
       { header: "obatHipertensi", key: "obatHipertensi", width: 25 },
       { header: "suplemen", key: "suplemen", width: 25 },
       { header: "obatLainnya", key: "obatLainnya", width: 25 },
+      // Kolom Pemeriksaan Fisik
       { header: "kondisiKesehatan", key: "kondisiKesehatan", width: 20 },
       { header: "kesadaran", key: "kesadaran", width: 20 },
       { header: "beratBadanKg", key: "beratBadanKg", width: 20 },
@@ -550,7 +580,7 @@ export async function GET(request: Request) {
       { header: "sikap", key: "sikap", width: 20 },
       { header: "dayaIngat", key: "dayaIngat", width: 20 },
       { header: "orientasi", key: "orientasi", width: 20 },
-      // HASIL LAB & PENUNJANG DARI MCU RESULT (SESUAI TEMPLATE REPORT)
+      // HASIL LAB & PENUNJANG DARI MCU RESULT
       // Hematologi
       { header: "golonganDarah", key: "golonganDarah", width: 20 },
       { header: "hemoglobin", key: "hemoglobin", width: 20 },
@@ -873,9 +903,18 @@ export async function GET(request: Request) {
       },
     ];
 
+    worksheet.columns = allColumns;
+
     worksheet.getRow(1).font = { bold: true };
 
-    reports.forEach((report) => {
+    const startMcuCol = 10;
+    const endMcuCol = allColumns.length;
+
+    sortedReports.forEach((report) => {
+      const hasPhysicalExam =
+        report.pemeriksaanFisikForm !== null &&
+        report.pemeriksaanFisikForm !== undefined;
+
       const healthHistory = flattenAnswers(report.healthHistoryAnswers);
       const dassResult =
         report.dassTestAnswers && (report.dassTestAnswers as any).result
@@ -887,7 +926,9 @@ export async function GET(request: Request) {
         : {};
       const fasResult = calculateFasResult(fasRawAnswers);
 
-      const fisik = flattenAnswers(report.pemeriksaanFisikForm);
+      const fisik = hasPhysicalExam
+        ? flattenAnswers(report.pemeriksaanFisikForm)
+        : {};
 
       let bmiCategory = "";
       const bmiValue = Number(fisik.bmi);
@@ -917,46 +958,92 @@ export async function GET(request: Request) {
 
       const examinationDate = formatExcelDate(report.examinationStartedAt);
 
-      const newRow = worksheet.addRow({
-        nik,
-        fullName,
-        patientId,
-        age,
-        gender,
-        position,
-        division,
-        location,
-        examinationDate,
-        ...reportData,
-        ...dassResult,
-        ...fasResult,
-        ...healthHistory,
-        ...fisik,
-        bmi_category: bmiCategory,
-      });
+      let rowData: Record<string, any>;
 
-      const labColumnsToStyle = allLabDataMap.map((item) => item.field);
+      if (hasPhysicalExam) {
+        rowData = {
+          nik,
+          fullName,
+          patientId,
+          age,
+          gender,
+          position,
+          division,
+          location,
+          examinationDate,
+          ...reportData,
+          ...dassResult,
+          ...fasResult,
+          ...healthHistory,
+          ...fisik,
+          bmi_category: bmiCategory,
+        };
+      } else {
+        rowData = {
+          nik,
+          fullName,
+          patientId,
+          age,
+          gender,
+          position,
+          division,
+          location,
+          examinationDate,
+        };
+      }
 
-      labColumnsToStyle.forEach((fieldKey) => {
-        const column = worksheet.getColumn(fieldKey);
-        if (!column) return;
+      const newRow = worksheet.addRow(rowData);
+      const currentRowNumber = newRow.number;
 
-        const item = labFieldMap.get(fieldKey);
-        if (!item) return;
+      if (hasPhysicalExam) {
+        const labColumnsToStyle = allLabDataMap.map((item) => item.field);
 
-        const cell = newRow.getCell(column.number);
-        const resultValue = (reportData as Record<string, unknown>)[fieldKey];
+        labColumnsToStyle.forEach((fieldKey) => {
+          const column = worksheet.getColumn(fieldKey);
+          if (!column) return;
 
-        if (resultValue == null) return;
+          const item = labFieldMap.get(fieldKey);
+          if (!item) return;
 
-        const anomaly = getLabAnomaly(item, resultValue, gender);
+          const cell = newRow.getCell(column.number);
+          const resultValue = (reportData as Record<string, unknown>)[fieldKey];
 
-        if (anomaly === "HIGH") {
-          cell.font = { color: { argb: "FFFF0000" }, bold: true };
-        } else if (anomaly === "LOW") {
-          cell.font = { color: { argb: "FF0000FF" }, bold: true };
-        }
-      });
+          if (resultValue == null) return;
+
+          const anomaly = getLabAnomaly(item, resultValue, gender);
+
+          if (anomaly === "HIGH") {
+            cell.font = { color: { argb: "FFFF0000" }, bold: true };
+          } else if (anomaly === "LOW") {
+            cell.font = { color: { argb: "FF0000FF" }, bold: true };
+          }
+        });
+      } else {
+        worksheet.mergeCells(
+          currentRowNumber,
+          startMcuCol,
+          currentRowNumber,
+          endMcuCol
+        );
+
+        const mergedCell = newRow.getCell(startMcuCol);
+        mergedCell.value = "TIDAK MCU";
+
+        mergedCell.font = {
+          bold: true,
+          color: { argb: "FFFF0000" },
+          size: 14,
+        };
+        mergedCell.alignment = {
+          vertical: "middle",
+          horizontal: "center",
+        };
+        mergedCell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "FFFFCCCC" },
+        };
+      }
     });
 
     const lastRowNumber = worksheet.rowCount + 2;
