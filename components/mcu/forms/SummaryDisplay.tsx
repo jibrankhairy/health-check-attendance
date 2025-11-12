@@ -157,7 +157,9 @@ export const SummaryDisplay = ({
         valueUpper === "NORMAL" ||
         valueUpper.includes("NORMAL") ||
         valueUpper.includes("NEGATIVE ISCHEMIC RESPONSE") ||
-        valueUpper.includes("NEGATIVE STRESS TEST");
+        valueUpper.includes("NEGATIVE STRESS TEST") ||
+        valueUpper.includes("NEGATIVE ISKEMIK RESPONSE") ||
+        valueUpper.includes("NEGATIF ISKEMIK RESPONSE");
 
       let textColorClass = "text-red-600";
 
@@ -165,7 +167,9 @@ export const SummaryDisplay = ({
         if (
           key === "treadmill" &&
           (valueUpper.includes("NEGATIVE ISCHEMIC RESPONSE") ||
-            valueUpper.includes("NEGATIVE STRESS TEST"))
+            valueUpper.includes("NEGATIVE STRESS TEST") ||
+            valueUpper.includes("NEGATIVE ISKEMIK RESPONSE") ||
+            valueUpper.includes("NEGATIF ISKEMIK RESPONSE"))
         ) {
           textColorClass = "text-black";
         } else {
