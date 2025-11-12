@@ -547,6 +547,8 @@ const summarizeResults = (data: ConclusionData): Summaries => {
 
     if (
       resultUpper.includes("NEGATIVE ISCHEMIC RESPONSE") ||
+      resultUpper.includes("NEGATIVE ISKEMIK RESPONSE") ||
+      resultUpper.includes("NEGATIF ISKEMIK RESPONSE") ||
       resultUpper.includes("NEGATIVE STRESS TEST") ||
       resultUpper.includes("NEGATIVE STREES TEST") ||
       resultUpper.includes("NORMAL")

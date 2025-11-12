@@ -189,12 +189,16 @@ export async function POST(request: Request) {
         const dataToUpdate = mapExcelToPrisma(row);
         dataToUpdate.isExcelDataImported = true;
 
+        const oldStatus = mcuResult.status;
         const isImagesAlreadyUploaded = mcuResult.isImagesUploaded;
 
-        if (isImagesAlreadyUploaded) {
+        if (oldStatus === "COMPLETED") {
           dataToUpdate.status = "COMPLETED";
           dataToUpdate.fileUrl = `/dashboard/reports/view/${mcuResult.id}`;
-          if (mcuResult.status !== "COMPLETED") {
+        } else if (isImagesAlreadyUploaded) {
+          dataToUpdate.status = "COMPLETED";
+          dataToUpdate.fileUrl = `/dashboard/reports/view/${mcuResult.id}`;
+          if (oldStatus !== "COMPLETED") {
             dataToUpdate.completedAt = new Date();
           }
         } else {
