@@ -24,6 +24,9 @@ export interface KimiaDarahData {
   kolesterolTotal?: number | string | null;
   hdl?: number | string | null;
   ldl?: number | string | null;
+  bilirubinTotal?: number | string | null;
+  bilirubinDirect?: number | string | null;
+  alkaliPhosphatase?: number | string | null;
   trigliserida?: number | string | null;
   sgot?: number | string | null;
   sgpt?: number | string | null;
@@ -112,6 +115,30 @@ const kimiaDarahDataMap: ReadonlyArray<KimiaDarahItem> = [
     refText: "< 130",
     unit: "mg/dL",
     ref: { all: { max: 130 } },
+  },
+  {
+    no: "",
+    label: "BILIRUBIN TOTAL",
+    field: "bilirubinTotal",
+    refText: "0.8 - 1.2",
+    unit: "mg/dL",
+    ref: { all: { min: 0.2, max: 1.2 } },
+  },
+  {
+    no: "",
+    label: "BILIRUBIN DIRECT",
+    field: "bilirubinDirect",
+    refText: "0.1 - 0.3",
+    unit: "mg/dL",
+    ref: { all: { min: 0.1, max: 0.3 } },
+  },
+  {
+    no: "",
+    label: "ALKALI PHOSPATASE",
+    field: "alkaliPhosphatase",
+    refText: "30 - 120",
+    unit: "IU/L",
+    ref: { all: { min: 30, max: 120 } },
   },
   {
     no: "",
@@ -241,6 +268,19 @@ const validatorStyles = {
   },
 };
 
+const formatTruncate2Decimals = (value: unknown): string => {
+  if (value === null || value === undefined || String(value) === "") {
+    return "-";
+  }
+
+  const num = Number(value);
+  if (isNaN(num)) {
+    return String(value);
+  }
+  const truncatedNum = Math.trunc((num * 100) + Number.EPSILON) / 100;
+  return String(truncatedNum);
+};
+
 export const KimiaDarahDocument: React.FC<KimiaDarahDocumentProps> = ({
   data,
 }) => (
@@ -297,8 +337,21 @@ export const KimiaDarahDocument: React.FC<KimiaDarahDocumentProps> = ({
             );
           }
 
-          const val = data?.[item.field as keyof KimiaDarahData] as unknown;
+          let val = data?.[item.field as keyof KimiaDarahData] as unknown;
+
+          const fieldsToTruncate = [
+            "bilirubinTotal", 
+            "bilirubinDirect", 
+            "alkaliPhosphatase"
+          ];
+
+          if (fieldsToTruncate.includes(item.field as string)) {
+            val = formatTruncate2Decimals(val);
+          }
+
           const abnormal = getResultStyle(item, val, data?.patient?.gender);
+
+          const displayValue = (val as any) ?? "-";
 
           return (
             <View
@@ -314,9 +367,11 @@ export const KimiaDarahDocument: React.FC<KimiaDarahDocumentProps> = ({
               <Text style={[styles.tableCol, styles.colJenis]}>
                 {item.label}
               </Text>
+              
               <Text style={[styles.tableCol, styles.colHasil, abnormal]}>
-                {(val as any) ?? "-"}
+                {displayValue}
               </Text>
+
               <Text style={[styles.tableCol, styles.colRujukan]}>
                 {item.refText}
               </Text>
