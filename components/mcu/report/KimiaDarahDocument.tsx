@@ -272,13 +272,12 @@ const formatTruncate2Decimals = (value: unknown): string => {
   if (value === null || value === undefined || String(value) === "") {
     return "-";
   }
-
   const num = Number(value);
   if (isNaN(num)) {
     return String(value);
   }
-  const truncatedNum = Math.trunc((num * 100) + Number.EPSILON) / 100;
-  return String(truncatedNum);
+  const roundedNum = Math.round((num * 100) + Number.EPSILON) / 100;
+  return String(roundedNum);
 };
 
 export const KimiaDarahDocument: React.FC<KimiaDarahDocumentProps> = ({
@@ -337,7 +336,6 @@ export const KimiaDarahDocument: React.FC<KimiaDarahDocumentProps> = ({
             );
           }
 
-          // yahayu
           let val = data?.[item.field as keyof KimiaDarahData] as unknown;
 
           const fieldsToTruncate = [
