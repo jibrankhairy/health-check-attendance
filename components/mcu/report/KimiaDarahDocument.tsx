@@ -337,6 +337,7 @@ export const KimiaDarahDocument: React.FC<KimiaDarahDocumentProps> = ({
             );
           }
 
+          // yahayu
           let val = data?.[item.field as keyof KimiaDarahData] as unknown;
 
           const fieldsToTruncate = [
