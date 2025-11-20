@@ -158,6 +158,7 @@ export const SummaryDisplay = ({
         valueUpper.includes("NORMAL") ||
         valueUpper.includes("NEGATIVE ISCHEMIC RESPONSE") ||
         valueUpper.includes("NEGATIVE STRESS TEST") ||
+        valueUpper.includes("NEGATIVE STREES TEST") ||
         valueUpper.includes("NEGATIVE ISKEMIK RESPONSE") ||
         valueUpper.includes("NEGATIF ISKEMIK RESPONSE");
 
