@@ -50,6 +50,7 @@ const slugToExaminationMap: { [key: string]: string[] } = {
     "Fungsi ginjal (ureum, creatinin, asam urat)",
     "HIV",
     "Panel Hepatitis",
+    "Pemeriksaan (SGOT, SGPT, LED)",
   ],
   pemeriksaan_urin: ["Urinalisa lengkap"],
   pemeriksaan_radiologi: ["Radiologi thoraks", "USG Whole Abdomen"],

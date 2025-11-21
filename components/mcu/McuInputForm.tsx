@@ -291,15 +291,15 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
         "dr. Pipit Yuliarpan, MARS, FISQua",
 
       hematologiValidatorName:
-        initialData.hematologiValidatorName || "dr.Fitri Hamka, Sp.PK",
+        initialData.hematologiValidatorName || "dr.Fitri Hamka SpPK",
       kimiaDarahValidatorName:
-        initialData.kimiaDarahValidatorName || "dr.Fitri Hamka, Sp.PK",
+        initialData.kimiaDarahValidatorName || "dr.Fitri Hamka SpPK",
       urinalisaValidatorName:
-        initialData.urinalisaValidatorName || "dr.Fitri Hamka, Sp.PK",
+        initialData.urinalisaValidatorName || "dr.Fitri Hamka SpPK",
       biomonitoringValidatorName:
-        initialData.biomonitoringValidatorName || "dr.Fitri Hamka, Sp.PK",
+        initialData.biomonitoringValidatorName || "dr.Fitri Hamka SpPK",
       hepatitisValidatorName:
-        initialData.hepatitisValidatorName || "dr.Fitri Hamka, Sp.PK",
+        initialData.hepatitisValidatorName || "dr.Fitri Hamka SpPK",
 
       framinghamAge: String(initialData.patient.age || ""),
       framinghamGender: initialData.patient.gender || "",
@@ -643,12 +643,14 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
     hasItem("mcu regular") ||
     hasItem("mcu eksekutif") ||
     hasItem("mcu akhir") ||
-    hasItem("mcu dmc");
+    hasItem("mcu dmc") || 
+    hasItem("mcu guardian");
   const showKimiaDarah =
     hasItem("mcu regular") ||
     hasItem("mcu eksekutif") ||
     hasItem("mcu akhir") ||
-    hasItem("mcu dmc");
+    hasItem("mcu dmc") || 
+    hasItem("mcu guardian");
   const showBiomonitoring =
     hasItem("mcu regular") ||
     hasItem("mcu eksekutif") ||
@@ -684,6 +686,7 @@ export const McuInputForm = ({ initialData }: McuInputFormProps) => {
     hasItem("mcu eksekutif") ||
     hasItem("mcu akhir") ||
     hasItem("mcu dmc") ||
+    hasItem("mcu guardian") ||
     hasItem("radiologi thoraks");
 
   const showRefraktometri = hasItem("refraktometri");

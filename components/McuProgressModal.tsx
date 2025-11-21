@@ -50,8 +50,8 @@ const examinationToSlugMap: { [key: string]: string } = {
   Treadmill: "pemeriksaan_treadmill",
   "Panel Hepatitis": "pemeriksaan_lab",
   "USG Whole Abdomen": "pemeriksaan_radiologi",
-  "Hematologi (darah lengkap, golongan darah & rhesus) + HbsAg":
-    "pemeriksaan_lab",
+  "Hematologi (darah lengkap, golongan darah & rhesus) + HbsAg": "pemeriksaan_lab", 
+  "Pemeriksaan (SGOT, SGPT, LED)": "pemeriksaan_lab",
   Refraktometri: "pemeriksaan_refraktometri",
   "Biomonitoring (Pb, Fe, As)": "pemeriksaan_lab",
 };

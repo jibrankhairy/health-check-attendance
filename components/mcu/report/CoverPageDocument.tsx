@@ -117,7 +117,7 @@ function buildAttachedList(data: ReportData) {
     has("mcu regular") ||
     has("mcu eksekutif") ||
     has("mcu akhir") ||
-    has("mcu dmc");
+    has("mcu dmc") || has("mcu guardian");
 
   const list: Array<{ type: "item" | "subhead"; text: string }> = [];
 
@@ -148,7 +148,7 @@ function buildAttachedList(data: ReportData) {
     has("mcu regular") ||
     has("mcu akhir") ||
     has("mcu dmc") ||
-    has("mcu eksekutif")
+    has("mcu eksekutif") || has("mcu guardian")
   )
     penunjangItems.push("HASIL PEMERIKSAAN RONTGEN");
   if (has("ekg") || has("mcu eksekutif"))

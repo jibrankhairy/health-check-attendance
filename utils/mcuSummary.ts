@@ -502,7 +502,8 @@ export const summarizeResults = (data: SummaryConclusionData): Summaries => {
     has("mcu regular") ||
     has("mcu eksekutif") ||
     has("mcu akhir") ||
-    has("mcu dmc");
+    has("mcu dmc") ||
+    has("mcu guardian");
 
   const summaries: Summaries = {};
 

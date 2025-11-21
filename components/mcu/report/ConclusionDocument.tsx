@@ -474,7 +474,7 @@ const summarizeResults = (data: ConclusionData): Summaries => {
     has("mcu regular") ||
     has("mcu eksekutif") ||
     has("mcu akhir") ||
-    has("mcu dmc");
+    has("mcu dmc") || has("mcu guardian");
 
   const summaries: Summaries = {};
 
@@ -619,7 +619,7 @@ export const ConclusionDocument: React.FC<{ data: ConclusionData }> = ({
     has("mcu regular") ||
     has("mcu eksekutif") ||
     has("mcu akhir") ||
-    has("mcu dmc");
+    has("mcu dmc") || has("mcu guardian");
 
   let saranList: string[] = [];
   if (data?.saran && typeof data.saran === "string") {

@@ -34,6 +34,11 @@ export const dmcPackageItems = [
   "Radiologi thoraks",
 ];
 
+export const guardianPackageItems = [
+  "Pemeriksaan (SGOT, SGPT, LED)",
+  "Radiologi thoraks",
+];
+
 export const mcuPackages = [
   { id: "MCU Regular", label: "MCU Regular", details: regularPackageItems },
   {
@@ -43,6 +48,7 @@ export const mcuPackages = [
   },
   { id: "MCU Akhir", label: "MCU Akhir", details: finalPackageItems },
   { id: "MCU DMC", label: "MCU DMC", details: dmcPackageItems },
+  { id: "MCU Guardian", label: "MCU Guardian", details: guardianPackageItems }
 ];
 
 export const addOnItems = [

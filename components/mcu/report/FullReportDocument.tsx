@@ -197,14 +197,14 @@ export const FullReportDocument: React.FC<FullReportDocumentProps> = ({
     (hasItem("mcu regular") ||
       hasItem("mcu eksekutif") ||
       hasItem("mcu akhir") ||
-      hasItem("mcu dmc")) &&
+      hasItem("mcu dmc") || hasItem("mcu guardian")) &&
     sectionHasData(d, HEMATOLOGI_FIELDS);
 
   const showKimiaDarah =
     (hasItem("mcu regular") ||
       hasItem("mcu eksekutif") ||
       hasItem("mcu akhir") ||
-      hasItem("mcu dmc")) &&
+      hasItem("mcu dmc")|| hasItem("mcu guardian")) &&
     sectionHasData(d, KIMIA_DARAH_FIELDS);
 
   const showBiomonitoring = sectionHasData(d, BIOMONITORING_FIELDS);
@@ -223,7 +223,7 @@ export const FullReportDocument: React.FC<FullReportDocumentProps> = ({
       hasItem("mcu eksekutif") ||
       hasItem("mcu akhir") ||
       hasItem("mcu dmc") ||
-      hasItem("radiologi thoraks")) &&
+      hasItem("radiologi thoraks") || hasItem("mcu guardian"))  &&
     sectionHasData(d, RONTGEN_FIELDS);
 
   const showEkg =
