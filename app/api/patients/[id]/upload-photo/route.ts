@@ -40,7 +40,6 @@ export async function POST(
     }
 
     const file = maybeFile as File;
-
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
     const base64 = buffer.toString("base64");

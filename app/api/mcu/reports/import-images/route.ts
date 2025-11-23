@@ -93,7 +93,6 @@ async function processFile(
       },
       select: { isExcelDataImported: true, id: true },
     });
-
     if (updatedResult.isExcelDataImported) {
       await prisma.mcuResult.update({
         where: { id: updatedResult.id },

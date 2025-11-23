@@ -326,7 +326,7 @@ model McuResult {
   spirometryEffortCount      String? @db.Text
   spirometryImage            String? @db.MediumText
   kesimpulanSpirometry       String? @db.Text
-
+  // 
   // --- Framingham ---
   framinghamGender                  String?
   framinghamAge                     String?
