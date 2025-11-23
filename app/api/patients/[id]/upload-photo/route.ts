@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { PrismaClient } from "@prisma/client";
-// import { put } from "@vercel/blob";
+import sharp from "sharp"; 
 
-export const runtime = "nodejs";
+export const runtime = "nodejs"; 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
@@ -41,9 +41,16 @@ export async function POST(
 
     const file = maybeFile as File;
     const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    const base64 = buffer.toString("base64");
-    const url = `data:${file.type};base64,${base64}`;
+    const originalBuffer = Buffer.from(bytes);
+
+    const compressedBuffer = await sharp(originalBuffer)
+      .resize({ width: 500, withoutEnlargement: true }) 
+      .jpeg({ quality: 80, progressive: true }) 
+      .toBuffer();
+
+    const base64 = compressedBuffer.toString("base64");
+    
+    const url = `data:image/jpeg;base64,${base64}`;
 
     const latestMcuResult = await prisma.mcuResult.findFirst({
       where: { patientId: patientId },
@@ -70,7 +77,7 @@ export async function POST(
     ]);
 
     return NextResponse.json({
-      message: "Upload berhasil dan MCU ditandai selesai",
+      message: "Upload berhasil (dikompresi) dan MCU ditandai selesai",
       patient: updatedPatient,
     });
   } catch (error: any) {

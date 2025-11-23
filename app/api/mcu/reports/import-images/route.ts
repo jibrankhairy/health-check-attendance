@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { PrismaClient, Prisma } from "@prisma/client";
 import path from "path";
-import fs from "fs/promises";
-import { put } from "@vercel/blob";
+import sharp from "sharp"; 
 
+export const runtime = "nodejs"; 
 export const maxDuration = 60;
 
 const prisma = new PrismaClient();
@@ -80,10 +80,16 @@ async function processFile(
     }
 
     const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    const base64 = buffer.toString("base64");
+    const originalBuffer = Buffer.from(bytes);
 
-    let finalUrl = `data:${file.type};base64,${base64}`;
+    const compressedBuffer = await sharp(originalBuffer)
+      .resize({ width: 1024, withoutEnlargement: true })
+      .jpeg({ quality: 80, progressive: true })
+      .toBuffer();
+
+    const base64 = compressedBuffer.toString("base64");
+
+    const finalUrl = `data:image/jpeg;base64,${base64}`;
 
     const updatedResult = await prisma.mcuResult.update({
       where: { id: mcuResult.id },
@@ -93,6 +99,7 @@ async function processFile(
       },
       select: { isExcelDataImported: true, id: true },
     });
+
     if (updatedResult.isExcelDataImported) {
       await prisma.mcuResult.update({
         where: { id: updatedResult.id },
@@ -103,6 +110,7 @@ async function processFile(
         },
       });
     }
+
     return { success: true, message: `Berhasil mengimpor ${originalFilename}` };
   } catch (e) {
     const error = e as Error;

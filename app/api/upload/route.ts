@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
-import { put } from "@vercel/blob";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
+import sharp from "sharp"; 
 
-export const runtime = "nodejs";
+export const runtime = "nodejs"; 
 
 export async function POST(request: Request) {
   try {
@@ -17,25 +15,30 @@ export async function POST(request: Request) {
       );
     }
 
-    // if (process.env.BLOB_READ_WRITE_TOKEN) {
-    //   const filename = `mcu/${Date.now()}-${file.name.replace(/\s+/g, "_")}`;
-    //   const blob = await put(filename, file, {
-    //     access: "public",
-    //     token: process.env.BLOB_READ_WRITE_TOKEN,
-    //     contentType: file.type,
-    //   });
-    //   return NextResponse.json({ url: blob.url });
-    // }
-
     const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    const base64 = buffer.toString("base64")
-    const dataUrl = `data:${file.type};base64,${base64}`
-    // const dir = path.join(process.cwd(), "public", "uploads");
-    // await mkdir(dir, { recursive: true });
+    const originalBuffer = Buffer.from(bytes);
 
-    // const uploadPath = path.join(dir, filename);
-    // await writeFile(uploadPath, buffer);
+    let finalBase64String = "";
+    let finalMimeType = file.type;
+
+    if (file.type.startsWith("image/")) {
+      try {
+        const compressedBuffer = await sharp(originalBuffer)
+          .resize({ width: 1024, withoutEnlargement: true })
+          .jpeg({ quality: 80, progressive: true })
+          .toBuffer();
+
+        finalBase64String = compressedBuffer.toString("base64");
+        finalMimeType = "image/jpeg";
+      } catch (err) {
+        console.error("Gagal kompresi, fallback ke original:", err);
+        finalBase64String = originalBuffer.toString("base64");
+      }
+    } else {
+      finalBase64String = originalBuffer.toString("base64");
+    }
+
+    const dataUrl = `data:${finalMimeType};base64,${finalBase64String}`;
 
     return NextResponse.json({ url: dataUrl });
   } catch (error) {
