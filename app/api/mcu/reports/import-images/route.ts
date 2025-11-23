@@ -79,30 +79,11 @@ async function processFile(
       };
     }
 
-    let finalUrl = "";
-    if (process.env.BLOB_READ_WRITE_TOKEN) {
-      const blobPath = `mcu-images/${companyId}/${imageType}/${originalFilename}`;
-      const blob = await put(blobPath, file, {
-        access: "public",
-        contentType: file.type,
-        addRandomSuffix: false,
-        allowOverwrite: true,
-      });
-      finalUrl = blob.url;
-    } else {
-      const uploadDir = path.join(
-        process.cwd(),
-        "public",
-        "uploads",
-        companyId,
-        imageType
-      );
-      await fs.mkdir(uploadDir, { recursive: true });
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const filePath = path.join(uploadDir, originalFilename);
-      await fs.writeFile(filePath, buffer);
-      finalUrl = `/uploads/${companyId}/${imageType}/${originalFilename}`;
-    }
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    const base64 = buffer.toString("base64");
+
+    let finalUrl = `data:${file.type};base64,${base64}`;
 
     const updatedResult = await prisma.mcuResult.update({
       where: { id: mcuResult.id },

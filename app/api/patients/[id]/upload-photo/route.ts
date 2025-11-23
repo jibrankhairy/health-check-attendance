@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { PrismaClient } from "@prisma/client";
-import { put } from "@vercel/blob";
+// import { put } from "@vercel/blob";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -40,14 +40,11 @@ export async function POST(
     }
 
     const file = maybeFile as File;
-    const { url } = await put(
-      `patients/${patientId}/${Date.now()}-${file.name}`,
-      file,
-      {
-        access: "public",
-        addRandomSuffix: false,
-      }
-    );
+
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    const base64 = buffer.toString("base64");
+    const url = `data:${file.type};base64,${base64}`;
 
     const latestMcuResult = await prisma.mcuResult.findFirst({
       where: { patientId: patientId },
